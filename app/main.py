@@ -200,19 +200,21 @@ def main() -> None:
         c1.metric("Target", target_name)
         c2.metric("Target body", target_body)
         st.caption("Mission-profile selection filters the ranking produced by the matching module. The app does not recalculate weights or rankings.")
-        st.markdown("#### Extended analysis modules")
+        st.markdown("#### AREA 67 product capabilities")
         st.markdown(
-            "| Module | Current status |\n"
-            "|---|---|\n"
-            "| Core Terrain Fingerprint | Integrated when Hiba's CSV is supplied |\n"
-            "| Thermal context (Diviner / THEMIS / MODIS) | Planned / separate evidence layer |\n"
-            "| Geological and mineralogical context | Planned / separate evidence layer |\n"
-            "| Water, ice, dust, and wind context | Planned / separate evidence layer |\n"
-            "| Subsurface environments | Planned / separate evidence layer |\n"
-            "| ShadowTwin illumination analysis | Planned until compatible inputs and calculations are supplied |\n"
-            "| Rover Gauntlet (A* route evaluation) | Planned until a tested route output is supplied |"
+            "| Capability | Scope / current status |\\n"
+            "|---|---|\\n"
+            "| Analog Radar | Candidate discovery and ranking from the selected target |\\n"
+            "| Mission Matching | MVP profile: Rover Navigation / Terrain Traversal; actual weights come from Omar's ranking output |\\n"
+            "| Single-Parameter Explorer | Available in Results & Comparison |\\n"
+            "| Rover Gauntlet | A* least-cost route planned after the core data-to-ranking workflow is validated |\\n"
+            "| ShadowTwin | DEM + SPICE Sun-position illumination analysis; planned until implemented and tested |\\n"
+            "| Analog Passport | Evidence, provenance, candidate explanation, gaps, and analogy limits |"
         )
-        st.caption("Context layers are not added to similarity scores until their sources, scales, units, and timing have been checked.")
+        st.caption(
+            "Thermal products (MODIS, Diviner, THEMIS) are separate supporting context in the project report. "
+            "They are not part of the core topographic similarity score unless source compatibility and an independent method are validated."
+        )
 
     with tab_results:
         st.subheader("Candidate results")
@@ -289,7 +291,7 @@ def main() -> None:
         else:
             st.info("Per-feature differences/contributions have not been supplied by the matcher. The app does not estimate them.")
 
-        quality_cols = [col for col in ("site_id", "site_name", "source_id", "analysis_scale_m", "nodata_pct", "valid_cell_count") if col in fingerprints.columns]
+        quality_cols = [col for col in ("site_id", "site_name", "source_id", "analysis_scale_m", "valid_coverage_pct", "nodata_pct", "valid_cell_count") if col in fingerprints.columns]
         if quality_cols:
             st.markdown("#### Data quality and provenance")
             st.dataframe(fingerprints[fingerprints["site_id"].isin(comparison_ids)][quality_cols], use_container_width=True, hide_index=True)
@@ -340,7 +342,8 @@ def main() -> None:
         missing_features = []
         for group, metrics in FEATURE_GROUPS.items():
             values = passport["fingerprint"].get(group, {})
-            absent = [metric for metric in metrics if metric not in values]
+            present_metrics = [metric for metric in metrics if metric in fingerprints.columns]
+            absent = [metric for metric in present_metrics if metric not in values]
             missing_features.extend(absent)
             with st.expander(group, expanded=True):
                 if values:
