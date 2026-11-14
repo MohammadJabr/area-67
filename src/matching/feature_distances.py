@@ -1,8 +1,8 @@
 """Calculate comparable group distances from AREA 67 terrain fingerprints.
 
-The metric tolerances are explicit configuration inputs. Resulting group
-distances are RMS differences measured in tolerance units; they are not
-probabilities or universal measures of planetary equivalence.
+Metric tolerances are explicit configuration inputs. Resulting group distances
+are RMS differences measured in tolerance units; they are not probabilities or
+universal measures of planetary equivalence.
 """
 
 from collections.abc import Mapping
@@ -105,25 +105,28 @@ def _compare_method_field(
     candidate: Mapping,
     field: str,
     warnings: list[str],
-    *,
-    required_for_comparison: bool = False,
-):
+) -> bool:
+    """Return True only when both sites declare the same method value."""
     target_value = target.get(field)
     candidate_value = candidate.get(field)
 
     if target_value is None or candidate_value is None:
+        missing_on = []
+        if target_value is None:
+            missing_on.append("target")
+        if candidate_value is None:
+            missing_on.append("candidate")
         warnings.append(
-            f"Method metadata '{field}' is missing on "
-            f"{'target' if target_value is None else 'candidate'}; comparability is not fully confirmed."
+            f"Method metadata '{field}' is missing on {' and '.join(missing_on)}; "
+            "the dependent feature group will not be compared."
         )
-        if required_for_comparison:
-            raise ValueError(f"Both sites must provide {field}.")
-        return
+        return False
 
     if _canonical_metadata(target_value) != _canonical_metadata(candidate_value):
         raise ValueError(
             f"Incompatible {field}: target={target_value!r}, candidate={candidate_value!r}."
         )
+    return True
 
 
 def validate_feature_tolerances(tolerances: Mapping) -> dict:
@@ -164,15 +167,16 @@ def compare_terrain_fingerprints(
 ) -> dict:
     """Compare one Moon/Mars target with one Earth candidate.
 
-    Required matching safeguards:
+    Required safeguards:
     - Both sites declare analysis scale, slope units, elevation units and NoData.
     - Analysis scales agree within the configured relative tolerance.
     - Known method metadata conflicts are rejected.
-    - Missing feature groups remain missing; they are never filled with zero.
-    - Scalar and percentage differences are standardized by explicit tolerances.
+    - Groups whose method metadata is absent remain unavailable.
+    - Missing feature groups are never filled with zero.
+    - Differences are standardized by explicit, documented tolerances.
 
-    TRI is assumed to use the site's declared elevation unit, as expected for
-    elevation-difference-based TRI. Confirm this with the feature producer.
+    TRI is assumed to use the site's declared elevation unit. Confirm this
+    assumption with the terrain-feature producer before using real outputs.
     """
     if not isinstance(target, Mapping) or not isinstance(candidate, Mapping):
         raise TypeError("target and candidate fingerprints must be mappings.")
@@ -233,7 +237,6 @@ def compare_terrain_fingerprints(
     if target_valid <= 0 or candidate_valid <= 0:
         raise ValueError("A site has no valid raster coverage after NoData masking.")
 
-    # Where supplied, valid_coverage_pct must agree with 100 - nodata_pct.
     for record, nodata, label in (
         (target, target_nodata, "target"),
         (candidate, candidate_nodata, "candidate"),
@@ -245,19 +248,22 @@ def compare_terrain_fingerprints(
                 f"{label} valid_coverage_pct",
             )
             if abs(valid_coverage - (100.0 - nodata)) > 1.0:
-                raise ValueError(
-                    f"{label} valid_coverage_pct conflicts with nodata_pct."
-                )
+                raise ValueError(f"{label} valid_coverage_pct conflicts with nodata_pct.")
 
     warnings = []
-    for field in (
-        "tri_definition",
-        "tri_window_cells",
-        "relief_window_m",
-        "terrain_class_thresholds",
-        "spatial_pattern_definition",
-    ):
-        _compare_method_field(target, candidate, field, warnings)
+    tri_method_ready = (
+        _compare_method_field(target, candidate, "tri_definition", warnings)
+        and _compare_method_field(target, candidate, "tri_window_cells", warnings)
+    )
+    relief_method_ready = _compare_method_field(
+        target, candidate, "relief_window_m", warnings
+    )
+    distribution_method_ready = _compare_method_field(
+        target, candidate, "terrain_class_thresholds", warnings
+    )
+    spatial_method_ready = _compare_method_field(
+        target, candidate, "spatial_pattern_definition", warnings
+    )
 
     if not target.get("source_id") or not candidate.get("source_id"):
         warnings.append("One or both sites are missing source_id provenance.")
@@ -268,14 +274,25 @@ def compare_terrain_fingerprints(
             "layer such as LOLA LDEC must be reviewed separately from NoData coverage."
         )
 
+    target_direct = target.get("direct_observation_coverage_pct")
+    candidate_direct = candidate.get("direct_observation_coverage_pct")
+    if target_direct is not None:
+        target_direct = _validate_percent(
+            _finite_number(target, "direct_observation_coverage_pct"),
+            "target direct_observation_coverage_pct",
+        )
+    if candidate_direct is not None:
+        candidate_direct = _validate_percent(
+            _finite_number(candidate, "direct_observation_coverage_pct"),
+            "candidate direct_observation_coverage_pct",
+        )
+
     target_slope_unit = _unit_key(target.get("slope_unit"), "target slope_unit")
     candidate_slope_unit = _unit_key(candidate.get("slope_unit"), "candidate slope_unit")
     target_elevation_unit = _unit_key(target.get("elevation_unit"), "target elevation_unit")
     candidate_elevation_unit = _unit_key(
         candidate.get("elevation_unit"), "candidate elevation_unit"
     )
-
-    # Validate units before any groups are calculated, even when a group is missing.
     _slope_to_degrees(0.0, target_slope_unit)
     _slope_to_degrees(0.0, candidate_slope_unit)
     _elevation_to_meters(0.0, target_elevation_unit)
@@ -284,7 +301,6 @@ def compare_terrain_fingerprints(
     group_distances = {}
     missing_groups = []
 
-    # Slope group: median and P90, standardized in degrees.
     slope_target = [
         _finite_number(target, "slope_median", required=False),
         _finite_number(target, "slope_p90", required=False),
@@ -309,7 +325,6 @@ def compare_terrain_fingerprints(
             target_slope_deg, candidate_slope_deg, tolerance_values["slope_deg"]
         )
 
-    # TRI group: median and P90, assuming elevation units.
     tri_target = [
         _finite_number(target, "tri_median", required=False),
         _finite_number(target, "tri_p90", required=False),
@@ -318,7 +333,10 @@ def compare_terrain_fingerprints(
         _finite_number(candidate, "tri_median", required=False),
         _finite_number(candidate, "tri_p90", required=False),
     ]
-    if any(value is None for value in tri_target + tri_candidate):
+    if (
+        not tri_method_ready
+        or any(value is None for value in tri_target + tri_candidate)
+    ):
         group_distances["tri"] = None
         missing_groups.append("tri")
     else:
@@ -334,10 +352,13 @@ def compare_terrain_fingerprints(
             tri_target_m, tri_candidate_m, tolerance_values["tri_m"]
         )
 
-    # Local relief: P95-P5, converted to metres.
     target_relief = _finite_number(target, "local_relief_p95_p5", required=False)
     candidate_relief = _finite_number(candidate, "local_relief_p95_p5", required=False)
-    if target_relief is None or candidate_relief is None:
+    if (
+        not relief_method_ready
+        or target_relief is None
+        or candidate_relief is None
+    ):
         group_distances["local_relief"] = None
         missing_groups.append("local_relief")
     else:
@@ -349,7 +370,6 @@ def compare_terrain_fingerprints(
             [target_relief_m], [candidate_relief_m], tolerance_values["local_relief_m"]
         )
 
-    # Terrain distribution: compare the same explicitly named class set.
     target_distribution_variant = next(
         (name for name, fields in DISTRIBUTION_FIELDS.items()
          if all(field in target for field in fields)),
@@ -361,21 +381,22 @@ def compare_terrain_fingerprints(
         None,
     )
     if (
-        target_distribution_variant is None
+        target_distribution_variant is not None
+        and candidate_distribution_variant is not None
+        and target_distribution_variant != candidate_distribution_variant
+    ):
+        raise ValueError(
+            "Terrain distribution class labels differ; do not reinterpret "
+            "low/mid/high as flat/moderate/steep."
+        )
+
+    if (
+        not distribution_method_ready
+        or target_distribution_variant is None
         or candidate_distribution_variant is None
-        or target_distribution_variant != candidate_distribution_variant
     ):
         group_distances["terrain_distribution"] = None
         missing_groups.append("terrain_distribution")
-        if (
-            target_distribution_variant is not None
-            and candidate_distribution_variant is not None
-            and target_distribution_variant != candidate_distribution_variant
-        ):
-            raise ValueError(
-                "Terrain distribution class labels differ; do not reinterpret "
-                "low/mid/high as flat/moderate/steep."
-            )
     else:
         distribution_fields = DISTRIBUTION_FIELDS[target_distribution_variant]
         target_distribution = [
@@ -411,16 +432,32 @@ def compare_terrain_fingerprints(
                 tolerance_values["terrain_distribution_pp"],
             )
 
-    # Spatial pattern: the same documented statistic must exist on both sites.
-    spatial_field = None
-    if "largest_steep_patch_pct" in target or "largest_steep_patch_pct" in candidate:
+    target_has_largest_patch = "largest_steep_patch_pct" in target
+    candidate_has_largest_patch = "largest_steep_patch_pct" in candidate
+    target_has_generic_pattern = "spatial_pattern_metric" in target
+    candidate_has_generic_pattern = "spatial_pattern_metric" in candidate
+
+    if (
+        target_has_largest_patch != candidate_has_largest_patch
+        or target_has_generic_pattern != candidate_has_generic_pattern
+        or (target_has_largest_patch and target_has_generic_pattern)
+        or (candidate_has_largest_patch and candidate_has_generic_pattern)
+    ):
+        raise ValueError(
+            "Target and candidate must provide the same single spatial-pattern metric."
+        )
+
+    if target_has_largest_patch and candidate_has_largest_patch:
         spatial_field = "largest_steep_patch_pct"
         spatial_tolerance_key = "spatial_pattern_pct"
-    elif "spatial_pattern_metric" in target or "spatial_pattern_metric" in candidate:
+    elif target_has_generic_pattern and candidate_has_generic_pattern:
         spatial_field = "spatial_pattern_metric"
         spatial_tolerance_key = "spatial_pattern_metric"
+    else:
+        spatial_field = None
+        spatial_tolerance_key = None
 
-    if spatial_field is None:
+    if not spatial_method_ready or spatial_field is None:
         group_distances["spatial_pattern"] = None
         missing_groups.append("spatial_pattern")
     else:
@@ -454,8 +491,8 @@ def compare_terrain_fingerprints(
         "target_valid_coverage_pct": 100.0 * target_valid,
         "candidate_valid_coverage_pct": 100.0 * candidate_valid,
         "valid_raster_coverage_completeness": min(target_valid, candidate_valid),
-        "target_direct_observation_coverage_pct": target.get("direct_observation_coverage_pct"),
-        "candidate_direct_observation_coverage_pct": candidate.get("direct_observation_coverage_pct"),
+        "target_direct_observation_coverage_pct": target_direct,
+        "candidate_direct_observation_coverage_pct": candidate_direct,
         "normalization_method": "RMS of metric differences divided by explicit metric tolerances",
         "normalization_tolerances": tolerance_values,
     }
