@@ -122,7 +122,17 @@ def _compare_method_field(
         )
         return False
 
-    if _canonical_metadata(target_value) != _canonical_metadata(candidate_value):
+    if (
+        isinstance(target_value, (int, float))
+        and not isinstance(target_value, bool)
+        and isinstance(candidate_value, (int, float))
+        and not isinstance(candidate_value, bool)
+    ):
+        equal = isclose(float(target_value), float(candidate_value), rel_tol=1e-9, abs_tol=1e-9)
+    else:
+        equal = _canonical_metadata(target_value) == _canonical_metadata(candidate_value)
+
+    if not equal:
         raise ValueError(
             f"Incompatible {field}: target={target_value!r}, candidate={candidate_value!r}."
         )
@@ -446,6 +456,12 @@ def compare_terrain_fingerprints(
         if "spatial_pattern_metric" in candidate
         else None
     )
+
+    if (
+        ("largest_steep_patch_pct" in target and "spatial_pattern_metric" in target)
+        or ("largest_steep_patch_pct" in candidate and "spatial_pattern_metric" in candidate)
+    ):
+        raise ValueError("Each site must supply only one spatial-pattern statistic.")
 
     if (
         target_pattern_type is not None
