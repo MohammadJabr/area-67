@@ -123,3 +123,17 @@ def test_passport_marks_unreported_differences_as_not_supplied():
     text = passport_to_markdown(passport)
     assert "Matcher-reported differences" in text
     assert "Not supplied by the upstream analysis." in text
+
+def test_partial_metric_nulls_are_allowed_when_the_feature_group_is_still_present():
+    fingerprints, _ = load_demo_data()
+    fingerprints.loc[0, "slope_median"] = float("nan")
+    assert not validate_fingerprints(fingerprints)
+    warnings = fingerprint_quality_warnings(fingerprints)
+    assert not any("Slope distribution: no usable metric" in warning for warning in warnings)
+
+
+def test_a_fully_missing_feature_group_is_reported_as_a_quality_gap():
+    fingerprints, _ = load_demo_data()
+    fingerprints.loc[0, ["tri_median"]] = float("nan")
+    warnings = fingerprint_quality_warnings(fingerprints)
+    assert any("Terrain Ruggedness Index (TRI): no usable metric" in warning for warning in warnings)
