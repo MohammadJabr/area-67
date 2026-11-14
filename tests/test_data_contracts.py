@@ -100,6 +100,7 @@ def test_active_mvp_requires_moon_or_mars_target_and_earth_candidates():
 
 def test_quality_audit_reports_absent_method_metadata():
     fingerprints, _ = load_demo_data()
+    fingerprints = fingerprints.drop(columns=["tri_definition"])
     warnings = fingerprint_quality_warnings(fingerprints)
     assert any("tri_definition" in warning for warning in warnings)
 
