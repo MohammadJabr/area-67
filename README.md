@@ -152,7 +152,7 @@ The matching CLI refuses to run unless the operator explicitly supplies both `--
 ### Application and optional route status
 
 - The application remains in clearly labelled **DEMO MODE** until both real processed files exist and pass the integration contracts. It refuses to mix a single real file with synthetic fixtures.
-- Hiba's feature branch adds the DEM-to-fingerprint extraction pipeline and 15 synthetic/GeoTIFF tests. These verify the implementation against constructed surfaces, not actual lunar or Earth reference terrain.
+- Hiba's feature branch adds the DEM-to-fingerprint extraction pipeline and 16 synthetic/GeoTIFF tests. These verify the implementation against constructed surfaces, not actual lunar or Earth reference terrain.
 - The matching workflow is software plumbing tested with synthetic fixtures; no real Earth–Moon/Mars ranking is claimed.
 - The optional A* Rover Gauntlet work remains in [Draft PR #9](https://github.com/MohammadJabr/area-67/pull/9), not in `main`. Its updated branch rejects sheared affine grids, enforces a 250,000-cell default software resource guard, and writes a route provenance JSON sidecar. Its latest CI passed 76 synthetic tests; no real route is claimed.
 - The latest full test run on `main` after the CSV matching workflow merge passed **85 tests** (24 warnings).
