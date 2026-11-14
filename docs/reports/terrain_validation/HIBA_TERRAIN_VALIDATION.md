@@ -16,8 +16,8 @@
 
 The focused test module was run in the development workspace using `python -m pytest -q tests/test_terrain_fingerprint.py`.
 
-- **15 passed**
-- Tests cover the analytic slope of a plane, near-zero derivatives for a flat surface, positive TRI around a synthetic bump, strict NoData propagation, percentage closure, spatial connectivity, scale mismatch rejection, integer-valued GeoTIFF ingestion, direct-observation provenance without an invented cutoff, contract consistency, correlation sample-size guard and resolution-sensitivity calculation.
+- **16 passed**
+- Tests cover the analytic slope of a plane, near-zero derivatives for a flat surface, positive TRI around a synthetic bump, strict NoData propagation, percentage closure, spatial connectivity, scale mismatch rejection, integer-valued GeoTIFF ingestion, direct-observation provenance without an invented cutoff, explicit local-relief support configuration, contract consistency, correlation sample-size guard and resolution-sensitivity calculation.
 
 These tests validate the implemented calculations on constructed surfaces; they are not validation against NASA or Earth reference terrain products.
 
