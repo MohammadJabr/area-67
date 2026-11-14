@@ -128,3 +128,5 @@ The Streamlit MVP, Analog Passport, provisional LOLA Site04 GIS acquisition/QA w
 - Direct LOLA observation support, valid raster coverage, and uncertainty are distinct quality concepts; the app and methodology must not conflate them.
 
 The current scientific result status is therefore **pending real Earth-candidate data and validated terrain fingerprints**.
+
+An optional A* Rover Gauntlet implementation is also available in the route-planning feature branch. It accepts aligned elevation, slope, and TRI rasters and exports a route-profile CSV. Its tests use synthetic grids only; no real rover route is claimed until compatible candidate rasters and team-approved route-cost assumptions are available. See [the route method](docs/ROVER_ROUTE_METHOD.md).
