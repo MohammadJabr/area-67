@@ -64,7 +64,7 @@ The CSV exporter records each path cell, the terrain profiles, per-step/cumulati
 
 Example API call (replace paths, units, start/goal cells, and scales with the actual candidate data and documented study settings):
 
-\`\`\`python
+```python
 from src.routes.workflow import plan_route_from_rasters
 
 result = plan_route_from_rasters(
@@ -84,7 +84,7 @@ result = plan_route_from_rasters(
     output_path="data/processed/rover_route.csv",
 )
 print(result["route"]["total_cost_m"])
-\`\`\`
+```
 
 The numeric scales in this example are placeholders, not recommended values. The project team must agree them after reviewing the candidate dataset and mission objective.
 
