@@ -16,11 +16,25 @@ from pyproj import Transformer
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SOURCE_ID = "646eeb74d34e4e58932cf87e"
 TILE_ID = "USGS_1M_4_x86y220_HI_Hawaii_Island_Lidar_NOAA_2017_B17"
-SOURCE_URL = (
+NEIGHBOR_TILE_ID = "USGS_1M_5_x24y220_HI_Hawaii_Island_Lidar_NOAA_2017_B17"
+_BASE_URL = (
     "https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/1m/Projects/"
-    "HI_Hawaii_Island_Lidar_NOAA_2017_B17/TIFF/" + TILE_ID + ".tif"
+    "HI_Hawaii_Island_Lidar_NOAA_2017_B17/TIFF/"
 )
-EXPECTED_SIZE = 270_812_447
+TILE_CATALOG = {
+    TILE_ID: {
+        "source_id": "646eeb74d34e4e58932cf87e",
+        "size": 270_812_447,
+        "url": _BASE_URL + TILE_ID + ".tif",
+    },
+    NEIGHBOR_TILE_ID: {
+        "source_id": "646eebf0d34e4e58932cf963",
+        "size": 224_245_197,
+        "url": _BASE_URL + NEIGHBOR_TILE_ID + ".tif",
+    },
+}
+SOURCE_URL = TILE_CATALOG[TILE_ID]["url"]
+EXPECTED_SIZE = TILE_CATALOG[TILE_ID]["size"]
 SITE_LON, SITE_LAT = -155.47, 19.82
 DEFAULT_DESTINATION = (
     REPO_ROOT / "data/raw/earth/mauna_kea/usgs_3dep/1m" / f"{TILE_ID}.tif"
@@ -39,8 +53,9 @@ def _sha256(path: Path) -> str:
 def acquire_tile(
     destination: str | Path = DEFAULT_DESTINATION,
     *,
+    tile_id: str = TILE_ID,
     expected_sha256: str | None = None,
-    expected_size: int = EXPECTED_SIZE,
+    expected_size: int | None = None,
     open_url: Callable[..., Any] = urllib.request.urlopen,
 ) -> dict[str, Any]:
     """Download only the catalog-listed tile; resume .part files and never overwrite.
@@ -49,6 +64,14 @@ def acquire_tile(
     supplied and matches. Interrupted partials remain available for safe resume.
     """
     destination = Path(destination)
+    try:
+        source = TILE_CATALOG[tile_id]
+    except KeyError as exc:
+        raise ValueError(f"Tile is not in the official-source allowlist: {tile_id}") from exc
+    if tile_id != TILE_ID and destination.resolve() == DEFAULT_DESTINATION.resolve():
+        raise ValueError("An explicit distinct destination is required for a non-default tile")
+    if expected_size is None:
+        expected_size = source["size"]
     if expected_size <= 0:
         raise ValueError("expected_size must be positive")
     if destination.exists():
@@ -68,7 +91,7 @@ def acquire_tile(
     headers = {"User-Agent": "AREA67-USGS-3DEP/1.0"}
     if offset:
         headers["Range"] = f"bytes={offset}-"
-    request = urllib.request.Request(SOURCE_URL, headers=headers)
+    request = urllib.request.Request(source["url"], headers=headers)
     with open_url(request, timeout=90) as response:
         status = getattr(response, "status", 200)
         if offset:
@@ -111,8 +134,8 @@ def acquire_tile(
     digest = _sha256(partial)
     partial.replace(destination)
     return {
-        "status": "downloaded", "source_id": SOURCE_ID, "tile_id": TILE_ID,
-        "source_url": SOURCE_URL, "path": str(destination),
+        "status": "downloaded", "source_id": source["source_id"], "tile_id": tile_id,
+        "source_url": source["url"], "path": str(destination),
         "file_size_bytes": destination.stat().st_size, "sha256": digest,
         "raster_metadata": metadata,
     }
@@ -121,13 +144,20 @@ def acquire_tile(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--confirm-download", action="store_true", help="Required explicit confirmation")
+    parser.add_argument("--tile-id", choices=tuple(TILE_CATALOG), default=TILE_ID,
+                        help="Exact official catalog tile; only allowlisted products are accepted")
     parser.add_argument("--expected-sha256", help="Only used to skip an existing verified complete tile")
-    parser.add_argument("--destination", type=Path, default=DEFAULT_DESTINATION)
+    parser.add_argument("--destination", type=Path)
     args = parser.parse_args(argv)
     if not args.confirm_download:
         parser.error("supply --confirm-download after reviewing the allow-listed source")
+    destination = args.destination or (
+        DEFAULT_DESTINATION if args.tile_id == TILE_ID
+        else DEFAULT_DESTINATION.with_name(f"{args.tile_id}.tif")
+    )
     try:
-        print(json.dumps(acquire_tile(args.destination, expected_sha256=args.expected_sha256), indent=2))
+        print(json.dumps(acquire_tile(destination, tile_id=args.tile_id,
+                                      expected_sha256=args.expected_sha256), indent=2))
         return 0
     except (FileExistsError, RuntimeError, ValueError, OSError, rasterio.errors.RasterioError) as exc:
         print(f"ACQUISITION FAILED: {exc}", file=sys.stderr)

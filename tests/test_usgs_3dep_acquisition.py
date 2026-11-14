@@ -6,7 +6,7 @@ import pytest
 import rasterio
 from rasterio.transform import from_origin
 
-from src.data.usgs_3dep_acquisition import acquire_tile
+from src.data.usgs_3dep_acquisition import NEIGHBOR_TILE_ID, acquire_tile
 
 
 class FakeResponse(BytesIO):
@@ -77,3 +77,33 @@ def test_failed_response_leaves_partial_for_inspection(tmp_path):
         acquire_tile(destination, expected_size=len(payload), open_url=opener)
     assert destination.with_name(destination.name + ".part").read_bytes() == payload[:20]
     assert not destination.exists()
+
+
+def test_adjacent_catalog_tile_uses_its_own_allowlisted_url_and_size(tmp_path):
+    payload = make_tiff(tmp_path / "fixture.tif")
+    destination = tmp_path / "neighbor.tif"
+    calls = []
+
+    def opener(request, timeout):
+        calls.append(request.full_url)
+        return FakeResponse(payload, headers={"Content-Length": str(len(payload))})
+
+    result = acquire_tile(destination, tile_id=NEIGHBOR_TILE_ID,
+                          expected_size=len(payload), open_url=opener)
+    assert result["tile_id"] == NEIGHBOR_TILE_ID
+    assert "USGS_1M_5_x24y220" in calls[0]
+    assert result["raster_metadata"]["site_coordinate_covered"]
+
+
+def test_unknown_tile_is_rejected_before_network_or_filesystem_write(tmp_path):
+    called = False
+
+    def opener(request, timeout):
+        nonlocal called
+        called = True
+        raise AssertionError("network must not be used for an unknown tile")
+
+    with pytest.raises(ValueError, match="allowlist"):
+        acquire_tile(tmp_path / "unknown.tif", tile_id="unlisted", open_url=opener)
+    assert not called
+    assert not (tmp_path / "unknown.tif").exists()
