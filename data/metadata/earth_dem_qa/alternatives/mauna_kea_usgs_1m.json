@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "dem": {
+    "path": "data\\raw\\earth\\mauna_kea\\usgs_3dep\\1m\\USGS_1M_4_x86y220_HI_Hawaii_Island_Lidar_NOAA_2017_B17.tif",
+    "file_size_bytes": 270812447,
+    "sha256": "27d730f77f276bad0755ee2b9ab153a5461539b8dd0142bc619b13fc9f8f8b8c",
+    "driver": "GTiff",
+    "width": 10012,
+    "height": 10012,
+    "band_count": 1,
+    "data_types": [
+      "float32"
+    ],
+    "nodata": -999999.0,
+    "crs": "EPSG:26904",
+    "crs_wkt": "PROJCS[\"NAD83 / UTM zone 4N\",GEOGCS[\"NAD83\",DATUM[\"North_American_Datum_1983\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"6269\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4269\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",0],PARAMETER[\"central_meridian\",-159],PARAMETER[\"scale_factor\",0.9996],PARAMETER[\"false_easting\",500000],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH],AUTHORITY[\"EPSG\",\"26904\"]]",
+    "transform": [
+      1.0,
+      0.0,
+      859993.9999889291,
+      0.0,
+      -1.0,
+      2200006.0000058846
+    ],
+    "bounds": [
+      859993.9999889291,
+      2189994.0000058846,
+      870005.9999889291,
+      2200006.0000058846
+    ],
+    "pixel_size_x": 1.0,
+    "pixel_size_y": 1.0,
+    "area_or_point": "Area",
+    "dataset_tags": {
+      "AREA_OR_POINT": "Area"
+    },
+    "band_tags": [
+      {}
+    ],
+    "bands": [
+      {
+        "band": 1,
+        "unit": null,
+        "gdal_valid_pixel_count": 100240144,
+        "nodata_masked_pixel_count": 0,
+        "nonfinite_pixel_count": 0,
+        "statistics": {
+          "valid_pixel_count": 100240144,
+          "valid_coverage_pct": 100.0,
+          "minimum": 1966.452880859375,
+          "maximum": 4202.6572265625,
+          "mean": 3216.749029818844,
+          "standard_deviation_population": 494.5831830595554
+        }
+      }
+    ]
+  },
+  "quality_layers": [],
+  "elevation_range_screen_applied": false,
+  "warnings": [],
+  "status": "checks_passed",
+  "limitations": [
+    "Raster metadata does not prove effective terrain resolution or measurement accuracy.",
+    "Vertical datum and elevation units must be verified from authoritative product metadata; they are not inferred from horizontal CRS.",
+    "An absent warning does not certify scientific suitability or cross-site comparability."
+  ]
+}
