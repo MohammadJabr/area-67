@@ -59,7 +59,7 @@ def test_ranking_references_must_exist_in_fingerprint_table():
     fingerprints, rankings = load_demo_data()
     rankings.loc[0, "candidate_site_id"] = "NOT_IN_FINGERPRINTS"
     errors = validate_ranking_references(fingerprints, rankings)
-    assert any("candidate_site_id values absent" in error for error in errors)
+    assert any("candidate site_id values absent" in error for error in errors)
 
 
 def test_active_mvp_requires_moon_or_mars_target_and_earth_candidates():
