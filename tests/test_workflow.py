@@ -2,6 +2,7 @@ import csv
 import json
 
 import pandas as pd
+import pytest
 
 from src.data.contracts import (
     normalize_rankings,
@@ -64,6 +65,8 @@ def test_workflow_reads_fingerprints_and_exports_results(
         get_mission_weights(),
         matching_tolerances,
         mission_profile=ROVER_NAVIGATION_PROFILE["name"],
+        min_feature_group_completeness=0.0,
+        min_data_completeness=0.0,
         ranking_output_path=ranking_path,
         robustness_output_path=robustness_path,
     )
@@ -103,3 +106,23 @@ def test_workflow_reads_fingerprints_and_exports_results(
     summary = json.loads(robustness_path.read_text(encoding="utf-8"))
     assert summary["sensitivity"]["scenario_count"] == 11
     assert "slope_only_baseline" in summary
+
+
+
+def test_workflow_refuses_to_run_without_explicit_completeness_policy(
+    target_fingerprint, earth_candidate, matching_tolerances
+):
+    from src.matching.workflow import run_matching_workflow
+
+    candidate = dict(earth_candidate)
+    candidate["site_id"] = "EARTH_A"
+    candidate["source_id"] = "DEM_A"
+
+    with pytest.raises(ValueError, match="explicit completeness policy"):
+        run_matching_workflow(
+            target_fingerprint,
+            {"EARTH_A": candidate},
+            get_mission_weights(),
+            matching_tolerances,
+            mission_profile=ROVER_NAVIGATION_PROFILE["name"],
+        )

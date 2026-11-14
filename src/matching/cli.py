@@ -69,14 +69,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--min-feature-group-completeness",
         type=float,
-        default=0.0,
-        help="Minimum available mission-weight fraction required to rank a candidate.",
+        required=True,
+        help="Team-approved minimum available mission-weight fraction (0 to 1).",
     )
     parser.add_argument(
         "--min-data-completeness",
         type=float,
-        default=0.0,
-        help="Minimum conservative data completeness required to rank a candidate.",
+        required=True,
+        help="Team-approved minimum conservative data completeness (0 to 1).",
     )
     parser.add_argument(
         "--scale-relative-tolerance",

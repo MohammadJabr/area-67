@@ -122,10 +122,10 @@ Synthetic CSVs are used only when neither real file exists. The app refuses to m
 When the agreed `data/processed/terrain_fingerprints.csv` is available and the team has approved explicit feature tolerances, run the Space-to-Earth matching pipeline from the repository root:
 
 ```powershell
-python -m src.matching.cli --fingerprints data/processed/terrain_fingerprints.csv --target-site-id MOON_SITE04 --tolerances-json config/matching_tolerances.json
+python -m src.matching.cli --fingerprints data/processed/terrain_fingerprints.csv --target-site-id MOON_SITE04 --tolerances-json config/matching_tolerances.json --min-feature-group-completeness <TEAM_APPROVED_FRACTION> --min-data-completeness <TEAM_APPROVED_FRACTION>
 ```
 
-The command writes the canonical `data/processed/candidate_rankings.csv` and a `data/processed/ranking_robustness.json` sidecar. Start from `config/matching_tolerances.template.json`, but replace its null values only with study-specific tolerances agreed by the team. See [the matching runbook](docs/MATCHING_RUNBOOK.md) for input requirements, configuration, outputs and limitations.
+Replace both completeness placeholders with team-approved fractions between 0 and 1; the CLI refuses to run if they are omitted. A value of `0.0` explicitly disables that gate and must not be used for a real study without team approval. The command writes the canonical `data/processed/candidate_rankings.csv` and a `data/processed/ranking_robustness.json` sidecar. Start from `config/matching_tolerances.template.json`, but replace its null values only with study-specific tolerances agreed by the team. See [the matching runbook](docs/MATCHING_RUNBOOK.md) for input requirements, configuration, outputs and limitations.
 
 ## Current implementation status
 

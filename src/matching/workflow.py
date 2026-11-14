@@ -77,8 +77,8 @@ def run_matching_workflow(
     mission_profile: str,
     ranking_output_path: str | Path = "data/processed/candidate_rankings.csv",
     robustness_output_path: str | Path = "data/processed/ranking_robustness.json",
-    min_feature_group_completeness: float = 0.0,
-    min_data_completeness: float = 0.0,
+    min_feature_group_completeness: float | None = None,
+    min_data_completeness: float | None = None,
     scale_relative_tolerance: float = 0.01,
     distribution_sum_tolerance_pp: float = 0.5,
     weight_relative_change: float = 0.20,
@@ -89,6 +89,13 @@ def run_matching_workflow(
     This function deliberately requires explicit tolerances. It never supplies
     scientific threshold values implicitly.
     """
+    if min_feature_group_completeness is None or min_data_completeness is None:
+        raise ValueError(
+            "An explicit completeness policy is required: set both "
+            "min_feature_group_completeness and min_data_completeness to "
+            "team-approved fractions between 0 and 1."
+        )
+
     ranking_result = rank_terrain_fingerprints(
         target_fingerprint=target_fingerprint,
         candidate_fingerprints=candidate_fingerprints,
