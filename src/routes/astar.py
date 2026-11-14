@@ -83,6 +83,7 @@ def plan_rover_route(
     blocked_mask=None,
     penalty=None,
     connectivity: int = 8,
+    max_grid_cells: int = 250_000,
 ) -> dict:
     """Find a least-cost path over an aligned DEM-derived grid using A*.
 
@@ -100,7 +101,8 @@ def plan_rover_route(
     penalties, Euclidean distance is an admissible heuristic.
 
     slope_scale_deg and tri_scale_m are explicit operational scales, not
-    NASA or rover-manufacturer limits.
+    NASA or rover-manufacturer limits. max_grid_cells is a software memory/
+    performance guard, not a science or vehicle threshold.
     """
     elevation = _as_grid(elevation_m, "elevation_m")
     slope = _as_grid(slope_deg, "slope_deg")
@@ -109,6 +111,19 @@ def plan_rover_route(
 
     if slope.shape != shape or tri.shape != shape:
         raise ValueError("Elevation, slope, and TRI grids must have identical shapes.")
+    if (
+        isinstance(max_grid_cells, bool)
+        or not isinstance(max_grid_cells, int)
+        or max_grid_cells < 1
+    ):
+        raise ValueError("max_grid_cells must be a positive integer.")
+    cell_count = shape[0] * shape[1]
+    if cell_count > max_grid_cells:
+        raise ValueError(
+            f"Route grid has {cell_count:,} cells, exceeding max_grid_cells="
+            f"{max_grid_cells:,}. Crop to an approved ROI or raise the limit "
+            "only after benchmarking the intended environment."
+        )
 
     cell_size_m = _check_positive_finite(cell_size_m, "cell_size_m")
     slope_scale_deg = _check_positive_finite(slope_scale_deg, "slope_scale_deg")
