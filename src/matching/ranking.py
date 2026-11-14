@@ -11,12 +11,17 @@ from src.matching.similarity import weighted_similarity_distance
 def rank_candidates(
     candidates: Mapping[str, Mapping[str, float | None]],
     weights: Mapping[str, float],
+    *,
+    target_site_id: str,
     min_completeness: float = 0.0,
 ) -> dict:
     """
     Rank Earth candidate sites by ascending similarity distance.
     Smaller distance means greater terrain similarity.
     """
+
+    if not isinstance(target_site_id, str) or not target_site_id.strip():
+        raise ValueError("target_site_id must be a non-empty string.")
 
     if not candidates:
         raise ValueError("At least one candidate is required.")
@@ -54,6 +59,7 @@ def rank_candidates(
         candidate["rank"] = position
 
     return {
+        "target_site_id": target_site_id.strip(),
         "ranking": ranked,
         "rejected_candidates": rejected,
     }
