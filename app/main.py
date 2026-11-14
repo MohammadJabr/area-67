@@ -83,7 +83,7 @@ def show_feature_groups(frame: pd.DataFrame, site_ids: list[str]) -> None:
         ]
         with st.expander(group, expanded=True):
             if available:
-                st.dataframe(selected[["site_id", "site_name", *available]], use_container_width=True, hide_index=True)
+                st.dataframe(selected[["site_id", "site_name", *available]], width="stretch", hide_index=True)
             else:
                 st.write("No measurements supplied for this feature group.")
 
@@ -113,7 +113,7 @@ def show_single_parameter_explorer(frame: pd.DataFrame, site_ids: list[str]) -> 
             st.caption(f"Reported unit: {units[0]}")
         elif len(units) > 1:
             st.warning("Unit labels vary across sites; interpret values cautiously.")
-    st.plotly_chart(px.bar(selected, x="site_name", y=metric, color="site_id", title=f"Single-parameter comparison · {metric}"), use_container_width=True)
+    st.plotly_chart(px.bar(selected, x="site_name", y=metric, color="site_id", title=f"Single-parameter comparison · {metric}"), width="stretch")
 
 
 def main() -> None:
@@ -250,11 +250,11 @@ def main() -> None:
             )
             if col in merged.columns
         ]
-        st.dataframe(merged[display_cols], use_container_width=True, hide_index=True)
+        st.dataframe(merged[display_cols], width="stretch", hide_index=True)
         if selected_rankings["similarity_score"].notna().any():
             st.plotly_chart(
                 px.bar(selected_rankings, x="candidate_site_id", y="similarity_score", color="rank", title="Relative similarity score (as supplied by the matcher)"),
-                use_container_width=True,
+                width="stretch",
             )
 
         candidate_ids = selected_rankings["candidate_site_id"].tolist()
@@ -277,7 +277,7 @@ def main() -> None:
             if not mapped.empty:
                 st.plotly_chart(
                     px.scatter_geo(mapped, lat="latitude", lon="longitude", color="planet", hover_name="site_name", hover_data=["site_id"], title="Earth candidate locations (target coordinates are not plotted on an Earth basemap)"),
-                    use_container_width=True,
+                    width="stretch",
                 )
             else:
                 st.info("No valid coordinates are available for this target/profile.")
@@ -287,14 +287,14 @@ def main() -> None:
         explanation_cols = [col for col in selected_rankings.columns if col.endswith("_contribution") or col.endswith("_difference")]
         if explanation_cols:
             st.markdown("#### Matcher-supplied explanation")
-            st.dataframe(selected_rankings[["candidate_site_id", *explanation_cols]], use_container_width=True, hide_index=True)
+            st.dataframe(selected_rankings[["candidate_site_id", *explanation_cols]], width="stretch", hide_index=True)
         else:
             st.info("Per-feature differences/contributions have not been supplied by the matcher. The app does not estimate them.")
 
         quality_cols = [col for col in ("site_id", "site_name", "source_id", "analysis_scale_m", "valid_coverage_pct", "nodata_pct", "valid_cell_count") if col in fingerprints.columns]
         if quality_cols:
             st.markdown("#### Data quality and provenance")
-            st.dataframe(fingerprints[fingerprints["site_id"].isin(comparison_ids)][quality_cols], use_container_width=True, hide_index=True)
+            st.dataframe(fingerprints[fingerprints["site_id"].isin(comparison_ids)][quality_cols], width="stretch", hide_index=True)
 
         st.caption("Similarity is a relative ranking under supplied features, scaling, and mission weights. It is not a probability of mission success or certification of site suitability.")
 
@@ -371,7 +371,7 @@ def main() -> None:
                 for metric in feature_metrics()
                 if metric in fingerprints.columns
             ]
-            st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
             if comparison["reported_differences"]:
                 st.write("Differences reported by the matching module")
                 st.json(comparison["reported_differences"])
