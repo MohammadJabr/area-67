@@ -14,6 +14,7 @@ from math import isfinite
 
 
 OUTPUT_COLUMNS = [
+    "target_site_id",
     "site_id",
     "mission_profile",
     "similarity_distance",
@@ -69,6 +70,10 @@ def export_rankings_csv(
     if not isinstance(mission_profile, str) or not mission_profile.strip():
         raise ValueError("mission_profile cannot be empty.")
 
+    target_site_id = ranking_result.get("target_site_id")
+    if not isinstance(target_site_id, str) or not target_site_id.strip():
+        raise ValueError("ranking_result must include a non-empty target_site_id.")
+
     path = Path(output_path)
     path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -78,6 +83,7 @@ def export_rankings_csv(
         distance = candidate["similarity_distance"]
 
         row = {
+            "target_site_id": target_site_id.strip(),
             "site_id": candidate["site_id"],
             "mission_profile": mission_profile,
             "similarity_distance": distance,
