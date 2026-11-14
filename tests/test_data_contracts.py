@@ -179,3 +179,10 @@ def test_target_site_id_is_mandatory_for_traceable_rankings():
     _, rankings = load_demo_data()
     errors = validate_rankings(rankings.drop(columns=["target_site_id"]))
     assert any("Missing required column: target_site_id" in error for error in errors)
+
+
+def test_ranking_distance_cannot_be_negative():
+    _, rankings = load_demo_data()
+    rankings.loc[0, "weighted_distance"] = -0.1
+    errors = validate_rankings(rankings)
+    assert any("weighted_distance must be non-negative" in error for error in errors)
