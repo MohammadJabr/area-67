@@ -36,7 +36,7 @@ Do not present a scientific ranking as a project result until every applicable g
 
 ### Gate B — Terrain fingerprints and validation
 
-- Hiba supplies `data/processed/terrain_fingerprints.csv`, one row per analyzed site.
+- Hiba's five-group extraction and validation software is now merged into `main`; Hiba must still run it to supply `data/processed/terrain_fingerprints.csv`, one row per approved/analyzed site, after the AOIs and common physical scale are agreed.
 - All sites use a documented, comparable physical analysis scale and neighborhood/window definitions.
 - The five groups are represented: Slope, Terrain Ruggedness Index (TRI), Local Relief, Terrain Distribution, and Spatial Pattern.
 - Slope units, TRI definition/window, relief window, terrain-class thresholds, and spatial-pattern threshold/connectivity are explicit.
@@ -98,13 +98,13 @@ Only use real-data results in this sequence after Gates A–D pass. Until then, 
 ## 6. Current project snapshot (2026-11-15)
 
 - `main` contains the Streamlit MVP, Analog Passport, application contracts, provisional lunar LOLA Site04 acquisition/QA, Earth DEM source acquisition/QA/screening, and the CSV-driven Space-to-Earth matching workflow.
-- The latest full test run on `main` passed **85 tests** (24 warnings) after the CSV workflow was merged. The A* route-planning feature branch separately passed 76 tests after geometry/resource/provenance safeguards; it remains a Draft PR and is not part of `main`.
+- Hiba's terrain-fingerprint PR #17 is merged. Its final PR CI passed **101 tests** (41 warnings), including all 16 focused terrain tests; Python compilation and the geospatial artifact ignore-policy check passed. The post-merge `main` CI run is tracked separately in GitHub Actions. The A* route-planning feature branch separately passed 76 tests after geometry/resource/provenance safeguards; it remains a Draft PR and is not part of `main`.
 - The Earth-data package records five provisional Copernicus GLO-30 DSM source tiles (Haughton, McMurdo, Askja, Mauna Kea, Yungay) and one separate Mauna Kea USGS 3DEP 1 m alternative. Large raw rasters remain gitignored.
 - These source tiles and named points are **not approved candidate AOIs**. No final ROI boundaries, site IDs for the study, common analysis scale, or cross-source preparation policy have been approved. Metadata/structural QA does not prove physical accuracy or suitability.
 - The matching CLI requires explicit feature tolerances and explicit minimum completeness settings. Those values are team-selected study assumptions, not NASA specifications; no approved real-study configuration is committed.
-- Hiba's validated `data/processed/terrain_fingerprints.csv` is still not available on `main`; no real `candidate_rankings.csv` or validated ranking/Passport result exists.
+- The terrain-extraction software and synthetic validation are merged. Hiba's real `data/processed/terrain_fingerprints.csv` is still not available on `main`; no real `candidate_rankings.csv` or validated ranking/Passport result exists.
 - The Streamlit interface remains in clearly labelled **DEMO MODE** because the real processed fingerprint/ranking pair is not available. Synthetic fixtures are software/demo data only.
 - Direct LOLA observation support, valid raster coverage, and RMS uncertainty remain distinct. Site04's 9.1541% positive LDEC support is not its NoData percentage.
 - The optional A* route work is in Draft PR #9. Its latest branch CI passed 76 synthetic tests and adds affine-grid orthogonality checks, a default 250,000-cell software guard, and a route metadata sidecar. It has not been run on an approved real ROI and is not a rover-safety certification.
 
-**Current verdict:** AREA 67 now has a functioning application, reproducible Earth source-screening tools, and a CSV-driven matching implementation. It is still **not ready to claim a validated planetary-analog result**. The blockers are approved AOIs/target, harmonized analysis scale and processing policy, Hiba's real validated fingerprints, team-approved tolerance/completeness settings, and a real end-to-end run.
+**Current verdict:** AREA 67 now has a functioning application, reproducible Earth source-screening tools, five-group terrain-fingerprint extraction/validation software, and a CSV-driven matching implementation. It is still **not ready to claim a validated planetary-analog result**. The blockers are approved AOIs/target, harmonized analysis scale and processing policy, Hiba's real validated fingerprints, team-approved tolerance/completeness settings, and a real end-to-end run.
