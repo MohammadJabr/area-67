@@ -136,6 +136,11 @@ def rank_terrain_fingerprints(
     return {
         "target_site_id": target_site_id.strip(),
         "mission_profile": mission_profile.strip(),
+        "mission_weights": dict(weights),
+        "feature_tolerances": dict(tolerances),
+        "min_feature_group_completeness": float(min_feature_group_completeness),
+        "min_data_completeness": float(min_data_completeness),
+        "scale_relative_tolerance": float(scale_relative_tolerance),
         "ranking": ranked,
         "rejected_candidates": rejected,
         "matching_method": {
