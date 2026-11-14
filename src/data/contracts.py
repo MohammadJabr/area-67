@@ -221,6 +221,11 @@ def validate_rankings(frame: pd.DataFrame) -> list[str]:
     )
     errors.extend(_numeric_errors(frame, numeric_columns, allow_null=False))
     rank_values = pd.to_numeric(frame["rank"], errors="coerce")
+    for distance_column in RANKING_DISTANCE_COLUMNS:
+        if distance_column in frame.columns:
+            distance_values = pd.to_numeric(frame[distance_column], errors="coerce")
+            if (distance_values < 0).any():
+                errors.append(f"{distance_column} must be non-negative")
     if (rank_values <= 0).any():
         errors.append("rank must contain positive integers")
     if ((rank_values % 1) != 0).any():
