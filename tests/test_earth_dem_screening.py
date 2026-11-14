@@ -129,7 +129,6 @@ def test_repository_relative_qa_path_is_portable_across_checkouts(tmp_path, monk
         "valid_coverage_pct": "75.0",
     }
     manifest_b = checkout_b / "data/metadata/manifest.csv"
-    manifest_b.parent.mkdir(parents=True)
     with manifest_b.open("w", newline="", encoding="utf-8") as stream:
         writer = csv.DictWriter(stream, fieldnames=row)
         writer.writeheader()
