@@ -82,4 +82,9 @@ Use feature branches and pull requests. Keep `main` runnable. Do not commit larg
 
 ## Current status
 
-Repository initialization. No scientific results or validated rankings are claimed yet.
+The repository now includes:
+- A provisional NASA LOLA Site04 acquisition, inspection, and raster-QA workflow. Site04 is not an officially finalized team target.
+- A tested, explainable Space-to-Earth matching implementation with five feature-group distances, mission-weighted ranking, missing-data handling, a Slope-only baseline, weight sensitivity, and canonical ranking export.
+- A CSV loader and command-line workflow that connect Hiba's terrain-fingerprint table to Omar's ranking and robustness outputs.
+
+The matching code has been tested with synthetic fixtures. **No real Earth–Moon/Mars candidate ranking or validated analog conclusion is claimed yet.** Real Earth candidate DEMs/fingerprints, team-approved feature tolerances, method/scale confirmation, and an end-to-end run with the actual upstream files are still required. See [the matching runbook](docs/MATCHING_RUNBOOK.md), [the matching method](docs/MATCHING_METHOD.md), and [the GIS handoff](docs/GIS_HANDOFF.md).
