@@ -86,6 +86,8 @@ def build_weight_scenarios(
 def run_weight_sensitivity(
     candidates: Mapping,
     base_weights: Mapping[str, float],
+    *,
+    target_site_id: str,
     relative_change: float = 0.20,
     top_k: tuple[int, ...] = (3, 5),
 ) -> dict:
@@ -94,6 +96,9 @@ def run_weight_sensitivity(
 
     Reports how many scenarios each site appears in Top-K.
     """
+
+    if not isinstance(target_site_id, str) or not target_site_id.strip():
+        raise ValueError("target_site_id must be a non-empty string.")
 
     if not candidates:
         raise ValueError("At least one candidate is required.")
@@ -121,6 +126,7 @@ def run_weight_sensitivity(
         result = rank_candidates(
             candidates=candidates,
             weights=weights,
+            target_site_id=target_site_id,
         )
 
         ranking = result["ranking"]
@@ -131,6 +137,7 @@ def run_weight_sensitivity(
                 appearance_counts[k][candidate["site_id"]] += 1
 
     return {
+        "target_site_id": target_site_id.strip(),
         "scenario_count": len(scenarios),
         "relative_change": relative_change,
         "scenario_rankings": scenario_rankings,
