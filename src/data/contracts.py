@@ -138,11 +138,29 @@ def validate_fingerprints(frame: pd.DataFrame) -> list[str]:
     if frame["site_id"].duplicated().any():
         errors.append("site_id must be unique (one row per analyzed site)")
 
+    # Scale and NoData are required quality metadata. Individual terrain
+    # metrics may be null as long as each fingerprint group remains represented.
     errors.extend(
         _numeric_errors(
             frame,
-            FINGERPRINT_NUMERIC_COLUMNS,
+            ("analysis_scale_m", "nodata_pct"),
             allow_null=False,
+        )
+    )
+    errors.extend(
+        _numeric_errors(
+            frame,
+            (
+                "slope_median",
+                "slope_p90",
+                "tri_median",
+                "local_relief_p95_p5",
+                "terrain_flat_pct",
+                "terrain_moderate_pct",
+                "terrain_steep_pct",
+                "spatial_pattern_metric",
+            ),
+            allow_null=True,
         )
     )
 
