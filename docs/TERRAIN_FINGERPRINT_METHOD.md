@@ -14,6 +14,7 @@ Each site run requires:
 - A north-up, non-rotated, projected raster whose horizontal units are metres and whose elevation unit is explicitly metres.
 - The same approved `analysis_scale_m` for every site in a comparison.
 - An explicit `relief_window_m`. The code rounds this to an odd cell window and records both the cell count and actual centre-to-centre span.
+- An explicit `local_relief_min_valid_fraction`; the pipeline does not choose a neighborhood-completeness fraction for the study.
 
 The command rejects geographic-degree rasters, non-metre grids, rotated/sheared grids, and grids whose pixel sizes do not match the configured analysis scale. Reprojection, datum transformation, resampling and AOI decisions must be completed upstream and recorded; the module will not silently make them.
 
@@ -43,7 +44,7 @@ TRI_i=\sqrt{\sum_{j\in N_8(i)}(z_j-z_i)^2}
 
 ### 3. Local Relief
 
-For each cell, local relief is the moving-window P95 minus P5 of elevation. Windows use only finite cells and require the configured minimum valid fraction (default 80%). The site summary `local_relief_p95_p5` is the median of the local P95–P5 map; `local_relief_p90` is also supplied. The requested physical window, selected odd cell count and actual centre-to-centre span are recorded. This is relative/local relief, not absolute planetary elevation.
+For each cell, local relief is the moving-window P95 minus P5 of elevation. Windows use only finite cells and require the explicitly configured minimum valid fraction. This setting changes which local-relief measurements are emitted and must be selected for the study; there is no implicit default. The site summary `local_relief_p95_p5` is the median of the local P95–P5 map; `local_relief_p90` is also supplied. The requested physical window, selected odd cell count and actual centre-to-centre span are recorded. This is relative/local relief, not absolute planetary elevation.
 
 ### 4. Terrain Distribution
 
@@ -61,9 +62,9 @@ The MVP spatial metric is the percentage of valid slope area occupied by the lar
 
 ## Quality, missingness and provenance
 
-The table reports `valid_coverage_pct` and `nodata_pct` from the elevation raster within the AOI. These sum to approximately 100%. Derivative maps have smaller usable footprints because neighbourhood calculations exclude edges and invalid neighbours; their individual usable-cell counts are kept separately.
+The table reports `valid_coverage_pct` and `nodata_pct` from the elevation raster within the AOI. These sum to approximately 100%. An automated minimum-coverage warning is emitted only when the run configuration explicitly supplies `minimum_valid_coverage_pct`; the template leaves this unset until the team agrees a cutoff. Derivative maps have smaller usable footprints because neighbourhood calculations exclude edges and invalid neighbours; their individual usable-cell counts are kept separately.
 
-Missing measurements remain blank/NaN. They are never converted to zero. `direct_observation_coverage_pct` is a separate optional field for products such as LOLA Site04. It must not be conflated with raster-valid coverage: Site04's reported 9.1541% positive LDEC spot-count support does not mean that the other valid interpolated DEM cells are NoData. Uncertainty layers and notes are provenance/quality context and are not silently treated as per-pixel error bounds.
+Missing measurements remain blank/NaN. They are never converted to zero. `direct_observation_coverage_pct` is a separate optional field for products such as LOLA Site04. It must not be conflated with raster-valid coverage: Site04's reported 9.1541% positive LDEC spot-count support does not mean that the other valid interpolated DEM cells are NoData. The pipeline records this percentage but does not apply an unapproved fixed cutoff; review criteria must be documented separately. Uncertainty layers and notes are provenance/quality context and are not silently treated as per-pixel error bounds.
 
 `quality_status` is deliberately conservative: `WARN` means one or more review flags were raised; `REVIEW` means no automated threshold flag was raised, not that the site has passed scientific validation. The module does not produce an `APPROVED` status.
 
@@ -72,6 +73,7 @@ Missing measurements remain blank/NaN. They are never converted to zero. `direct
 - `data/processed/terrain_fingerprints.csv`: one row per site, compatible with `docs/INTEGRATION_CONTRACT.md`.
 - Optional `data/processed/terrain_maps/<site_id>/`: GeoTIFFs for slope, TRI and local relief.
 - The row retains product/source identity, CRS, vertical reference, pixel size, AOI coverage, feature definitions, thresholds, window settings and quality notes.
+- Integer and floating-point elevation rasters are supported; masked samples are converted to floating-point NaN before calculations.
 
 Do not commit large DEMs. Commit only small derived artifacts when the team explicitly agrees; the app reads the canonical processed CSV, not the feature-map GeoTIFFs.
 
