@@ -1,40 +1,41 @@
 # AREA 67
 
-**Planetary Analog Discovery & Mission Planning**
+**Planetary Analog Discovery & Mission Planning**  
+**Discover Earth. Explore Other Worlds.**
 
-Area 67 is a NASA Space Apps Challenge project exploring how open Earth, Moon, and Mars observations can be used to identify and characterize terrestrial environments that are useful analogs for specific planetary exploration tasks.
+AREA 67 is a NASA Space Apps Challenge project exploring how open Earth, Moon, and Mars observations can identify and characterize terrestrial environments that are useful analogs for specific planetary exploration tasks.
 
-Our approach is evidence-based and multi-dimensional. We begin with a terrain fingerprint built from five groups of topographic characteristics:
+An analog is useful for selected characteristics or processes; it is not a perfect replica. Results should explain both where an analogy is useful and where it breaks down.
 
-- Slope distribution
-- Terrain Ruggedness Index (TRI)
-- Local relief
-- Terrain distribution
-- Spatial pattern
+## Agreed architecture
 
-We compare candidate locations for a stated mission objective rather than claiming that one Earth location perfectly reproduces the Moon or Mars. Results should explain both where an analogy is useful and where it breaks down.
+- **Search directions:** Space-to-Earth (active MVP) and Earth-to-Space (future direction).
+- **Core Terrain Fingerprint:** Slope distribution, Terrain Ruggedness Index (TRI), Local Relief, Terrain Distribution, and Spatial Pattern.
+- **Context layers:** thermal, geological/mineralogical, environmental (water/ice/dust/wind), and subsurface evidence. Keep them separate until source compatibility and measurement methods are validated.
+- **Mission modules:** Weighted Similarity & Mission-Based Matching, Single-Parameter Explorer, ShadowTwin (illumination), Rover Gauntlet (rover mobility/A*), Analog Gap Analysis, and Analog Passport.
 
-## Initial prototype scope
+See docs/PRODUCT_ARCHITECTURE.md and docs/INTEGRATION_CONTRACT.md.
 
-The first working prototype will focus on a limited, reproducible case study:
-1. Select one lunar or Martian target area and one mission profile.
-2. Obtain compatible, documented elevation datasets for the target and a small set of Earth candidate areas.
-3. Check coordinate systems, units, spatial resolution, coverage, NoData values, and available quality/uncertainty layers.
-4. Derive the five terrain fingerprint feature groups.
-5. Rank Earth candidates using an explainable, mission-weighted similarity method.
-6. Validate calculations and test sensitivity to resolution and feature weights.
-7. Present evidence, limitations, and provenance in an initial Analog Passport.
+## Initial 24-hour prototype scope
 
-Route analysis (A*), illumination/shadow analysis, thermal and geological layers are extensions. They must only be presented as implemented after their data and calculations have been tested.
+1. Select one lunar or Martian target, one mission profile, and 3–5 Earth candidates.
+2. Acquire documented, compatible elevation datasets and record source/quality metadata.
+3. Derive at least one documented metric for each of the five Terrain Fingerprint groups.
+4. Rank candidates using explainable mission-weighted similarity.
+5. Display target, candidates, feature evidence, ranking explanations, and data-quality notes in Streamlit.
+6. Generate one initial Analog Passport from actual data rows.
+7. Validate the workflow and freeze a reproducible demo.
 
-## Scientific principles
+Thermal/geological layers, Earth-to-Space search, ShadowTwin simulation, and A* route analysis are extensions. Mark each as Concept / Planned until its inputs and calculations have been tested.
 
-- An analog is useful for selected characteristics or processes; it is not a perfect replica.
-- Do not interpret a similarity score as a probability of mission success.
-- Do not claim a site is globally undiscovered merely because it is absent from one catalog.
-- Spatial resolution is not the same as measurement accuracy. Resampling does not create new information.
-- Keep source provenance, units, scale, quality flags, and assumptions with every result.
-- Clearly distinguish measured values, derived metrics, assumptions, and future work.
+## Scientific safeguards
+
+- Do not interpret similarity as a probability of mission success or site certification.
+- Do not claim global novelty because a candidate is absent from one catalog.
+- Spatial resolution is not measurement accuracy; resampling does not create new information.
+- Keep source provenance, units, scale, quality flags, assumptions, and limitations with every result.
+- Do not compare absolute elevations across bodies with incompatible vertical references.
+- Missing values are not silently replaced with zero.
 
 ## Team
 
@@ -43,73 +44,52 @@ Route analysis (A*), illumination/shadow analysis, thermal and geological layers
 - Hiba Sbouh — Terrain Analysis & Validation
 - Omar Salous — Similarity Matching & Mission Planning
 
-## Suggested repository structure
+## Repository structure
 
-```
-area-67/
-├── app/                 # Interactive application
-├── data/
-│   ├── raw/             # Downloaded source data (not committed if large)
-│   ├── processed/       # Derived data (not committed if large)
-│   └── sample/          # Small reproducible examples only
-├── docs/                # Scope, methodology, sources, decisions
-├── notebooks/           # Exploration and validation notebooks
-├── src/
-│   ├── data/            # Loading and preprocessing
-│   ├── features/         # Terrain fingerprint calculations
-│   ├── matching/         # Similarity and mission profiles
-│   ├── routes/           # Optional route analysis
-│   ├── illumination/     # Optional shadow analysis
-│   └── reporting/        # Analog Passport generation
-├── tests/               # Unit and integration tests
-├── .gitignore
-├── README.md
-└── requirements.txt
-```
+    area-67/
+    ├── app/                 # Streamlit application
+    ├── data/
+    │   ├── raw/             # Large source data (not committed)
+    │   ├── processed/       # Team-produced outputs (not committed if large)
+    │   └── sample/          # Small, labelled development fixtures
+    ├── docs/                # Scope, architecture, contracts, sources
+    ├── notebooks/           # Exploration and validation notebooks
+    ├── src/
+    │   ├── data/            # Loading and contracts
+    │   ├── features/        # Terrain fingerprint calculations
+    │   ├── matching/        # Similarity and mission profiles
+    │   ├── routes/          # Optional route analysis
+    │   ├── illumination/    # Optional shadow analysis
+    │   └── reporting/       # Analog Passport generation
+    ├── tests/               # Unit and integration tests
+    ├── .github/workflows/   # Automated checks
+    ├── .gitignore
+    └── requirements.txt
 
-## Data sources to investigate
+## Run locally
 
-- NASA LOLA / LRO products for lunar topography.
-- NASA PDS MOLA products and suitable local CTX-derived terrain models for Mars.
-- USGS and other documented DEM sources for Earth candidates.
-- NASA/USGS analog-site catalogs as references for known sites, not as exhaustive proof of novelty.
+    python -m venv .venv
+    # Windows PowerShell:
+    .venv\Scripts\Activate.ps1
+    # Git Bash on Windows:
+    source .venv/Scripts/activate
+    # macOS / Linux:
+    source .venv/bin/activate
 
-Record the exact product identifier, version, access date, spatial resolution, coordinate reference system, vertical reference, units, coverage, quality flags, and license/usage terms for every dataset.
+    pip install -r requirements.txt
+    streamlit run app/main.py
 
-## Development workflow
+Run tests with pytest -q.
 
-Use feature branches and pull requests. Keep `main` runnable. Do not commit large rasters, credentials, API keys, or unlicensed data. Commit small synthetic/sample data and scripts or instructions that reproduce processing.
+## Data integration
 
-## Run the application
+The application expects:
 
-Create and activate a virtual environment, install the repository requirements, then start Streamlit:
+- data/processed/terrain_fingerprints.csv
+- data/processed/candidate_rankings.csv
 
-```bash
-python -m venv .venv
-# Windows PowerShell:
-.venv\\Scripts\\Activate.ps1
-# Git Bash on Windows:
-source .venv/Scripts/activate
-# macOS / Linux:
-source .venv/bin/activate
-
-pip install -r requirements.txt
-streamlit run app/main.py
-```
-
-Run the current tests with:
-
-```bash
-pytest -q
-```
-
-The application expects these upstream files for a real integrated view:
-
-- `data/processed/terrain_fingerprints.csv`
-- `data/processed/candidate_rankings.csv`
-
-Their required and optional fields are documented in [the application integration contract](docs/INTEGRATION_CONTRACT.md). When both real files are absent, the app loads explicitly synthetic fixtures from `data/sample/` and shows a DEMO MODE warning. It will not mix one real file with one synthetic file.
+When both real files are absent, the app may use the clearly labelled synthetic fixtures in data/sample/ for interface development. The app refuses to mix one real file with one synthetic file. Synthetic values must never be described as NASA observations or scientific findings.
 
 ## Current status
 
-The Streamlit integration and initial Analog Passport implementation are on `feature/mohammad-app-integration` and proposed for review in [draft PR #5](https://github.com/MohammadJabr/area-67/pull/5). The repository does not yet claim validated scientific results or rankings; those depend on the real outputs from the GIS, terrain-analysis, and matching workstreams.
+The Streamlit integration and initial Analog Passport are on feature/mohammad-app-integration, proposed for review in draft PR #5. Scientific rankings remain pending on real outputs from the GIS, terrain-analysis, and matching workstreams.
