@@ -1,6 +1,15 @@
 import csv
 import json
 
+import pandas as pd
+
+from src.data.contracts import (
+    normalize_rankings,
+    validate_fingerprints,
+    validate_ranking_references,
+    validate_rankings,
+    validate_space_to_earth,
+)
 from src.matching.mission_profiles import (
     ROVER_NAVIGATION_PROFILE,
     get_mission_weights,
@@ -79,6 +88,17 @@ def test_workflow_reads_fingerprints_and_exports_results(
     assert exported[0]["candidate_site_id"] == "EARTH_A"
     assert "Top-3 in" in exported[0]["ranking_stability_note"]
     assert exported[0]["slope_only_rank"] != ""
+
+    # Check the files against the application's actual contract validators.
+    fingerprint_frame = pd.read_csv(fingerprints_path)
+    ranking_frame = normalize_rankings(pd.read_csv(ranking_path))
+    contract_errors = (
+        validate_fingerprints(fingerprint_frame)
+        + validate_rankings(ranking_frame)
+        + validate_ranking_references(fingerprint_frame, ranking_frame)
+        + validate_space_to_earth(fingerprint_frame, ranking_frame)
+    )
+    assert contract_errors == []
 
     summary = json.loads(robustness_path.read_text(encoding="utf-8"))
     assert summary["sensitivity"]["scenario_count"] == 11
