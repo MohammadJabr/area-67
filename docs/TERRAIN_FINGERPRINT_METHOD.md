@@ -80,7 +80,7 @@ Do not commit large DEMs. Commit only small derived artifacts when the team expl
 ## Run
 
 1. Obtain approved AOI polygons and prepare every site's DEM on the same approved physical grid.
-2. Copy `docs/examples/terrain_run.template.json` and fill the global scale/window and each site's paths/metadata.
+2. Copy `docs/examples/terrain_run.template.json` and fill the global analysis scale, relief window, each site's paths/metadata, and the team-selected `local_relief_min_valid_fraction`. Leave `minimum_valid_coverage_pct` null unless the team separately approves an AOI coverage warning cutoff.
 3. Activate the repository environment and run:
 
 \`\`\`bash
