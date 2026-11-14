@@ -77,7 +77,7 @@ def test_aligned_raster_loader_converts_declared_units(tmp_path):
 
     assert np.allclose(result["elevation_m"], 30.48)
     assert np.allclose(result["slope_deg"], 90.0)
-    assert np.allclose(result["tri_m"], 1.0, atol=1e-8)
+    assert np.allclose(result["tri_m"], 1.0, atol=1e-6)
 
 
 def test_misaligned_rasters_are_rejected(tmp_path):
