@@ -42,12 +42,12 @@ class TerrainConfig:
 
     analysis_scale_m: float
     relief_window_m: float
+    local_relief_min_valid_fraction: float
     slope_low_max_deg: float = 10.0
     slope_mid_max_deg: float = 25.0
     steep_threshold_deg: float = 25.0
     connectivity: int = 8
-    minimum_valid_coverage_pct: float = 80.0
-    local_relief_min_valid_fraction: float = 0.8
+    minimum_valid_coverage_pct: float | None = None
 
     def validate(self) -> None:
         if not math.isfinite(self.analysis_scale_m) or self.analysis_scale_m <= 0:
@@ -60,8 +60,8 @@ class TerrainConfig:
             raise ValueError("steep_threshold_deg must be between 0 and 90 degrees")
         if self.connectivity not in (4, 8):
             raise ValueError("connectivity must be 4 or 8")
-        if not (0 <= self.minimum_valid_coverage_pct <= 100):
-            raise ValueError("minimum_valid_coverage_pct must be between 0 and 100")
+        if self.minimum_valid_coverage_pct is not None and not (0 <= self.minimum_valid_coverage_pct <= 100):
+            raise ValueError("minimum_valid_coverage_pct must be between 0 and 100 when configured")
         if not (0 < self.local_relief_min_valid_fraction <= 1):
             raise ValueError("local_relief_min_valid_fraction must be in (0, 1]")
 
@@ -353,7 +353,8 @@ def analyze_geotiff(
             all_touched=False,
         )
         source_mask = np.ma.getmaskarray(clipped)
-        z = np.asarray(np.ma.filled(clipped, np.nan), dtype=np.float64)
+        # Cast before filling: integer DEM rasters cannot represent NaN in their native dtype.
+        z = np.asarray(clipped.astype(np.float64).filled(np.nan), dtype=np.float64)
         inside_aoi = geometry_mask(
             geometries,
             out_shape=z.shape,
@@ -382,8 +383,17 @@ def analyze_geotiff(
                 + ", ".join(unavailable)
             )
 
+        direct_support = site.get("direct_observation_coverage_pct")
+        if direct_support is not None and not pd.isna(direct_support):
+            direct_support = float(direct_support)
+            if not math.isfinite(direct_support) or not 0 <= direct_support <= 100:
+                raise ValueError("direct_observation_coverage_pct must be between 0 and 100 when supplied")
+
         flags: list[str] = []
-        if valid_coverage_pct < config.minimum_valid_coverage_pct:
+        if (
+            config.minimum_valid_coverage_pct is not None
+            and valid_coverage_pct < config.minimum_valid_coverage_pct
+        ):
             flags.append(
                 f"valid_coverage_below_{config.minimum_valid_coverage_pct:g}_pct"
             )
@@ -391,10 +401,6 @@ def analyze_geotiff(
             flags.append("no_per_pixel_quality_layer_reported")
         if not site.get("effective_resolution_note"):
             flags.append("effective_terrain_resolution_not_established")
-        direct_support = site.get("direct_observation_coverage_pct")
-        if direct_support is not None and not pd.isna(direct_support) and float(direct_support) < 20:
-            flags.append("low_direct_observation_support_review_required")
-
         result: dict[str, Any] = {
             "site_id": site_id,
             "site_name": site.get("site_name"),
@@ -462,7 +468,7 @@ def analyze_run_config(config_path: str | Path, output_csv: str | Path, maps_dir
     config_path = Path(config_path)
     with config_path.open("r", encoding="utf-8") as stream:
         document = json.load(stream)
-    required = ("analysis_scale_m", "relief_window_m", "sites")
+    required = ("analysis_scale_m", "relief_window_m", "local_relief_min_valid_fraction", "sites")
     missing = [key for key in required if key not in document or document[key] is None]
     if missing:
         raise ValueError(
@@ -477,7 +483,7 @@ def analyze_run_config(config_path: str | Path, output_csv: str | Path, maps_dir
         steep_threshold_deg=float(document.get("steep_threshold_deg", 25)),
         connectivity=int(document.get("connectivity", 8)),
         minimum_valid_coverage_pct=float(document.get("minimum_valid_coverage_pct", 80)),
-        local_relief_min_valid_fraction=float(document.get("local_relief_min_valid_fraction", 0.8)),
+        local_relief_min_valid_fraction=float(document["local_relief_min_valid_fraction"]),
     )
     run_config.validate()
     sites = document.get("sites")
