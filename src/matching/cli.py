@@ -124,6 +124,11 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Target: {result['ranking_result']['target_site_id']}")
         print(f"Mission: {result['ranking_result']['mission_profile']}")
         print(f"Ranked Earth candidates: {len(ranking)}")
+        if len(ranking) < 3:
+            print(
+                "WARNING: fewer than three Earth candidates were ranked. "
+                "The MVP should use at least three candidates when suitable data are available."
+            )
         for item in ranking:
             print(
                 f"{item['rank']}. {item['site_id']} | "
