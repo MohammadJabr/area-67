@@ -42,7 +42,7 @@ def _slope_factor_to_degrees(unit: str) -> float:
     raise ValueError(f"Unsupported slope unit: {unit!r}.")
 
 
-def _validate_projected_meter_grid(dataset, name: str) -> tuple[float, float]:
+def _validate_projected_meter_grid(dataset, name: str) -> tuple[float, float, float, float]:
     if dataset.crs is None:
         raise ValueError(f"{name} raster has no CRS.")
     crs = CRS.from_user_input(dataset.crs)
@@ -86,7 +86,7 @@ def _validate_projected_meter_grid(dataset, name: str) -> tuple[float, float]:
         )
     if pixel_x_m <= 0:
         raise ValueError(f"{name} raster has an invalid pixel size.")
-    return pixel_x_m, unit_factor
+    return pixel_x_m, unit_factor, pixel_y_m, normalized_dot
 
 
 def load_aligned_route_rasters(
@@ -139,9 +139,10 @@ def load_aligned_route_rasters(
         reference_transform = reference.transform
         reference_shape = (reference.height, reference.width)
 
-        cell_size_m, crs_unit_factor = _validate_projected_meter_grid(
-            reference, "Elevation"
+        cell_size_m, crs_unit_factor, pixel_y_m, normalized_dot = (
+            _validate_projected_meter_grid(reference, "Elevation")
         )
+        pixel_x_m = cell_size_m
 
         arrays = {}
         masks = {}
