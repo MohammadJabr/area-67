@@ -6,6 +6,7 @@ on:
       - main
       - feature/ghassan-data-gis
       - feature/omar-matching-planning
+      - feature/omar-matching-workflow
       - feature/mohammad-app-integration
   pull_request:
     branches:
