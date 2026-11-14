@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "dem": {
-    "path": "C:\\Users\\Ghassan\\Documents\\GitHub\\area-67\\data\\raw\\earth\\copdem_glo30\\mcmurdo\\Copernicus_DSM_COG_10_S78_00_E162_00_DEM.tif",
+    "path": "data/raw/earth/copdem_glo30/mcmurdo/Copernicus_DSM_COG_10_S78_00_E162_00_DEM.tif",
     "file_size_bytes": 13702247,
     "sha256": "dae6c48d7642f87b5b9fc24df4dcd39847b8e991f3d5c99e83365549d87fa138",
     "driver": "GTiff",
@@ -16,9 +16,9 @@
     "crs_wkt": "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST],AUTHORITY[\"EPSG\",\"4326\"]]",
     "transform": [
       0.0008333333333333333,
-      0.0,
+      0,
       161.99958333333333,
-      0.0,
+      0,
       -0.0002777777777777778,
       -76.99986111111112
     ],
@@ -46,7 +46,7 @@
         "nonfinite_pixel_count": 0,
         "statistics": {
           "valid_pixel_count": 4320000,
-          "valid_coverage_pct": 100.0,
+          "valid_coverage_pct": 100,
           "minimum": -0.3908325135707855,
           "maximum": 3203.217529296875,
           "mean": 927.1539722759574,
