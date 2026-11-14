@@ -1,92 +1,164 @@
 # AREA 67 — Application Integration Contract
 
-This contract connects the GIS, terrain-analysis, matching, and application workstreams. The application consumes upstream files; it does not silently recompute scientific results.
+This contract connects Ghassan's GIS/source preparation, Hiba's Terrain Fingerprint, Omar's matching/planning, and Mohammed's application. The app consumes upstream files; it does not silently recalculate scientific measurements or candidate rankings.
 
 ## Canonical files
 
-- data/processed/terrain_fingerprints.csv — one row per target/candidate site, produced by terrain analysis.
-- data/processed/candidate_rankings.csv — one row per candidate/target/mission-profile ranking, produced by matching.
-- Optional boundaries/routes may be supplied as GeoJSON after the team agrees and tests the schema. They are not required for the first MVP.
+- data/processed/terrain_fingerprints.csv — one row per target/candidate site, produced by Hiba from Ghassan's analysis-ready rasters and manifest.
+- data/processed/candidate_rankings.csv — one row per candidate/target/mission-profile ranking, produced by Omar.
+- Optional data/processed/sites.geojson or route GeoJSON/CSV may be provided after the team agrees and tests the schema.
 
-Large source DEMs stay outside Git. Keep a source manifest with exact product/source IDs, versions, access dates, CRS, vertical reference, units, resolution, coverage, NoData handling, quality information, and usage terms.
+Large DEMs and source archives remain outside Git. Commit small reproducible tests and metadata, not large raster binaries.
 
-## terrain_fingerprints.csv
+## Shared identifiers
 
-One row per analyzed site. Required columns:
+Every target and candidate must have a stable unique `site_id` in `terrain_fingerprints.csv`.
 
-| Column | Meaning |
-|---|---|
-| site_id | Stable unique site key shared across all files |
-| planet | Earth, Moon, or Mars |
-| source_id | Source product identifier |
-| analysis_scale_m | Physical analysis scale in metres; document resampling/windowing |
-| slope_median | Median slope angle; state units |
-| slope_p90 | 90th percentile slope; state units |
-| tri_median | Median TRI; document formulation and neighborhood |
-| local_relief_p95_p5 | Local relief percentile range; document window and vertical units |
-| terrain_flat_pct | Percentage of valid area classified as flat |
-| terrain_moderate_pct | Percentage of valid area classified as moderate |
-| terrain_steep_pct | Percentage of valid area classified as steep |
-| spatial_pattern_metric | Interpretable spatial-pattern statistic; document definition and scale |
-| nodata_pct | Percentage of analysis cells with missing/invalid data |
+The ranking output must contain **both**:
 
-### Structural and numeric validation
+- `target_site_id` — the Moon/Mars target compared against.
+- `candidate_site_id` — the Earth candidate being ranked.
 
-- site_id must be present and unique; planet and source_id must be non-empty.
-- analysis_scale_m must be a finite value greater than zero.
-- analysis_scale_m and nodata_pct must be present, numeric, and finite. The three terrain-class percentages must also be present because together they define the class distribution.
-- Other individual terrain metrics may be null, but at least one usable metric must be present in every feature group for every MVP site. The app reports a missing group as a quality gap; it never fills it with zero.
-- slope statistics cannot be negative; when both are present, slope_p90 must be greater than or equal to slope_median.
-- local_relief_p95_p5 cannot be negative.
-- terrain class percentages and nodata_pct must be in the range 0–100.
-- the three terrain-class percentages should sum to approximately 100% (within rounding tolerance) when classes cover all valid cells. The app reports a quality warning rather than altering values.
+Omar's role playbook lists a candidate-side `site_id` output field. For integration, that field can be supplied in place of `candidate_site_id`; the application normalizes `site_id` to `candidate_site_id`. The target ID cannot be inferred and must be explicit.
 
-Recommended method/provenance metadata: site_name, source_name, product_version, access_date, crs, vertical_reference, license, latitude, longitude, area_km2, valid_cell_count, slope_unit, tri_definition, tri_window_cells, relief_window_m, terrain_class_thresholds, spatial_pattern_definition, and suggested_test.
+## `terrain_fingerprints.csv`
 
-Each of the five feature groups must have at least one usable metric per site for the MVP. The application warns where a group is entirely missing. Null individual metrics remain null and are displayed as gaps. Do not assume a column name establishes units or scientific comparability.
-
-## candidate_rankings.csv
-
-Required columns:
+One row per analyzed site. Required common columns:
 
 | Column | Meaning |
 |---|---|
-| target_site_id | Target key from terrain_fingerprints.csv |
-| candidate_site_id | Candidate key from terrain_fingerprints.csv |
-| rank | Positive integer rank within target and mission profile |
-| similarity_score | Relative score; document range and direction |
-| mission_profile | Named mission profile used for the ranking |
+| `site_id` | Stable unique site identifier shared across all files |
+| `planet` | Earth, Moon, or Mars |
+| `source_id` | Exact source product identifier, linked to Ghassan's manifest |
+| `analysis_scale_m` | Declared physical analysis scale in metres |
+| `slope_median` | Median slope in the declared `slope_unit` |
+| `slope_p90` | 90th percentile slope |
+| `tri_median` | Median Terrain Ruggedness Index |
+| `local_relief_p95_p5` | Local relief P95–P5 in the declared vertical unit/window |
+| `nodata_pct` | Percentage of invalid/NoData cells in the AOI |
 
-### Structural and join validation
+Hiba's preferred MVP output includes `slope_p95`, `tri_p90`, `relief_window_m`, `tri_definition`, `tri_window_cells`, `slope_unit`, and `terrain_class_thresholds` as additional method/statistic fields.
 
-- target_site_id, candidate_site_id, and mission_profile must be present and non-empty.
-- rank and similarity_score must be numeric and finite. Rank must be a positive integer.
-- each target/candidate/mission_profile combination must be unique.
-- ranks must be unique within each target and mission profile.
-- every target and candidate ID must refer to a row in terrain_fingerprints.csv.
-- for the active Space-to-Earth MVP, every target must be Moon or Mars and every candidate must be Earth. Earth-to-Space is a separate future workflow, not an implicit variation of this CSV.
+### Terrain Distribution naming variants
 
-Recommended optional fields:
+Hiba's playbook specifies these three required percentage columns:
 
-- weighted_distance
-- slope_contribution, tri_contribution, local_relief_contribution, terrain_distribution_contribution, spatial_pattern_contribution
-- slope_difference, tri_difference, local_relief_difference, terrain_distribution_difference, spatial_pattern_difference
-- ranking_note, suggested_test
+- `terrain_low_pct`
+- `terrain_mid_pct`
+- `terrain_high_pct`
 
-The matching owner must document scaling, weights, missing-data behavior, score direction, the definition of each reported difference, and whether contribution fields sum to the reported distance/score. The app displays matcher-reported differences and contributions; it does not invent them or impose an undocumented score range.
+The earlier Mohammed integration draft used these equivalent schema slots:
+
+- `terrain_flat_pct`
+- `terrain_moderate_pct`
+- `terrain_steep_pct`
+
+The application accepts either complete three-column set, without silently renaming or reinterpreting class labels. The team must document the exact slope thresholds and label meanings. Percentages are calculated by valid area and should sum to approximately 100%.
+
+### Spatial Pattern naming variants
+
+Hiba's preferred MVP statistic is:
+
+- `largest_steep_patch_pct` — the percentage of valid area occupied by the largest connected patch of cells classified as high/steep slope. Document the threshold and whether connectivity is 4-neighbour or 8-neighbour.
+
+The earlier integration draft used:
+
+- `spatial_pattern_metric` — accepted if the precise statistic, units/range, threshold, and scale are documented.
+
+The app accepts either field. It does not assume the two metrics are numerically interchangeable.
+
+### Quality and provenance fields
+
+Required for the current validation contract: `analysis_scale_m` and `nodata_pct`; if `valid_coverage_pct` is supplied, it should complement NoData so the two sum to approximately 100%.
+
+Recommended/expected metadata from Ghassan's manifest:
+
+- `site_name`, `source_name`, `source_url`, `product_version`, `access_date` / acquisition or release date
+- `pixel_width_m`, `pixel_height_m`, `crs`, `vertical_reference`
+- `elevation_unit`, `nodata_value`, `valid_coverage_pct`
+- `quality_layer`, `uncertainty_note`, `processing_steps`
+- `latitude`, `longitude`, `area_km2`, `valid_cell_count`
+
+Recommended Hiba method fields:
+
+- `slope_unit`
+- `tri_definition`, `tri_window_cells`
+- `relief_window_m`
+- `terrain_class_thresholds`
+- `spatial_pattern_definition`
+
+The app warns when recommended provenance/method metadata is absent. Missing optional statistics remain null. Required MVP groups must still be represented for each site. NoData is never replaced by zero.
+
+## `candidate_rankings.csv`
+
+Canonical app field names:
+
+| Column | Meaning |
+|---|---|
+| `target_site_id` | Lunar/Martian target site |
+| `candidate_site_id` | Earth candidate site |
+| `rank` | Positive integer rank within target and mission profile |
+| `similarity_score` | Relative ranking score; document range and direction |
+| `mission_profile` | Mission profile used for the result |
+
+Omar's playbook documents these output aliases, which the app normalizes:
+
+| Omar's field | App's canonical field |
+|---|---|
+| `site_id` | `candidate_site_id` |
+| `relative_similarity` | `similarity_score` |
+| `similarity_distance` | `weighted_distance` |
+
+**`target_site_id` is mandatory**, even when `site_id` is used for the candidate, so rankings remain traceable to their target.
+
+Recommended Omar output fields:
+
+- `slope_contribution`
+- `tri_contribution`
+- `relief_contribution`
+- `distribution_contribution`
+- `spatial_pattern_contribution`
+- `data_completeness`
+- `ranking_stability_note`
+- `ranking_note`
+
+Optional route deliverables: `route.geojson` or a documented route CSV with cell/coordinate references, route cost assumptions, and a clear note that a DEM least-cost path is not a rover safety certification.
+
+### Matching method metadata
+
+Omar must document:
+
+- The formula used for group distances and the normalization/scaling method.
+- The five group definitions and how their feature values are combined.
+- The mission weights and the fact that they are team-selected operational assumptions, not NASA or rover-manufacturer standards.
+- How missing feature groups are handled (never impute zero).
+- How per-group contributions relate to total distance/score.
+- The direction and range of `similarity_score` / `relative_similarity`.
+- How `data_completeness` and any ranking-stability summary are calculated.
+
+The app accepts either score/distance naming variant but does not invent a score or assume an undocumented score range. Similarity is a relative comparison, not a probability or certification.
+
+## Active MVP: Space-to-Earth
+
+- Every target must have `planet` = Moon or Mars.
+- Every candidate must have `planet` = Earth.
+- The ranking file must include target, candidate, rank, score/relative similarity, and mission profile.
+- Use one profile for the MVP: **Rover Navigation / Terrain Traversal**.
+- Provide at least three Earth candidates if available; the app displays the actual count and warns if fewer are supplied.
+
+Earth-to-Space remains in the product vision but is not the active CSV workflow.
 
 ## Application behavior
 
-- Uses the real processed file pair only when both are present.
-- If neither real file exists, it may use paired, clearly labelled synthetic fixtures in data/sample/ for interface development. The UI and exported Passport identify these as synthetic.
-- If only one real output exists, it stops instead of mixing real and synthetic results.
-- Missing feature values remain missing, not zero.
-- The 24-hour MVP implements Space-to-Earth: one lunar/Martian target, one mission profile, and at least three Earth candidates. Earth-to-Space remains in the product architecture as a future direction.
-- Mission-profile selection filters the matching output. It does not pretend to recalculate weights or rankings.
-- The Single-Parameter Explorer displays supplied feature values; it does not recompute the Terrain Fingerprint.
-- The candidate map displays Earth candidates only. Planetary coordinates must not be plotted on an Earth basemap.
-- Passport uses supplied site, provenance, ranking, and optional comparison rows. Unknown provenance and unreported differences remain explicitly unknown.
-- Thermal, geological, environmental, and subsurface layers are context-only until compatible source data and calculations have been validated. They are not added to the core similarity score by default.
+- Real data is loaded only when both canonical processed files exist.
+- If neither real file exists, the app may use paired synthetic fixtures from data/sample for interface development and smoke testing. The UI and exported Passport label them synthetic.
+- If only one real output exists, the app stops instead of mixing real and synthetic data.
+- The app normalizes only the documented ranking aliases above. It does not infer a target ID.
+- Mission selection filters upstream results; it does not recalculate Omar's weights or ranking.
+- The Single-Parameter Explorer displays supplied metrics; it does not recompute Hiba's fingerprint.
+- The map plots Earth candidate coordinates only. Lunar/Martian coordinates are not plotted on an Earth basemap.
+- The Passport shows site identity, source/quality metadata, five fingerprint groups, ranking fields, available matcher explanations, missing data, and limitations.
+- Any missing measurements or matcher differences remain explicitly missing; the app does not invent them.
 
 ## Run locally
 
@@ -97,4 +169,4 @@ The matching owner must document scaling, weights, missing-data behavior, score 
     pip install -r requirements.txt
     streamlit run app/main.py
 
-Run tests with pytest -q.
+Run tests with `pytest -q`.
