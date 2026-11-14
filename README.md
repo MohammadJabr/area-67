@@ -117,6 +117,16 @@ The fingerprint contract accepts Hiba's documented low/mid/high and largest-stee
 
 Synthetic CSVs are used only when neither real file exists. The app refuses to mix one real file with one synthetic file.
 
+## Matching workflow
+
+When the agreed `data/processed/terrain_fingerprints.csv` is available and the team has approved explicit feature tolerances, run the Space-to-Earth matching pipeline from the repository root:
+
+```powershell
+python -m src.matching.cli --fingerprints data/processed/terrain_fingerprints.csv --target-site-id MOON_SITE04 --tolerances-json config/matching_tolerances.json
+```
+
+The command writes the canonical `data/processed/candidate_rankings.csv` and a `data/processed/ranking_robustness.json` sidecar. Start from `config/matching_tolerances.template.json`, but replace its null values only with study-specific tolerances agreed by the team. See [the matching runbook](docs/MATCHING_RUNBOOK.md) for input requirements, configuration, outputs and limitations.
+
 ## Current implementation status
 
 The Streamlit MVP, Analog Passport, provisional LOLA Site04 GIS acquisition/QA workflow, and target-aware terrain-matching software are merged into `main`.
