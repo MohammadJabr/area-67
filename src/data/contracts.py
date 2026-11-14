@@ -295,14 +295,6 @@ def fingerprint_quality_warnings(frame: pd.DataFrame) -> list[str]:
             + ", ".join(absent_metadata)
         )
 
-    if "nodata_pct" in frame.columns:
-        nodata = pd.to_numeric(frame["nodata_pct"], errors="coerce")
-        high = frame.loc[nodata > 20, "site_id"].astype(str).tolist() if "site_id" in frame else []
-        if high:
-            warnings.append(
-                "More than 20% NoData is reported for: " + ", ".join(high)
-            )
-
     for group, metrics in FEATURE_GROUPS.items():
         available = [column for column in metrics if column in frame.columns]
         if not available:
