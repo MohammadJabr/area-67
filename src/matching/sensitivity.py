@@ -71,7 +71,7 @@ def run_weight_sensitivity(
     top_k: tuple[int, ...] = (3, 5),
     min_completeness: float = 0.0,
 ) -> dict:
-    """Rank candidate group distances under multiple weight scenarios."""
+    """Run weight perturbations and a Slope-only baseline on group distances."""
     if not isinstance(target_site_id, str) or not target_site_id.strip():
         raise ValueError("target_site_id must be a non-empty string.")
     if not isinstance(candidates, Mapping) or not candidates:
@@ -110,12 +110,28 @@ def run_weight_sensitivity(
             for candidate in ranking[:k]:
                 appearance_counts[k][candidate["site_id"]] += 1
 
+    # Slope-only baseline, calculated over the same accepted candidate inputs.
+    slope_candidates = {
+        site_id: {"slope": distances.get("slope")}
+        for site_id, distances in candidates.items()
+    }
+    slope_baseline_result = rank_candidates(
+        candidates=slope_candidates,
+        weights={"slope": 1.0},
+        target_site_id=target_site_id,
+        min_completeness=min_completeness,
+    )
+
     return {
         "target_site_id": target_site_id.strip(),
         "scenario_count": len(scenarios),
         "relative_change": relative_change,
         "scenario_rankings": scenario_rankings,
         "top_k_counts": appearance_counts,
+        "slope_only_baseline": {
+            "ranking": slope_baseline_result["ranking"],
+            "rejected_candidates": slope_baseline_result["rejected_candidates"],
+        },
         "interpretation": (
             "Top-K values are counts across tested weight scenarios, "
             "not probabilities or confidence levels."
@@ -131,7 +147,7 @@ def run_matching_robustness(
     top_k: tuple[int, ...] = (3, 5),
     min_completeness: float = 0.0,
 ) -> dict:
-    """Run weight sensitivity and Slope-only baseline for pipeline output."""
+    """Run weight sensitivity and a rank-change Slope-only baseline."""
     if not isinstance(matching_result, Mapping):
         raise TypeError("matching_result must be a mapping.")
 
