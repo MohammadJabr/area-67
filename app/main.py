@@ -202,13 +202,13 @@ def main() -> None:
         st.caption("Mission-profile selection filters the ranking produced by the matching module. The app does not recalculate weights or rankings.")
         st.markdown("#### AREA 67 product capabilities")
         st.markdown(
-            "| Capability | Scope / current status |\\n"
-            "|---|---|\\n"
-            "| Analog Radar | Candidate discovery and ranking from the selected target |\\n"
-            "| Mission Matching | MVP profile: Rover Navigation / Terrain Traversal; actual weights come from Omar's ranking output |\\n"
-            "| Single-Parameter Explorer | Available in Results & Comparison |\\n"
-            "| Rover Gauntlet | A* least-cost route planned after the core data-to-ranking workflow is validated |\\n"
-            "| ShadowTwin | DEM + SPICE Sun-position illumination analysis; planned until implemented and tested |\\n"
+            "| Capability | Scope / current status |\n"
+            "|---|---|\n"
+            "| Analog Radar | Candidate discovery and ranking from the selected target |\n"
+            "| Mission Matching | MVP profile: Rover Navigation / Terrain Traversal; actual weights come from Omar's ranking output |\n"
+            "| Single-Parameter Explorer | Available in Results & Comparison |\n"
+            "| Rover Gauntlet | A* least-cost route planned after the core data-to-ranking workflow is validated |\n"
+            "| ShadowTwin | DEM + SPICE Sun-position illumination analysis; planned until implemented and tested |\n"
             "| Analog Passport | Evidence, provenance, candidate explanation, gaps, and analogy limits |"
         )
         st.caption(
