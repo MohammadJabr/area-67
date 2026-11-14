@@ -40,10 +40,20 @@ def _json_number(value: Any) -> float | None:
     return number if np.isfinite(number) else None
 
 
+def _resolve_reported_path(value: str, repository_root: Path) -> Path:
+    """Resolve an absolute legacy path or a repository-relative portable path."""
+    recorded = Path(value)
+    if recorded.is_absolute():
+        return recorded.resolve()
+    return (repository_root / recorded).resolve()
+
+
 def inspect_candidates(
     manifest_path: str | Path = DEFAULT_MANIFEST,
     raw_root: str | Path = DEFAULT_RAW_ROOT,
     qa_root: str | Path = DEFAULT_QA_ROOT,
+    *,
+    repository_root: str | Path = REPO_ROOT,
 ) -> list[dict[str, Any]]:
     """Verify manifest, raw raster, checksum, coordinate, and QA-report agreement.
 
@@ -51,6 +61,7 @@ def inspect_candidates(
     report can be generated even when an item needs attention.
     """
     raw_root, qa_root = Path(raw_root), Path(qa_root)
+    repository_root = Path(repository_root).resolve()
     results: list[dict[str, Any]] = []
     with Path(manifest_path).open(encoding="utf-8-sig", newline="") as stream:
         rows = list(csv.DictReader(stream))
@@ -84,7 +95,8 @@ def inspect_candidates(
                 findings.append("QA JSON checksum does not match local raster")
             if int(qdem.get("file_size_bytes", -1)) != path.stat().st_size:
                 findings.append("QA JSON file size does not match local raster")
-            if qdem.get("path") and Path(qdem["path"]).resolve() != path.resolve():
+            recorded_path = qdem.get("path")
+            if recorded_path and _resolve_reported_path(recorded_path, repository_root) != path.resolve():
                 findings.append("QA JSON path does not point to the local raster")
             if qdem.get("crs") != row["crs"]:
                 findings.append("QA JSON CRS does not match manifest")
@@ -333,9 +345,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--raw-root", type=Path, default=DEFAULT_RAW_ROOT)
     parser.add_argument("--qa-root", type=Path, default=DEFAULT_QA_ROOT)
+    parser.add_argument("--repository-root", type=Path, default=REPO_ROOT,
+                        help="Checkout root used to resolve repository-relative QA paths")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args(argv)
-    results = inspect_candidates(args.manifest, args.raw_root, args.qa_root)
+    results = inspect_candidates(
+        args.manifest, args.raw_root, args.qa_root, repository_root=args.repository_root
+    )
     figures = make_figures(results, args.output_dir)
     report = build_report(results, figures)
     (args.output_dir / "README.md").write_text(report, encoding="utf-8")
