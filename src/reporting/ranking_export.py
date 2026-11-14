@@ -6,7 +6,7 @@ Similarity score is 100 / (1 + weighted_distance). It is a monotonic
 
 import csv
 from collections.abc import Mapping
-from math import isfinite
+from math import isclose, isfinite
 from pathlib import Path
 
 
@@ -25,6 +25,14 @@ OUTPUT_COLUMNS = [
     "data_completeness",
     "feature_group_completeness",
     "valid_raster_coverage_completeness",
+    "target_valid_coverage_pct",
+    "candidate_valid_coverage_pct",
+    "target_direct_observation_coverage_pct",
+    "candidate_direct_observation_coverage_pct",
+    "target_analysis_scale_m",
+    "candidate_analysis_scale_m",
+    "missing_groups",
+    "method_warnings",
     "ranking_stability_note",
     "ranking_note",
 ]
@@ -49,6 +57,18 @@ def relative_similarity_index(distance: float) -> float:
     ):
         raise ValueError("Distance must be finite, numeric, and non-negative.")
     return 100.0 / (1.0 + float(distance))
+
+
+def _optional_finite_number(value, field: str):
+    if value is None:
+        return ""
+    if (
+        isinstance(value, bool)
+        or not isinstance(value, (int, float))
+        or not isfinite(value)
+    ):
+        raise ValueError(f"{field} must be finite and numeric when supplied.")
+    return round(float(value), 6)
 
 
 def export_rankings_csv(
@@ -85,9 +105,8 @@ def export_rankings_csv(
             raise ValueError("Every candidate must include candidate_site_id or site_id.")
 
         distance = candidate.get("similarity_distance", candidate.get("weighted_distance"))
-        score = candidate.get("similarity_score")
-        if score is None:
-            score = relative_similarity_index(distance)
+        expected_score = relative_similarity_index(distance)
+        score = candidate.get("similarity_score", expected_score)
         if (
             isinstance(score, bool)
             or not isinstance(score, (int, float))
@@ -95,6 +114,12 @@ def export_rankings_csv(
             or not 0.0 <= score <= 100.0
         ):
             raise ValueError("similarity_score must be finite and between 0 and 100.")
+        if not isclose(float(score), expected_score, rel_tol=1e-8, abs_tol=1e-8):
+            raise ValueError("similarity_score does not match 100 / (1 + weighted_distance).")
+
+        rank = candidate.get("rank")
+        if isinstance(rank, bool) or not isinstance(rank, int) or rank < 1:
+            raise ValueError("rank must be a positive integer.")
 
         completeness = candidate.get("data_completeness")
         if (
@@ -109,14 +134,39 @@ def export_rankings_csv(
             "target_site_id": target_site_id.strip(),
             "candidate_site_id": candidate_site_id.strip(),
             "mission_profile": mission_profile.strip(),
-            "rank": candidate.get("rank"),
+            "rank": rank,
             "similarity_score": round(float(score), 4),
             "weighted_distance": round(float(distance), 8),
             "data_completeness": round(float(completeness), 4),
-            "feature_group_completeness": candidate.get("feature_group_completeness", ""),
-            "valid_raster_coverage_completeness": candidate.get(
-                "valid_raster_coverage_completeness", ""
+            "feature_group_completeness": _optional_finite_number(
+                candidate.get("feature_group_completeness"), "feature_group_completeness"
             ),
+            "valid_raster_coverage_completeness": _optional_finite_number(
+                candidate.get("valid_raster_coverage_completeness"),
+                "valid_raster_coverage_completeness",
+            ),
+            "target_valid_coverage_pct": _optional_finite_number(
+                candidate.get("target_valid_coverage_pct"), "target_valid_coverage_pct"
+            ),
+            "candidate_valid_coverage_pct": _optional_finite_number(
+                candidate.get("candidate_valid_coverage_pct"), "candidate_valid_coverage_pct"
+            ),
+            "target_direct_observation_coverage_pct": _optional_finite_number(
+                candidate.get("target_direct_observation_coverage_pct"),
+                "target_direct_observation_coverage_pct",
+            ),
+            "candidate_direct_observation_coverage_pct": _optional_finite_number(
+                candidate.get("candidate_direct_observation_coverage_pct"),
+                "candidate_direct_observation_coverage_pct",
+            ),
+            "target_analysis_scale_m": _optional_finite_number(
+                candidate.get("target_analysis_scale_m"), "target_analysis_scale_m"
+            ),
+            "candidate_analysis_scale_m": _optional_finite_number(
+                candidate.get("candidate_analysis_scale_m"), "candidate_analysis_scale_m"
+            ),
+            "missing_groups": ";".join(candidate.get("missing_groups", [])),
+            "method_warnings": "; ".join(candidate.get("method_warnings", [])),
             "ranking_stability_note": ranking_stability_note,
             "ranking_note": (
                 "similarity_score = 100 / (1 + weighted_distance); "
@@ -128,7 +178,7 @@ def export_rankings_csv(
         for group, column in GROUP_COLUMNS.items():
             contribution = contributions.get(group) if isinstance(contributions, Mapping) else None
             value = contribution.get("distance_share") if isinstance(contribution, Mapping) else None
-            row[column] = round(float(value), 6) if value is not None else ""
+            row[column] = _optional_finite_number(value, column)
 
         rows.append(row)
 
