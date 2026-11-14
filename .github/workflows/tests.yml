@@ -25,11 +25,14 @@ jobs:
           python-version: "3.11"
           cache: pip
 
-      - name: Install test dependencies
-        run: python -m pip install --upgrade pip pandas pytest
+      - name: Install application and test dependencies
+        run: python -m pip install --upgrade pip pandas pytest streamlit plotly
 
       - name: Compile application and source modules
         run: python -m compileall -q app src tests
 
-      - name: Run data-contract and Analog Passport tests
+      - name: Verify runtime imports
+        run: python -c "import pandas, plotly.express, streamlit; print('AREA 67 app dependencies import successfully')"
+
+      - name: Run data-contract, Passport, and app smoke tests
         run: python -m pytest -q
