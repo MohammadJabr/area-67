@@ -126,7 +126,7 @@ def test_passport_marks_unreported_differences_as_not_supplied():
 
 def test_partial_metric_nulls_are_allowed_when_the_feature_group_is_still_present():
     fingerprints, _ = load_demo_data()
-    fingerprints.loc[0, "slope_median"] = float("nan")
+    fingerprints.loc[0, "slope_p95"] = float("nan")
     assert not validate_fingerprints(fingerprints)
     warnings = fingerprint_quality_warnings(fingerprints)
     assert not any("Slope distribution: no usable metric" in warning for warning in warnings)
@@ -143,3 +143,44 @@ def test_terrain_distribution_requires_all_three_class_percentages():
     fingerprints.loc[0, "terrain_steep_pct"] = float("nan")
     errors = validate_fingerprints(fingerprints)
     assert any("terrain_steep_pct contains missing values" in error for error in errors)
+
+
+def test_hiba_playbook_fingerprint_schema_is_supported():
+    fingerprints, _ = load_demo_data()
+    fingerprints = fingerprints.drop(
+        columns=[
+            "terrain_flat_pct",
+            "terrain_moderate_pct",
+            "terrain_steep_pct",
+            "spatial_pattern_metric",
+        ]
+    )
+    fingerprints["terrain_low_pct"] = [62, 18, 42, 14]
+    fingerprints["terrain_mid_pct"] = [20, 46, 45, 37]
+    fingerprints["terrain_high_pct"] = [18, 36, 13, 49]
+    fingerprints["largest_steep_patch_pct"] = [14, 22, 7, 31]
+    fingerprints["valid_coverage_pct"] = 100 - fingerprints["nodata_pct"]
+    fingerprints["slope_p95"] = fingerprints["slope_p90"] + 5
+    fingerprints["tri_p90"] = fingerprints["tri_median"] + 1
+    assert not validate_fingerprints(fingerprints)
+    warnings = fingerprint_quality_warnings(fingerprints)
+    assert not any("Terrain distribution: no usable metric" in warning for warning in warnings)
+    assert not any("Spatial pattern: no usable metric" in warning for warning in warnings)
+
+
+def test_omar_playbook_ranking_schema_normalizes_to_app_schema():
+    from src.data.contracts import normalize_rankings
+
+    _, rankings = load_demo_data()
+    omar = rankings.rename(
+        columns={
+            "candidate_site_id": "site_id",
+            "similarity_score": "relative_similarity",
+            "weighted_distance": "similarity_distance",
+        }
+    )
+    normalized = normalize_rankings(omar)
+    assert "candidate_site_id" in normalized.columns
+    assert "similarity_score" in normalized.columns
+    assert "weighted_distance" in normalized.columns
+    assert not validate_rankings(normalized)
