@@ -102,13 +102,14 @@ def test_repository_relative_qa_path_is_portable_across_checkouts(tmp_path, monk
     qa_b.mkdir(parents=True)
 
     values = np.array([[1, 2], [3, -9999]], dtype="float32")
-    for raster_path in (source_a, source_b):
-        with rasterio.open(
-            raster_path, "w", driver="GTiff", width=2, height=2,
-            count=1, dtype="float32", crs="EPSG:4326",
-            transform=from_origin(-1, 2, 1, 1), nodata=-9999,
-        ) as dataset:
-            dataset.write(values, 1)
+    with rasterio.open(
+        source_a, "w", driver="GTiff", width=2, height=2,
+        count=1, dtype="float32", crs="EPSG:4326",
+        transform=from_origin(-1, 2, 1, 1), nodata=-9999,
+    ) as dataset:
+        dataset.write(values, 1)
+    # Copy the exact source bytes to model the same tracked source in another checkout.
+    source_b.write_bytes(source_a.read_bytes())
 
     # Generate the QA artifact in checkout A. Its path must not contain A's
     # absolute location, so it remains meaningful when checked out elsewhere.
