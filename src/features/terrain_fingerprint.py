@@ -328,8 +328,11 @@ def analyze_geotiff(
     site_id = str(site.get("site_id", "")).strip()
     source_id = str(site.get("source_id", "")).strip()
     planet = str(site.get("planet", "")).strip().title()
+    vertical_reference = str(site.get("vertical_reference") or "").strip()
     if not site_id or not source_id or planet not in {"Earth", "Moon", "Mars"}:
         raise ValueError("Each site requires site_id, source_id, and planet in Earth/Moon/Mars")
+    if not vertical_reference:
+        raise ValueError("Each site requires an explicit vertical_reference; use a documented unknown value when unresolved")
     if not dem_path.is_file():
         raise FileNotFoundError(f"DEM not found: {dem_path}")
     if not aoi_path.is_file():
@@ -404,7 +407,7 @@ def analyze_geotiff(
             "dem_path": str(dem_path),
             "aoi_path": str(aoi_path),
             "crs": dataset.crs.to_string(),
-            "vertical_reference": site.get("vertical_reference"),
+            "vertical_reference": vertical_reference,
             "elevation_unit": "m",
             "pixel_width_m": pixel_width,
             "pixel_height_m": pixel_height,

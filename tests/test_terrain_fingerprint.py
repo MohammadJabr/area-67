@@ -169,6 +169,16 @@ def test_geotiff_pipeline_rejects_unprojected_degree_grid(tmp_path):
     ) as dataset:
         dataset.write(np.ones((10, 10), dtype=np.float32), 1)
     aoi_path.write_text(json.dumps({"type":"Polygon","coordinates":[[[0,0],[1,0],[1,1],[0,1],[0,0]]]}),encoding="utf-8")
-    site = {"site_id":"BAD_GRID","planet":"Earth","source_id":"TEST","elevation_unit":"m"}
+    site = {"site_id":"BAD_GRID","planet":"Earth","source_id":"TEST","elevation_unit":"m","vertical_reference":"Unknown for CRS validation test"}
     with pytest.raises(ValueError, match="projected metric CRS"):
         analyze_geotiff(dem_path,aoi_path,site,config(scale=10,relief=40))
+
+
+def test_geotiff_pipeline_requires_explicit_vertical_reference():
+    with pytest.raises(ValueError, match="explicit vertical_reference"):
+        analyze_geotiff(
+            "not-needed.tif",
+            "not-needed.geojson",
+            {"site_id": "X", "planet": "Earth", "source_id": "SRC"},
+            config(),
+        )
