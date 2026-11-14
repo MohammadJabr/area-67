@@ -82,4 +82,12 @@ Use feature branches and pull requests. Keep `main` runnable. Do not commit larg
 
 ## Current status
 
-Repository initialization. No scientific results or validated rankings are claimed yet.
+The GIS branch has a documented, provisional NASA LOLA Site04 (Shackleton rim)
+acquisition, inspection, and raster QA workflow. Its five local rasters are
+excluded from Git; lightweight inspection and QA reports are in
+`data/metadata/`. Shackleton is not an officially finalized team target.
+
+No Earth candidate DEMs have been collected. AREA 67 terrain fingerprints,
+Earth–Moon similarity rankings, and Analog Passports are not yet implemented
+or validated. See [the Site04 GIS workflow](docs/LOLA_SITE04_WORKFLOW.md) and
+[the GIS handoff](docs/GIS_HANDOFF.md) for data and downstream requirements.
