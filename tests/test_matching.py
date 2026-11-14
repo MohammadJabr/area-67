@@ -60,7 +60,11 @@ def test_candidates_are_ranked_correctly():
         "tri": 0.5,
     }
 
-    result = rank_candidates(candidates, weights)
+    result = rank_candidates(
+        candidates,
+        weights,
+        target_site_id="MOON_SITE04",
+    )
 
     ranking = result["ranking"]
 
@@ -72,4 +76,5 @@ def test_candidates_are_ranked_correctly():
 
     assert [site["rank"] for site in ranking] == [1, 2, 3]
 
+    assert result["target_site_id"] == "MOON_SITE04"
     assert result["rejected_candidates"] == []
