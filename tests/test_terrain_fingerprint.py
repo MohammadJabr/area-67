@@ -7,6 +7,8 @@ from src.features.validation import compare_scale_runs, feature_correlation_audi
 
 
 def config(scale=10.0, relief=40.0, **kwargs):
+    # Synthetic tests declare the analytical support fraction explicitly.
+    kwargs.setdefault("local_relief_min_valid_fraction", 0.8)
     return TerrainConfig(analysis_scale_m=scale, relief_window_m=relief, **kwargs)
 
 
@@ -143,6 +145,7 @@ def test_geotiff_aoi_pipeline_writes_contract_ready_metrics(tmp_path):
         "site_id": "TEST_EARTH", "planet": "Earth", "source_id": "SYNTHETIC_TEST",
         "site_name": "Synthetic test site", "elevation_unit": "m", "aoi_crs": "EPSG:32631",
         "vertical_reference": "Synthetic local datum", "effective_resolution_note": "Synthetic grid",
+        "quality_layer": "Synthetic quality mask", "direct_observation_coverage_pct": 9.1541,
     }
     result = analyze_geotiff(
         dem_path, aoi_path, site, config(scale=10, relief=40), write_maps_to=tmp_path / "maps"
@@ -153,6 +156,9 @@ def test_geotiff_aoi_pipeline_writes_contract_ready_metrics(tmp_path):
     assert result["nodata_pct"] == pytest.approx(0)
     assert result["slope_median"] == pytest.approx(np.degrees(np.arctan(0.1)), abs=1e-5)
     assert validate_fingerprint_rows(pd.DataFrame([result])) == []
+    assert result["direct_observation_coverage_pct"] == pytest.approx(9.1541)
+    assert result["quality_status"] == "REVIEW"
+    assert "low_direct_observation_support_review_required" not in result["quality_flags"]
     assert (tmp_path / "maps" / "TEST_EARTH" / "TEST_EARTH_slope.tif").exists()
 
 
@@ -182,3 +188,46 @@ def test_geotiff_pipeline_requires_explicit_vertical_reference():
             {"site_id": "X", "planet": "Earth", "source_id": "SRC"},
             config(),
         )
+
+
+def test_geotiff_pipeline_accepts_integer_elevation_raster(tmp_path):
+    rasterio = pytest.importorskip("rasterio")
+    import json
+    from rasterio.transform import from_origin
+
+    dem_path = tmp_path / "integer_dem.tif"
+    aoi_path = tmp_path / "integer_aoi.geojson"
+    rows, cols = np.indices((21, 21))
+    elevation = cols.astype(np.int16)
+    with rasterio.open(
+        dem_path,
+        "w",
+        driver="GTiff",
+        height=elevation.shape[0],
+        width=elevation.shape[1],
+        count=1,
+        dtype="int16",
+        crs="EPSG:32631",
+        transform=from_origin(500000, 1000, 10, 10),
+        nodata=-32768,
+    ) as dataset:
+        dataset.write(elevation, 1)
+
+    aoi = {
+        "type": "Polygon",
+        "coordinates": [[[500010, 990], [500190, 990], [500190, 810], [500010, 810], [500010, 990]]],
+    }
+    aoi_path.write_text(json.dumps(aoi), encoding="utf-8")
+    site = {
+        "site_id": "INTEGER_EARTH",
+        "planet": "Earth",
+        "source_id": "SYNTHETIC_INT16",
+        "elevation_unit": "m",
+        "aoi_crs": "EPSG:32631",
+        "vertical_reference": "Synthetic local datum",
+        "quality_layer": "Synthetic mask",
+        "effective_resolution_note": "Synthetic 10 m integer grid",
+    }
+    result = analyze_geotiff(dem_path, aoi_path, site, config(scale=10, relief=40))
+    assert result["slope_median"] == pytest.approx(np.degrees(np.arctan(0.1)), abs=1e-5)
+    assert result["valid_coverage_pct"] == pytest.approx(100.0)
