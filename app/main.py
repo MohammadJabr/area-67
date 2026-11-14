@@ -10,7 +10,14 @@ import streamlit as st
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-from src.data.contracts import FEATURE_GROUPS, validate_fingerprints, validate_rankings
+from src.data.contracts import (
+    FEATURE_GROUPS,
+    fingerprint_quality_warnings,
+    validate_fingerprints,
+    validate_ranking_references,
+    validate_rankings,
+    validate_space_to_earth,
+)
 from src.reporting.passport import build_passport, passport_to_markdown
 
 st.set_page_config(page_title="AREA 67 | Planetary Analog Discovery", page_icon="🪐", layout="wide")
@@ -131,7 +138,12 @@ def main() -> None:
         st.error("The supplied CSV pair contains no rows; no results can be shown.")
         st.stop()
 
-    errors = validate_fingerprints(fingerprints) + validate_rankings(rankings)
+    errors = (
+        validate_fingerprints(fingerprints)
+        + validate_rankings(rankings)
+        + validate_ranking_references(fingerprints, rankings)
+        + validate_space_to_earth(fingerprints, rankings)
+    )
     if errors:
         st.error("Input files do not satisfy the shared integration contract.")
         for error in errors:
@@ -150,11 +162,18 @@ def main() -> None:
     unknown_targets = sorted(set(rankings["target_site_id"]) - known_ids)
     unknown_candidates = sorted(set(rankings["candidate_site_id"]) - known_ids)
     if unknown_targets or unknown_candidates:
-        st.warning("Some ranking rows refer to site IDs missing from the fingerprint table. They cannot be fully characterized.")
+        st.error("Ranking rows reference site IDs with no fingerprint record. Fix the upstream data contract before interpreting results.")
         if unknown_targets:
             st.write("Unknown target IDs: " + ", ".join(unknown_targets))
         if unknown_candidates:
             st.write("Unknown candidate IDs: " + ", ".join(unknown_candidates))
+        st.stop()
+
+    quality_warnings = fingerprint_quality_warnings(fingerprints)
+    if quality_warnings:
+        with st.expander("Data-quality audit · review before interpreting scores", expanded=True):
+            for warning in quality_warnings:
+                st.warning(warning)
 
     tab_setup, tab_results, tab_passport = st.tabs(["1 · Mission Setup", "2 · Results & Comparison", "3 · Site Passport"])
 
@@ -239,13 +258,18 @@ def main() -> None:
         show_single_parameter_explorer(fingerprints, comparison_ids)
 
         if {"latitude", "longitude"}.issubset(fingerprints.columns):
-            mapped = fingerprints[fingerprints["site_id"].isin(comparison_ids)].copy()
+            # Planetary latitude/longitude must not be plotted on an Earth basemap.
+            # This view intentionally displays Earth candidate locations only.
+            mapped = fingerprints[
+                fingerprints["site_id"].isin(candidate_ids)
+                & fingerprints["planet"].astype(str).str.casefold().eq("earth")
+            ].copy()
             mapped["latitude"] = pd.to_numeric(mapped["latitude"], errors="coerce")
             mapped["longitude"] = pd.to_numeric(mapped["longitude"], errors="coerce")
             mapped = mapped.dropna(subset=["latitude", "longitude"])
             if not mapped.empty:
                 st.plotly_chart(
-                    px.scatter_geo(mapped, lat="latitude", lon="longitude", color="planet", hover_name="site_name", hover_data=["site_id"], title="Target and Earth candidate locations"),
+                    px.scatter_geo(mapped, lat="latitude", lon="longitude", color="planet", hover_name="site_name", hover_data=["site_id"], title="Earth candidate locations (target coordinates are not plotted on an Earth basemap)"),
                     use_container_width=True,
                 )
             else:
