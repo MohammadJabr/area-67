@@ -143,7 +143,13 @@ def validate_fingerprints(frame: pd.DataFrame) -> list[str]:
     errors.extend(
         _numeric_errors(
             frame,
-            ("analysis_scale_m", "nodata_pct"),
+            (
+                "analysis_scale_m",
+                "nodata_pct",
+                "terrain_flat_pct",
+                "terrain_moderate_pct",
+                "terrain_steep_pct",
+            ),
             allow_null=False,
         )
     )
