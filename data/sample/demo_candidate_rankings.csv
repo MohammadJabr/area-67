@@ -1,4 +1,4 @@
-target_site_id,candidate_site_id,rank,similarity_score,weighted_distance,mission_profile,slope_contribution,tri_contribution,local_relief_contribution,terrain_distribution_contribution,spatial_pattern_contribution,ranking_note
-MOON_DEMO_01,EARTH_DEMO_01,1,0.91,0.09,Demo rover terrain navigation,0.02,0.01,0.02,0.02,0.02,Synthetic example only
-MOON_DEMO_01,EARTH_DEMO_03,2,0.76,0.24,Demo rover terrain navigation,0.04,0.05,0.05,0.04,0.06,Synthetic example only
-MOON_DEMO_01,EARTH_DEMO_02,3,0.63,0.37,Demo rover terrain navigation,0.08,0.07,0.09,0.08,0.05,Synthetic example only
+target_site_id,site_id,rank,relative_similarity,similarity_distance,mission_profile,slope_contribution,tri_contribution,relief_contribution,distribution_contribution,spatial_pattern_contribution,data_completeness,ranking_stability_note,ranking_note
+MOON_DEMO_01,EARTH_DEMO_01,1,91.0,0.09,Rover Navigation / Terrain Traversal,0.02,0.01,0.02,0.02,0.02,99.6,Synthetic illustrative run only; no measured stability claim,Synthetic example only
+MOON_DEMO_01,EARTH_DEMO_03,2,76.0,0.24,Rover Navigation / Terrain Traversal,0.04,0.05,0.05,0.04,0.06,99.3,Synthetic illustrative run only; no measured stability claim,Synthetic example only
+MOON_DEMO_01,EARTH_DEMO_02,3,63.0,0.37,Rover Navigation / Terrain Traversal,0.08,0.07,0.09,0.08,0.05,98.9,Synthetic illustrative run only; no measured stability claim,Synthetic example only
