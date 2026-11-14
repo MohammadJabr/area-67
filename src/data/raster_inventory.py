@@ -11,6 +11,23 @@ import numpy as np
 import rasterio
 
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+def _portable_path(path: str | Path) -> str:
+    """Return repository-relative paths for artifacts created inside this checkout.
+
+    External files retain the caller-supplied path because they cannot be made
+    portable without an explicit shared data-root mapping.
+    """
+    supplied = Path(path)
+    resolved = supplied.resolve()
+    try:
+        return resolved.relative_to(REPO_ROOT.resolve()).as_posix()
+    except ValueError:
+        return str(supplied)
+
+
 def sha256_file(path: str | Path, chunk_size: int = 1024 * 1024) -> str:
     """Return a streaming SHA-256 digest without loading a file into memory."""
     digest = hashlib.sha256()
@@ -100,7 +117,7 @@ def inventory_raster(
 
     with rasterio.open(raster_path) as ds:
         report = {
-            "path": str(raster_path),
+            "path": _portable_path(raster_path),
             "file_size_bytes": raster_path.stat().st_size,
             "sha256": sha256_file(raster_path) if checksum else None,
             "driver": ds.driver,

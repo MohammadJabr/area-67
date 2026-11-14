@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "dem": {
-    "path": "C:\\Users\\Ghassan\\Documents\\GitHub\\area-67\\data\\raw\\earth\\copdem_glo30\\mcmurdo\\Copernicus_DSM_COG_10_S78_00_E162_00_DEM.tif",
+    "path": "data/raw/earth/copdem_glo30/mcmurdo/Copernicus_DSM_COG_10_S78_00_E162_00_DEM.tif",
     "file_size_bytes": 13702247,
     "sha256": "dae6c48d7642f87b5b9fc24df4dcd39847b8e991f3d5c99e83365549d87fa138",
     "driver": "GTiff",

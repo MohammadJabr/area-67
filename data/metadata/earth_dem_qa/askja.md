@@ -4,7 +4,7 @@
 
 ## Primary DEM
 
-- File: `C:\Users\Ghassan\Documents\GitHub\area-67\data\raw\earth\copdem_glo30\askja\Copernicus_DSM_COG_10_N65_00_W017_00_DEM.tif`
+- File: `data/raw/earth/copdem_glo30/askja/Copernicus_DSM_COG_10_N65_00_W017_00_DEM.tif`
 - SHA-256: `1c663c1b6c3263c763ee40e5e20b85dfacdfeddaf3c41acb6b60cac8581cd56e`
 - Dimensions/bands: 1800 × 3600 / 1
 - Data type(s): float32

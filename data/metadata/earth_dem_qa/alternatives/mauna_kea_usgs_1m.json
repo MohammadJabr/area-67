@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "dem": {
-    "path": "data\\raw\\earth\\mauna_kea\\usgs_3dep\\1m\\USGS_1M_4_x86y220_HI_Hawaii_Island_Lidar_NOAA_2017_B17.tif",
+    "path": "data/raw/earth/mauna_kea/usgs_3dep/1m/USGS_1M_4_x86y220_HI_Hawaii_Island_Lidar_NOAA_2017_B17.tif",
     "file_size_bytes": 270812447,
     "sha256": "27d730f77f276bad0755ee2b9ab153a5461539b8dd0142bc619b13fc9f8f8b8c",
     "driver": "GTiff",

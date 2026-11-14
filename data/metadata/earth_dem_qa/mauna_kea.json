@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "dem": {
-    "path": "C:\\Users\\Ghassan\\Documents\\GitHub\\area-67\\data\\raw\\earth\\copdem_glo30\\mauna_kea\\Copernicus_DSM_COG_10_N19_00_W156_00_DEM.tif",
+    "path": "data/raw/earth/copdem_glo30/mauna_kea/Copernicus_DSM_COG_10_N19_00_W156_00_DEM.tif",
     "file_size_bytes": 31714695,
     "sha256": "a1881be4ef3710ebf3d0e59a7a22e77ca79e2a6a3f51cdbadb74209e0698e00d",
     "driver": "GTiff",

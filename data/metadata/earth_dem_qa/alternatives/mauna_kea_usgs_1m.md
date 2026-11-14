@@ -4,7 +4,7 @@
 
 ## Primary DEM
 
-- File: `data\raw\earth\mauna_kea\usgs_3dep\1m\USGS_1M_4_x86y220_HI_Hawaii_Island_Lidar_NOAA_2017_B17.tif`
+- File: `data/raw/earth/mauna_kea/usgs_3dep/1m/USGS_1M_4_x86y220_HI_Hawaii_Island_Lidar_NOAA_2017_B17.tif`
 - SHA-256: `27d730f77f276bad0755ee2b9ab153a5461539b8dd0142bc619b13fc9f8f8b8c`
 - Dimensions/bands: 10012 × 10012 / 1
 - Data type(s): float32

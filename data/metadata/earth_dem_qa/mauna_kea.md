@@ -4,7 +4,7 @@
 
 ## Primary DEM
 
-- File: `C:\Users\Ghassan\Documents\GitHub\area-67\data\raw\earth\copdem_glo30\mauna_kea\Copernicus_DSM_COG_10_N19_00_W156_00_DEM.tif`
+- File: `data/raw/earth/copdem_glo30/mauna_kea/Copernicus_DSM_COG_10_N19_00_W156_00_DEM.tif`
 - SHA-256: `a1881be4ef3710ebf3d0e59a7a22e77ca79e2a6a3f51cdbadb74209e0698e00d`
 - Dimensions/bands: 3600 × 3600 / 1
 - Data type(s): float32
