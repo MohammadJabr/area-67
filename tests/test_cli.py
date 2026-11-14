@@ -1,7 +1,9 @@
 import csv
 import json
 
-from src.matching.cli import main
+import pytest
+
+from src.matching.cli import build_parser, main
 
 
 def test_cli_runs_csv_to_matching_outputs(
@@ -32,6 +34,8 @@ def test_cli_runs_csv_to_matching_outputs(
         "--fingerprints", str(fingerprints_path),
         "--target-site-id", "MOON_SITE04",
         "--tolerances-json", str(tolerances_path),
+        "--min-feature-group-completeness", "0.0",
+        "--min-data-completeness", "0.0",
         "--output", str(ranking_path),
         "--robustness-output", str(robustness_path),
     ])
@@ -74,8 +78,21 @@ def test_cli_returns_error_for_unfilled_tolerance_template(
         "--fingerprints", str(fingerprints_path),
         "--target-site-id", "MOON_SITE04",
         "--tolerances-json", str(tolerances_path),
+        "--min-feature-group-completeness", "0.0",
+        "--min-data-completeness", "0.0",
     ])
     captured = capsys.readouterr()
 
     assert exit_code == 1
     assert "Tolerance" in captured.err
+
+
+
+def test_cli_requires_explicit_completeness_policy():
+    parser = build_parser()
+    with pytest.raises(SystemExit) as error:
+        parser.parse_args([
+            "--target-site-id", "MOON_SITE04",
+            "--tolerances-json", "config/matching_tolerances.json",
+        ])
+    assert error.value.code == 2
