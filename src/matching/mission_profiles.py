@@ -10,7 +10,7 @@ from math import isclose, isfinite
 
 
 ROVER_NAVIGATION_PROFILE = {
-    "name": "Rover Navigation",
+    "name": "Rover Navigation / Terrain Traversal",
     "description": (
         "Terrain matching focused on rover traversal "
         "and navigation."
