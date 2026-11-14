@@ -119,4 +119,12 @@ Synthetic CSVs are used only when neither real file exists. The app refuses to m
 
 ## Current implementation status
 
-The Streamlit integration and Analog Passport are on branch feature/mohammad-app-integration, proposed for review in [Draft PR #5](https://github.com/MohammadJabr/area-67/pull/5). The real scientific workflow remains pending until the GIS, terrain and matching workstreams provide their outputs.
+The Streamlit MVP, Analog Passport, provisional LOLA Site04 GIS acquisition/QA workflow, and target-aware terrain-matching software are merged into `main`.
+
+- The application runs in clearly labelled **DEMO MODE** while no complete real processed-data pair exists.
+- The demo fixtures are synthetic interface/test data, not NASA observations or scientific results.
+- The GIS contribution is a provisional lunar Site04 acquisition/QA workflow; it does not yet provide Earth analog candidates.
+- The matching engine is tested with synthetic fingerprints. Real analysis still requires Hiba's validated terrain fingerprints, at least three suitable Earth candidate sites, team-approved tolerances, and an end-to-end run.
+- Direct LOLA observation support, valid raster coverage, and uncertainty are distinct quality concepts; the app and methodology must not conflate them.
+
+The current scientific result status is therefore **pending real Earth-candidate data and validated terrain fingerprints**.
