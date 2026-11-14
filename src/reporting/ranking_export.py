@@ -1,32 +1,32 @@
+"""Export canonical candidate rankings for the AREA 67 application.
 
-"""
-CSV export for AREA 67 candidate rankings.
-
-The relative similarity index is 100 / (1 + distance).
-It is a relative ranking indicator, NOT a probability
-or a measure of mission success.
+Similarity score is 100 / (1 + weighted_distance). It is a monotonic
+0-100 ranking index, not a percentage of physical equivalence or success.
 """
 
 import csv
-from pathlib import Path
 from collections.abc import Mapping
 from math import isfinite
+from pathlib import Path
 
 
 OUTPUT_COLUMNS = [
     "target_site_id",
-    "site_id",
+    "candidate_site_id",
     "mission_profile",
-    "similarity_distance",
-    "relative_similarity",
     "rank",
+    "similarity_score",
+    "weighted_distance",
     "slope_contribution",
     "tri_contribution",
     "relief_contribution",
     "distribution_contribution",
     "spatial_pattern_contribution",
     "data_completeness",
+    "feature_group_completeness",
+    "valid_raster_coverage_completeness",
     "ranking_stability_note",
+    "ranking_note",
 ]
 
 
@@ -40,15 +40,15 @@ GROUP_COLUMNS = {
 
 
 def relative_similarity_index(distance: float) -> float:
-    """Convert distance into a relative ranking index."""
-
-    if not isinstance(distance, (int, float)):
-        raise ValueError("Distance must be numeric.")
-
-    if not isfinite(distance) or distance < 0:
-        raise ValueError("Distance must be finite and non-negative.")
-
-    return 100.0 / (1.0 + distance)
+    """Map a non-negative weighted distance to a monotonic 0-100 index."""
+    if (
+        isinstance(distance, bool)
+        or not isinstance(distance, (int, float))
+        or not isfinite(distance)
+        or distance < 0
+    ):
+        raise ValueError("Distance must be finite, numeric, and non-negative.")
+    return 100.0 / (1.0 + float(distance))
 
 
 def export_rankings_csv(
@@ -57,57 +57,78 @@ def export_rankings_csv(
     output_path: str | Path,
     ranking_stability_note: str = "",
 ) -> Path:
-    """Export ranked candidates and their feature contributions."""
-
+    """Export rankings using the canonical application integration fields."""
     if not isinstance(ranking_result, Mapping):
         raise TypeError("ranking_result must be a mapping.")
 
     candidates = ranking_result.get("ranking")
-
     if not isinstance(candidates, list):
         raise ValueError("ranking_result must contain a ranking list.")
-
-    if not isinstance(mission_profile, str) or not mission_profile.strip():
-        raise ValueError("mission_profile cannot be empty.")
 
     target_site_id = ranking_result.get("target_site_id")
     if not isinstance(target_site_id, str) or not target_site_id.strip():
         raise ValueError("ranking_result must include a non-empty target_site_id.")
 
+    if not isinstance(mission_profile, str) or not mission_profile.strip():
+        raise ValueError("mission_profile cannot be empty.")
+
     path = Path(output_path)
     path.parent.mkdir(parents=True, exist_ok=True)
-
     rows = []
 
     for candidate in candidates:
-        distance = candidate["similarity_distance"]
+        if not isinstance(candidate, Mapping):
+            raise TypeError("Every ranked candidate must be a mapping.")
+
+        candidate_site_id = candidate.get("candidate_site_id", candidate.get("site_id"))
+        if not isinstance(candidate_site_id, str) or not candidate_site_id.strip():
+            raise ValueError("Every candidate must include candidate_site_id or site_id.")
+
+        distance = candidate.get("similarity_distance", candidate.get("weighted_distance"))
+        score = candidate.get("similarity_score")
+        if score is None:
+            score = relative_similarity_index(distance)
+        if (
+            isinstance(score, bool)
+            or not isinstance(score, (int, float))
+            or not isfinite(score)
+            or not 0.0 <= score <= 100.0
+        ):
+            raise ValueError("similarity_score must be finite and between 0 and 100.")
+
+        completeness = candidate.get("data_completeness")
+        if (
+            isinstance(completeness, bool)
+            or not isinstance(completeness, (int, float))
+            or not isfinite(completeness)
+            or not 0.0 <= completeness <= 1.0
+        ):
+            raise ValueError("data_completeness must be finite and between 0 and 1.")
 
         row = {
             "target_site_id": target_site_id.strip(),
-            "site_id": candidate["site_id"],
-            "mission_profile": mission_profile,
-            "similarity_distance": distance,
-            "relative_similarity": round(
-                relative_similarity_index(distance), 4
-            ),
-            "rank": candidate["rank"],
-            "data_completeness": round(
-                candidate["data_completeness"], 4
+            "candidate_site_id": candidate_site_id.strip(),
+            "mission_profile": mission_profile.strip(),
+            "rank": candidate.get("rank"),
+            "similarity_score": round(float(score), 4),
+            "weighted_distance": round(float(distance), 8),
+            "data_completeness": round(float(completeness), 4),
+            "feature_group_completeness": candidate.get("feature_group_completeness", ""),
+            "valid_raster_coverage_completeness": candidate.get(
+                "valid_raster_coverage_completeness", ""
             ),
             "ranking_stability_note": ranking_stability_note,
+            "ranking_note": (
+                "similarity_score = 100 / (1 + weighted_distance); "
+                "relative ranking index, not a probability or certification"
+            ),
         }
 
         contributions = candidate.get("group_contributions", {})
-
         for group, column in GROUP_COLUMNS.items():
-            contribution = contributions.get(group)
-
-            # Keep missing feature contributions blank.
-            row[column] = (
-                round(contribution["distance_share"], 6)
-                if contribution is not None
-                else ""
-            )
+            contribution = contributions.get(group) if isinstance(contributions, Mapping) else None
+            value = contribution.get("distance_share") if isinstance(contribution, Mapping) else None
+            row[column] = round(float(value), 6) if value is not None else ""
 
         rows.append(row)
 
