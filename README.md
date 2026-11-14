@@ -3,68 +3,91 @@
 **Planetary Analog Discovery & Mission Planning**  
 **Discover Earth. Explore Other Worlds.**
 
-AREA 67 is a NASA Space Apps Challenge project exploring how open Earth, Moon, and Mars observations can identify and characterize terrestrial environments that are useful analogs for specific planetary exploration tasks.
+AREA 67 is a NASA Space Apps Challenge project: a mission-specific decision-support platform that uses elevation data to compare terrain regions on Earth, the Moon and Mars, and identify Earth sites useful for engineering experiments.
 
-An analog is useful for selected characteristics or processes; it is not a perfect replica. Results should explain both where an analogy is useful and where it breaks down.
+An analog is useful for selected characteristics; it is not a perfect reproduction of another world. Similarity rankings guide investigation. They are not site certifications or probabilities of mission success.
 
-## Agreed architecture
+## Approved product architecture
 
-- **Search directions:** Space-to-Earth (active MVP) and Earth-to-Space (future direction).
-- **Core Terrain Fingerprint:** Slope distribution, Terrain Ruggedness Index (TRI), Local Relief, Terrain Distribution, and Spatial Pattern.
-- **Context layers:** thermal, geological/mineralogical, environmental (water/ice/dust/wind), and subsurface evidence. Keep them separate until source compatibility and measurement methods are validated.
-- **Mission modules:** Weighted Similarity & Mission-Based Matching, Single-Parameter Explorer, ShadowTwin (illumination), Rover Gauntlet (rover mobility/A*), Analog Gap Analysis, and Analog Passport.
+The project supports two search directions:
 
-See docs/PRODUCT_ARCHITECTURE.md and docs/INTEGRATION_CONTRACT.md.
+- **Space-to-Earth:** start with a lunar or Martian target and rank Earth candidates. This is the 24-hour MVP workflow.
+- **Earth-to-Space:** start with an Earth location and find Moon/Mars terrain with selected similar characteristics. This remains in the product vision, not the first MVP.
 
-## Initial 24-hour prototype scope
+The five connected capabilities from the approved presentation are:
 
-1. Select one lunar or Martian target, one mission profile, and 3–5 Earth candidates.
-2. Acquire documented, compatible elevation datasets and record source/quality metadata.
-3. Derive at least one documented metric for each of the five Terrain Fingerprint groups.
-4. Rank candidates using explainable mission-weighted similarity.
-5. Display target, candidates, feature evidence, ranking explanations, and data-quality notes in Streamlit.
-6. Generate one initial Analog Passport from actual data rows.
-7. Validate the workflow and freeze a reproducible demo.
+1. **Analog Radar** — discover and rank candidate regions.
+2. **Mission Matching** — weight terrain features for the engineering task.
+3. **Rover Gauntlet** — hypothetical rover least-cost routes using A* (optional after the core pipeline).
+4. **ShadowTwin** — terrain illumination/shadow exploration using DEM and SPICE Sun-position context (optional).
+5. **Analog Passport** — evidence, provenance, comparison, suggested experiment, caveats and data lineage.
 
-Thermal/geological layers, Earth-to-Space search, ShadowTwin simulation, and A* route analysis are extensions. Mark each as Concept / Planned until its inputs and calculations have been tested.
+The **Single-Parameter Explorer** is an analysis utility in the comparison experience.
 
-## Scientific safeguards
+See [Product Architecture](docs/PRODUCT_ARCHITECTURE.md) and [Application Integration Contract](docs/INTEGRATION_CONTRACT.md).
 
-- Do not interpret similarity as a probability of mission success or site certification.
-- Do not claim global novelty because a candidate is absent from one catalog.
-- Spatial resolution is not measurement accuracy; resampling does not create new information.
-- Keep source provenance, units, scale, quality flags, assumptions, and limitations with every result.
-- Do not compare absolute elevations across bodies with incompatible vertical references.
-- Missing values are not silently replaced with zero.
+## Core Terrain Fingerprint
+
+All five groups are required:
+
+- **Slope:** median and P90 at minimum; P95/histogram optional.
+- **Ruggedness (TRI):** one declared formulation and neighbourhood; median and P90 at minimum.
+- **Local relief:** P95–P5 within a declared physical window.
+- **Terrain distribution:** valid-area percentages in documented low/mid/high classes (or the earlier flat/moderate/steep labels).
+- **Spatial pattern:** for the MVP, Hiba's preferred metric is largest connected high-slope patch percentage, with threshold and 4/8-neighbour connectivity documented.
+
+Use compatible physical scales/windows, record units and NoData, preserve nulls, and avoid double-counting correlated Slope and Terrain Distribution.
+
+## MVP mission and data
+
+The personal team playbooks recommend one **Rover Navigation / Terrain Traversal** mission profile for the first prototype. Its feature weights are team hypotheses that must be documented and tested; they are not NASA or rover-manufacturer standards.
+
+Project data sources:
+- Moon: NASA LOLA / LRO products.
+- Mars: NASA MOLA for broad context, or local USGS CTX DTM when suitable coverage exists.
+- Earth: SRTM or an appropriate documented local DEM.
+- Thermal context in the project report: MODIS (Earth), Diviner (Moon), THEMIS (Mars). These are supporting context only and are not part of the MVP topographic score unless their compatibility and method are checked.
+
+The prototype should use one space target and 3–5 Earth candidates selected for real data availability and quality.
+
+## Scientific integrity
+
+- Do not compare absolute elevation values across planetary bodies with different vertical references.
+- Do not treat NoData as zero.
+- Do not claim that resampling creates new detail.
+- Keep data source, product/version, CRS, vertical reference, units, scale, coverage and processing choices with each result.
+- Check feature correlations and avoid double counting.
+- Report similarity, data completeness and ranking stability separately.
+- Do not say a site is globally undiscovered because it is absent from one catalog.
+- Label hypothetical routes as least-cost paths under stated DEM cost assumptions, not rover-safe routes.
+- Label all synthetic fixtures and non-implemented capabilities as such.
 
 ## Team
 
 - Mohammed Jabr — Team Lead & System Integration
-- Ghassan Al-Shoubi — Data Collection & GIS
-- Hiba Sbouh — Terrain Analysis & Validation
-- Omar Salous — Similarity Matching & Mission Planning
+- Ghassan Al-Shoubi — Data Acquisition & GIS
+- Hiba Sbouh — Terrain Fingerprint & Scientific Validation
+- Omar Salous — Weighted Similarity & Mission Planning
 
-## Repository structure
+## Repository layout
 
     area-67/
     ├── app/                 # Streamlit application
     ├── data/
     │   ├── raw/             # Large source data (not committed)
-    │   ├── processed/       # Team-produced outputs (not committed if large)
-    │   └── sample/          # Small, labelled development fixtures
+    │   ├── processed/       # Team-produced outputs
+    │   └── sample/          # Small synthetic fixtures, labelled as such
     ├── docs/                # Scope, architecture, contracts, sources
-    ├── notebooks/           # Exploration and validation notebooks
+    ├── notebooks/           # Exploration and validation
     ├── src/
-    │   ├── data/            # Loading and contracts
+    │   ├── data/            # Loading, schemas and validation
     │   ├── features/        # Terrain fingerprint calculations
-    │   ├── matching/        # Similarity and mission profiles
-    │   ├── routes/          # Optional route analysis
-    │   ├── illumination/    # Optional shadow analysis
-    │   └── reporting/       # Analog Passport generation
-    ├── tests/               # Unit and integration tests
-    ├── .github/workflows/   # Automated checks
-    ├── .gitignore
-    └── requirements.txt
+    │   ├── matching/        # Mission-based similarity and explanations
+    │   ├── routes/          # Optional Rover Gauntlet/A*
+    │   ├── illumination/    # Optional ShadowTwin
+    │   └── reporting/       # Analog Passport
+    ├── tests/
+    └── .github/workflows/
 
 ## Run locally
 
@@ -79,17 +102,21 @@ Thermal/geological layers, Earth-to-Space search, ShadowTwin simulation, and A* 
     pip install -r requirements.txt
     streamlit run app/main.py
 
-Run tests with pytest -q.
+Run tests with:
+
+    pytest -q
 
 ## Data integration
 
-The application expects:
+The app reads:
 
 - data/processed/terrain_fingerprints.csv
 - data/processed/candidate_rankings.csv
 
-When both real files are absent, the app may use the clearly labelled synthetic fixtures in data/sample/ for interface development. The app refuses to mix one real file with one synthetic file. Synthetic values must never be described as NASA observations or scientific findings.
+The fingerprint contract accepts Hiba's documented low/mid/high and largest-steep-patch fields, as well as the earlier integration-draft flat/moderate/steep and generic spatial metric names. The ranking reader accepts both the app's canonical field names and Omar's documented site_id / relative_similarity / similarity_distance aliases. target_site_id is required to preserve traceability.
 
-## Current status
+Synthetic CSVs are used only when neither real file exists. The app refuses to mix one real file with one synthetic file.
 
-The Streamlit integration and initial Analog Passport are on feature/mohammad-app-integration, proposed for review in draft PR #5. Scientific rankings remain pending on real outputs from the GIS, terrain-analysis, and matching workstreams.
+## Current implementation status
+
+The Streamlit integration and Analog Passport are on branch feature/mohammad-app-integration, proposed for review in [Draft PR #5](https://github.com/MohammadJabr/area-67/pull/5). The real scientific workflow remains pending until the GIS, terrain and matching workstreams provide their outputs.
