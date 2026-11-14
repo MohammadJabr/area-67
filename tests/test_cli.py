@@ -45,8 +45,13 @@ def test_cli_runs_csv_to_matching_outputs(
 
 
 def test_cli_returns_error_for_unfilled_tolerance_template(tmp_path, capsys):
-    source = tmp_path / "template.json"
-    source.write_text(
+    fingerprints_path = tmp_path / "terrain_fingerprints.csv"
+    fingerprints_path.write_text(
+        "site_id,planet\nMOON_SITE04,Moon\nEARTH_A,Earth\n",
+        encoding="utf-8",
+    )
+    tolerances_path = tmp_path / "template.json"
+    tolerances_path.write_text(
         json.dumps({
             "slope_deg": None,
             "tri_m": None,
@@ -58,11 +63,11 @@ def test_cli_returns_error_for_unfilled_tolerance_template(tmp_path, capsys):
     )
 
     exit_code = main([
-        "--fingerprints", str(tmp_path / "missing.csv"),
+        "--fingerprints", str(fingerprints_path),
         "--target-site-id", "MOON_SITE04",
-        "--tolerances-json", str(source),
+        "--tolerances-json", str(tolerances_path),
     ])
     captured = capsys.readouterr()
 
     assert exit_code == 1
-    assert "Tolerance" in captured.err or "not found" in captured.err
+    assert "Tolerance" in captured.err
