@@ -34,8 +34,9 @@ One row per analyzed site. Required columns:
 
 - site_id must be present and unique; planet and source_id must be non-empty.
 - analysis_scale_m must be a finite value greater than zero.
-- required numeric columns must contain numeric finite values. Missing metric groups must not be disguised as zero.
-- slope statistics cannot be negative; slope_p90 must be greater than or equal to slope_median.
+- analysis_scale_m and nodata_pct must be present, numeric, and finite. The three terrain-class percentages must also be present because together they define the class distribution.
+- Other individual terrain metrics may be null, but at least one usable metric must be present in every feature group for every MVP site. The app reports a missing group as a quality gap; it never fills it with zero.
+- slope statistics cannot be negative; when both are present, slope_p90 must be greater than or equal to slope_median.
 - local_relief_p95_p5 cannot be negative.
 - terrain class percentages and nodata_pct must be in the range 0–100.
 - the three terrain-class percentages should sum to approximately 100% (within rounding tolerance) when classes cover all valid cells. The app reports a quality warning rather than altering values.
