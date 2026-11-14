@@ -82,3 +82,69 @@ def test_manifest_checksum_and_site_coordinate_problems_are_reported(tmp_path):
 
     assert any("SHA-256" in finding for finding in result["findings"])
     assert any("outside the raster footprint" in finding for finding in result["findings"])
+
+
+
+def test_repository_relative_qa_path_is_portable_across_checkouts(tmp_path, monkeypatch):
+    from src.data import raster_inventory
+    from src.data.earth_dem_qa import build_qa_report, markdown_report
+
+    checkout_a = tmp_path / "checkout-a"
+    checkout_b = tmp_path / "checkout-b"
+    relative_raster = "data/raw/demo/tile_demo.tif"
+    source_a = checkout_a / relative_raster
+    source_b = checkout_b / relative_raster
+    source_a.parent.mkdir(parents=True)
+    source_b.parent.mkdir(parents=True)
+    qa_a = checkout_a / "data/metadata/qa"
+    qa_b = checkout_b / "data/metadata/qa"
+    qa_a.mkdir(parents=True)
+    qa_b.mkdir(parents=True)
+
+    values = np.array([[1, 2], [3, -9999]], dtype="float32")
+    for raster_path in (source_a, source_b):
+        with rasterio.open(
+            raster_path, "w", driver="GTiff", width=2, height=2,
+            count=1, dtype="float32", crs="EPSG:4326",
+            transform=from_origin(-1, 2, 1, 1), nodata=-9999,
+        ) as dataset:
+            dataset.write(values, 1)
+
+    # Generate the QA artifact in checkout A. Its path must not contain A's
+    # absolute location, so it remains meaningful when checked out elsewhere.
+    monkeypatch.setattr(raster_inventory, "REPO_ROOT", checkout_a)
+    report = build_qa_report(source_a)
+    assert report["dem"]["path"] == relative_raster
+    (qa_a / "demo.json").write_text(json.dumps(report), encoding="utf-8")
+    (qa_a / "demo.md").write_text(markdown_report(report), encoding="utf-8")
+    assert str(checkout_a) not in (qa_a / "demo.json").read_text(encoding="utf-8")
+
+    digest = hashlib.sha256(source_b.read_bytes()).hexdigest()
+    row = {
+        "site_id": "demo", "source_id": "tile_demo",
+        "longitude": "-0.5", "latitude": "1.5",
+        "checksum_sha256": digest, "crs": "EPSG:4326",
+        "nodata_value": "-9999", "valid_cell_count": "3",
+        "valid_coverage_pct": "75.0",
+    }
+    manifest_b = checkout_b / "data/metadata/manifest.csv"
+    manifest_b.parent.mkdir(parents=True)
+    with manifest_b.open("w", newline="", encoding="utf-8") as stream:
+        writer = csv.DictWriter(stream, fieldnames=row)
+        writer.writeheader()
+        writer.writerow(row)
+
+    # The QA artifacts were created under checkout A and copied unchanged.
+    (qa_b / "demo.json").write_bytes((qa_a / "demo.json").read_bytes())
+    (qa_b / "demo.md").write_bytes((qa_a / "demo.md").read_bytes())
+
+    result = inspect_candidates(
+        manifest_b,
+        checkout_b / "data/raw",
+        qa_b,
+        repository_root=checkout_b,
+    )[0]
+
+    assert result["findings"] == []
+    assert result["sha256"] == digest
+    assert source_b.exists()
