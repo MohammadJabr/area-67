@@ -34,4 +34,4 @@ def test_slope_only_baseline_reports_rank_changes():
         item["site_id"]: item["rank_change_vs_slope_only"]
         for item in result["rank_comparison"]
     }
-    assert changes == {"EARTH_A": -2, "EARTH_B": 1, "EARTH_C": 0}
+    assert changes == {"EARTH_A": -2, "EARTH_B": 1, "EARTH_C": 1}
