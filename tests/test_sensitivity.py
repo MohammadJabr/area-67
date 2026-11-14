@@ -59,8 +59,10 @@ def test_sensitivity_counts_are_generated():
     result = run_weight_sensitivity(
         candidates=CANDIDATES,
         base_weights=WEIGHTS,
+        target_site_id="MOON_SITE04",
     )
 
+    assert result["target_site_id"] == "MOON_SITE04"
     assert result["scenario_count"] == 11
 
     assert set(result["top_k_counts"]) == {3, 5}
