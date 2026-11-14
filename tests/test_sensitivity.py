@@ -65,6 +65,12 @@ def test_sensitivity_counts_are_generated():
     assert result["target_site_id"] == "MOON_SITE04"
     assert result["scenario_count"] == 11
 
+    # Compare the five-group result with the slope-only baseline.
+    slope_baseline = result["slope_only_baseline"]["ranking"]
+    assert [row["site_id"] for row in slope_baseline] == [
+        "Site_C", "Site_A", "Site_B"
+    ]
+
     assert set(result["top_k_counts"]) == {3, 5}
 
     for k, counts in result["top_k_counts"].items():
