@@ -143,7 +143,7 @@ The following software and data-management components are merged into `main`:
 - The Mauna Kea USGS tile is a regional alternative only; it is not a harmonized replacement for all five Copernicus sources.
 - Source manifests, checksums, QA JSON/Markdown, and screening previews are tracked. Large raw DEM rasters remain gitignored and must be acquired locally using the documented tools.
 - No AOI boundaries, final Earth candidate set, common physical analysis scale, reprojection/resampling policy, or target sub-area have been approved.
-- Hiba's `data/processed/terrain_fingerprints.csv` has not yet been delivered to `main`; the canonical `candidate_rankings.csv` and robustness report are also absent.
+- Hiba's feature branch now includes the reusable five-group terrain extraction pipeline, scientific validation utilities, methodology, and synthetic/GeoTIFF tests. The real `data/processed/terrain_fingerprints.csv` is still pending approved AOIs, a shared physical scale, and analysis-ready rasters; no real terrain measurements are claimed. The canonical `candidate_rankings.csv` and robustness report are also absent.
 
 ### Running the matching workflow
 
@@ -152,6 +152,7 @@ The matching CLI refuses to run unless the operator explicitly supplies both `--
 ### Application and optional route status
 
 - The application remains in clearly labelled **DEMO MODE** until both real processed files exist and pass the integration contracts. It refuses to mix a single real file with synthetic fixtures.
+- Hiba's feature branch adds the DEM-to-fingerprint extraction pipeline and 16 synthetic/GeoTIFF tests. These verify the implementation against constructed surfaces, not actual lunar or Earth reference terrain.
 - The matching workflow is software plumbing tested with synthetic fixtures; no real Earth–Moon/Mars ranking is claimed.
 - The optional A* Rover Gauntlet work remains in [Draft PR #9](https://github.com/MohammadJabr/area-67/pull/9), not in `main`. Its updated branch rejects sheared affine grids, enforces a 250,000-cell default software resource guard, and writes a route provenance JSON sidecar. Its latest CI passed 76 synthetic tests; no real route is claimed.
 - The latest full test run on `main` after the CSV matching workflow merge passed **85 tests** (24 warnings).

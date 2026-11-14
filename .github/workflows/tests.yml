@@ -8,6 +8,7 @@ on:
       - feature/omar-matching-planning
       - feature/omar-matching-csv-workflow
       - feature/mohammad-app-integration
+      - feature/hiba-terrain-validation
   pull_request:
     branches:
       - main

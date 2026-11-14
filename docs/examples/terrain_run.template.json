@@ -1,0 +1,11 @@
+{
+  "analysis_scale_m": null,
+  "relief_window_m": null,
+  "slope_low_max_deg": 10,
+  "slope_mid_max_deg": 25,
+  "steep_threshold_deg": 25,
+  "connectivity": 8,
+  "minimum_valid_coverage_pct": null,
+  "local_relief_min_valid_fraction": null,
+  "sites": []
+}
