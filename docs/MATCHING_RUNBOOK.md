@@ -51,15 +51,15 @@ The JSON file with team-approved tolerances should be retained with the analysis
 From the repository root, with the project environment active:
 
 ```powershell
-python -m src.matching.cli --fingerprints data/processed/terrain_fingerprints.csv --target-site-id MOON_SITE04 --tolerances-json config/matching_tolerances.json
+python -m src.matching.cli --fingerprints data/processed/terrain_fingerprints.csv --target-site-id MOON_SITE04 --tolerances-json config/matching_tolerances.json --min-feature-group-completeness <TEAM_APPROVED_FRACTION> --min-data-completeness <TEAM_APPROVED_FRACTION>
 ```
 
 Replace `MOON_SITE04` with the exact target `site_id` from the CSV if the team selects another site.
 
-Optional safeguards:
+**Required completeness policy:** replace both `<TEAM_APPROVED_FRACTION>` placeholders with values the team has explicitly approved for this study. The first sets the minimum fraction of mission weight represented by available feature groups; the second sets the minimum conservative data-completeness fraction. The CLI refuses to run when either is omitted. Even `0.0` must be an explicit decision; it is not a recommended scientific threshold.
 
-- `--min-feature-group-completeness 0.60` requires at least 60% of the configured positive mission weight to be represented by available feature groups. The threshold is a team choice.
-- `--min-data-completeness 0.60` requires at least 60% under the pipeline's conservative completeness definition.
+Optional software safeguard:
+
 - `--scale-relative-tolerance 0.01` sets the allowed relative difference in `analysis_scale_m`. The default 1% is a software default, not a universal physical rule.
 
 If a candidate has incompatible method definitions or spatial scales, it is reported in `rejected_candidates` with a reason. A group whose required method metadata or metric is absent is reported as missing and excluded; it is not imputed as zero.
