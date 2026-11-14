@@ -80,6 +80,34 @@ Record the exact product identifier, version, access date, spatial resolution, c
 
 Use feature branches and pull requests. Keep `main` runnable. Do not commit large rasters, credentials, API keys, or unlicensed data. Commit small synthetic/sample data and scripts or instructions that reproduce processing.
 
+## Run the application
+
+Create and activate a virtual environment, install the repository requirements, then start Streamlit:
+
+```bash
+python -m venv .venv
+# Windows PowerShell:
+.venv\\Scripts\\Activate.ps1
+# Git Bash / macOS / Linux:
+source .venv/bin/activate
+
+pip install -r requirements.txt
+streamlit run app/main.py
+```
+
+Run the current tests with:
+
+```bash
+pytest -q
+```
+
+The application expects these upstream files for a real integrated view:
+
+- `data/processed/terrain_fingerprints.csv`
+- `data/processed/candidate_rankings.csv`
+
+Their required and optional fields are documented in [the application integration contract](docs/INTEGRATION_CONTRACT.md). When both real files are absent, the app loads explicitly synthetic fixtures from `data/sample/` and shows a DEMO MODE warning. It will not mix one real file with one synthetic file.
+
 ## Current status
 
-Repository initialization. No scientific results or validated rankings are claimed yet.
+The Streamlit integration and initial Analog Passport implementation are on `feature/mohammad-app-integration` and proposed for review in [draft PR #5](https://github.com/MohammadJabr/area-67/pull/5). The repository does not yet claim validated scientific results or rankings; those depend on the real outputs from the GIS, terrain-analysis, and matching workstreams.
