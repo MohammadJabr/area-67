@@ -6,6 +6,9 @@ import json
 from collections.abc import Mapping
 from pathlib import Path
 
+import pandas as pd
+
+from src.data.contracts import validate_fingerprints
 from src.data.fingerprint_loader import (
     load_terrain_fingerprints_csv,
     select_space_to_earth_fingerprints,
@@ -145,6 +148,16 @@ def run_matching_from_csv(
 ) -> dict:
     """Load the canonical fingerprint table and execute the matching workflow."""
     records = load_terrain_fingerprints_csv(fingerprints_csv)
+
+    # Validate the complete table against the same fingerprint contract used
+    # by the Streamlit application before producing an app-facing ranking.
+    fingerprint_errors = validate_fingerprints(pd.DataFrame(records))
+    if fingerprint_errors:
+        raise ValueError(
+            "Terrain fingerprints do not satisfy the application data contract: "
+            + "; ".join(fingerprint_errors)
+        )
+
     target, candidates = select_space_to_earth_fingerprints(
         records,
         target_site_id,
