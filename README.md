@@ -129,12 +129,31 @@ Replace both completeness placeholders with team-approved fractions between 0 an
 
 ## Current implementation status
 
-The Streamlit MVP, Analog Passport, provisional LOLA Site04 GIS acquisition/QA workflow, and target-aware terrain-matching software are merged into `main`.
+The following software and data-management components are merged into `main`:
 
-- The application runs in clearly labelled **DEMO MODE** while no complete real processed-data pair exists.
-- The demo fixtures are synthetic interface/test data, not NASA observations or scientific results.
-- The GIS contribution is a provisional lunar Site04 acquisition/QA workflow; it does not yet provide Earth analog candidates.
-- The matching engine is tested with synthetic fingerprints. Real analysis still requires Hiba's validated terrain fingerprints, at least three suitable Earth candidate sites, team-approved tolerances, and an end-to-end run.
-- Direct LOLA observation support, valid raster coverage, and uncertainty are distinct quality concepts; the app and methodology must not conflate them.
+- Streamlit MVP, Analog Passport, application contracts, and paired synthetic demo fixtures.
+- NASA LOLA Site04 acquisition and structural QA workflow; Site04 remains a **provisional lunar target**.
+- Earth DEM acquisition, raster inventory, structural QA, and screening reports for five provisional Copernicus GLO-30 DSM source tiles: Haughton, McMurdo, Askja, Mauna Kea, and Yungay.
+- A separate USGS 3DEP 1 m bare-earth DEM alternative for Mauna Kea, with its different vertical reference documented.
+- Target-aware terrain-matching engine plus a CSV loader/CLI, canonical ranking export, Slope-only baseline, and weight-sensitivity report.
 
-The current scientific result status is therefore **pending real Earth-candidate data and validated terrain fingerprints**.
+### Current data status
+
+- The five Copernicus products are full source tiles, not selected candidate AOIs. The named points and landforms remain provisional.
+- The Mauna Kea USGS tile is a regional alternative only; it is not a harmonized replacement for all five Copernicus sources.
+- Source manifests, checksums, QA JSON/Markdown, and screening previews are tracked. Large raw DEM rasters remain gitignored and must be acquired locally using the documented tools.
+- No AOI boundaries, final Earth candidate set, common physical analysis scale, reprojection/resampling policy, or target sub-area have been approved.
+- Hiba's `data/processed/terrain_fingerprints.csv` has not yet been delivered to `main`; the canonical `candidate_rankings.csv` and robustness report are also absent.
+
+### Running the matching workflow
+
+The matching CLI refuses to run unless the operator explicitly supplies both `--min-feature-group-completeness` and `--min-data-completeness`. Their values, along with the five feature tolerances, must be approved for the chosen study. The software does not select scientific cutoffs for the team. A value of `0.0` explicitly disables a gate and must not be treated as a recommendation.
+
+### Application and optional route status
+
+- The application remains in clearly labelled **DEMO MODE** until both real processed files exist and pass the integration contracts. It refuses to mix a single real file with synthetic fixtures.
+- The matching workflow is software plumbing tested with synthetic fixtures; no real Earth–Moon/Mars ranking is claimed.
+- The optional A* Rover Gauntlet work remains in [Draft PR #9](https://github.com/MohammadJabr/area-67/pull/9), not in `main`. Its updated branch rejects sheared affine grids, enforces a 250,000-cell default software resource guard, and writes a route provenance JSON sidecar. Its latest CI passed 76 synthetic tests; no real route is claimed.
+- The latest full test run on `main` after the CSV matching workflow merge passed **85 tests** (24 warnings).
+
+The project has a working application and reproducible source/matching software, but **it does not yet have a validated planetary-analog result**. The next priority is to approve study areas and physical scales, produce validated real fingerprints, and run the complete evidence chain—not to add more optional features.
