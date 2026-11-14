@@ -88,7 +88,9 @@ Create and activate a virtual environment, install the repository requirements, 
 python -m venv .venv
 # Windows PowerShell:
 .venv\\Scripts\\Activate.ps1
-# Git Bash / macOS / Linux:
+# Git Bash on Windows:
+source .venv/Scripts/activate
+# macOS / Linux:
 source .venv/bin/activate
 
 pip install -r requirements.txt
