@@ -54,3 +54,12 @@ reports/generated/
 Thumbs.db
 .vscode/
 .idea/
+
+
+# Small app-facing handoff artifacts are versioned so the team can integrate
+# Hiba's fingerprints and Omar's rankings. Large raster/binary files remain
+# ignored by the rules above.
+!data/processed/*.csv
+!data/processed/*.json
+!data/processed/*.geojson
+!data/processed/*.md

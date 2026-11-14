@@ -33,6 +33,24 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
+      - name: Verify geospatial artifact ignore policy
+        shell: bash
+        run: |
+          git check-ignore --no-index -q data/raw/example.tif
+          git check-ignore --no-index -q data/processed/example.tif
+          if git check-ignore --no-index -q data/processed/terrain_fingerprints.csv; then
+            echo "terrain_fingerprints.csv must be trackable"
+            exit 1
+          fi
+          if git check-ignore --no-index -q data/processed/candidate_rankings.csv; then
+            echo "candidate_rankings.csv must be trackable"
+            exit 1
+          fi
+          if git check-ignore --no-index -q data/processed/ranking_robustness.json; then
+            echo "ranking_robustness.json must be trackable"
+            exit 1
+          fi
+
       - name: Compile source and tests
         run: python -m compileall -q src tests
 
