@@ -13,6 +13,7 @@ if str(ROOT) not in sys.path:
 from src.data.contracts import (
     FEATURE_GROUPS,
     fingerprint_quality_warnings,
+    normalize_rankings,
     validate_fingerprints,
     validate_ranking_references,
     validate_rankings,
@@ -138,6 +139,7 @@ def main() -> None:
         st.error("The supplied CSV pair contains no rows; no results can be shown.")
         st.stop()
 
+    rankings = normalize_rankings(rankings)
     errors = (
         validate_fingerprints(fingerprints)
         + validate_rankings(rankings)
@@ -238,8 +240,11 @@ def main() -> None:
         display_cols = [
             col for col in (
                 "rank", "candidate_site_id", "site_name", "planet",
-                "similarity_score", "weighted_distance", "source_id",
-                "analysis_scale_m", "nodata_pct",
+                "similarity_score", "relative_similarity",
+                "weighted_distance", "similarity_distance",
+                "data_completeness", "ranking_stability_note",
+                "source_id", "analysis_scale_m", "valid_coverage_pct",
+                "nodata_pct",
             )
             if col in merged.columns
         ]
