@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "dem": {
+    "path": "data/raw/earth/copdem_glo30/mauna_kea/Copernicus_DSM_COG_10_N19_00_W156_00_DEM.tif",
+    "file_size_bytes": 31714695,
+    "sha256": "a1881be4ef3710ebf3d0e59a7a22e77ca79e2a6a3f51cdbadb74209e0698e00d",
+    "driver": "GTiff",
+    "width": 3600,
+    "height": 3600,
+    "band_count": 1,
+    "data_types": [
+      "float32"
+    ],
+    "nodata": null,
+    "crs": "EPSG:4326",
+    "crs_wkt": "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST],AUTHORITY[\"EPSG\",\"4326\"]]",
+    "transform": [
+      0.0002777777777777778,
+      0.0,
+      -156.0001388888889,
+      0.0,
+      -0.0002777777777777778,
+      20.000138888888888
+    ],
+    "bounds": [
+      -156.0001388888889,
+      19.000138888888888,
+      -155.0001388888889,
+      20.000138888888888
+    ],
+    "pixel_size_x": 0.0002777777777777778,
+    "pixel_size_y": 0.0002777777777777778,
+    "area_or_point": "Point",
+    "dataset_tags": {
+      "AREA_OR_POINT": "Point"
+    },
+    "band_tags": [
+      {}
+    ],
+    "bands": [
+      {
+        "band": 1,
+        "unit": null,
+        "gdal_valid_pixel_count": 12960000,
+        "nodata_masked_pixel_count": 0,
+        "nonfinite_pixel_count": 0,
+        "statistics": {
+          "valid_pixel_count": 12960000,
+          "valid_coverage_pct": 100.0,
+          "minimum": -2.921630859375,
+          "maximum": 4204.2373046875,
+          "mean": 1014.4871476778139,
+          "standard_deviation_population": 979.7489369605663
+        }
+      }
+    ]
+  },
+  "quality_layers": [],
+  "elevation_range_screen_applied": false,
+  "warnings": [],
+  "status": "checks_passed",
+  "limitations": [
+    "Raster metadata does not prove effective terrain resolution or measurement accuracy.",
+    "Vertical datum and elevation units must be verified from authoritative product metadata; they are not inferred from horizontal CRS.",
+    "An absent warning does not certify scientific suitability or cross-site comparability."
+  ]
+}
