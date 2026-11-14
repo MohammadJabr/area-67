@@ -44,12 +44,20 @@ def test_cli_runs_csv_to_matching_outputs(
     assert robustness_path.is_file()
 
 
-def test_cli_returns_error_for_unfilled_tolerance_template(tmp_path, capsys):
+def test_cli_returns_error_for_unfilled_tolerance_template(
+    tmp_path, target_fingerprint, earth_candidate, capsys
+):
+    candidate = dict(earth_candidate)
+    candidate["site_id"] = "EARTH_A"
+    candidate["source_id"] = "DEM_EARTH_A"
+
     fingerprints_path = tmp_path / "terrain_fingerprints.csv"
-    fingerprints_path.write_text(
-        "site_id,planet\nMOON_SITE04,Moon\nEARTH_A,Earth\n",
-        encoding="utf-8",
-    )
+    rows = [target_fingerprint, candidate]
+    fields = list(dict.fromkeys(key for row in rows for key in row))
+    with fingerprints_path.open("w", encoding="utf-8", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=fields)
+        writer.writeheader()
+        writer.writerows(rows)
     tolerances_path = tmp_path / "template.json"
     tolerances_path.write_text(
         json.dumps({
