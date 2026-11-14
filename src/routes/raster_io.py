@@ -55,8 +55,30 @@ def _validate_projected_meter_grid(dataset, name: str) -> tuple[float, float]:
     if unit_factor is None or not math.isfinite(unit_factor) or unit_factor <= 0:
         raise ValueError(f"{name} raster CRS has an unsupported linear unit.")
 
-    pixel_x_m = abs(dataset.res[0]) * unit_factor
-    pixel_y_m = abs(dataset.res[1]) * unit_factor
+    transform = dataset.transform
+    column_vector = (transform.a, transform.d)
+    row_vector = (transform.b, transform.e)
+    column_size_native = math.hypot(*column_vector)
+    row_size_native = math.hypot(*row_vector)
+    if column_size_native <= 0 or row_size_native <= 0:
+        raise ValueError(f"{name} raster has an invalid affine pixel basis.")
+
+    # A* assumes perpendicular row/column directions and square cells. Equal
+    # basis-vector lengths alone do not prove orthogonality (a sheared grid can
+    # have equal lengths while diagonal movement is not sqrt(2) cell widths).
+    dot_product = (
+        column_vector[0] * row_vector[0]
+        + column_vector[1] * row_vector[1]
+    )
+    normalized_dot = abs(dot_product) / (column_size_native * row_size_native)
+    if normalized_dot > 1e-9:
+        raise ValueError(
+            f"{name} raster affine grid is not orthogonal "
+            f"(normalized row/column dot product={normalized_dot:.3g})."
+        )
+
+    pixel_x_m = column_size_native * unit_factor
+    pixel_y_m = row_size_native * unit_factor
     if not math.isclose(pixel_x_m, pixel_y_m, rel_tol=1e-9, abs_tol=1e-9):
         raise ValueError(
             f"{name} raster pixels are not square in metres: "
@@ -75,6 +97,7 @@ def load_aligned_route_rasters(
     elevation_unit: str,
     slope_unit: str,
     tri_unit: str,
+    max_grid_cells: int = 250_000,
 ) -> dict:
     """Load three single-band rasters that share an identical projected grid.
 
@@ -83,6 +106,13 @@ def load_aligned_route_rasters(
     metres. Elevation and TRI are converted to metres; slope is converted to
     degrees. Vertical/elevation units must be supplied explicitly.
     """
+    if (
+        isinstance(max_grid_cells, bool)
+        or not isinstance(max_grid_cells, int)
+        or max_grid_cells < 1
+    ):
+        raise ValueError("max_grid_cells must be a positive integer.")
+
     paths = {
         "elevation": Path(elevation_path),
         "slope": Path(slope_path),
@@ -129,6 +159,15 @@ def load_aligned_route_rasters(
                     f"{name.capitalize()} raster dimensions do not match elevation raster."
                 )
 
+        cell_count = reference_shape[0] * reference_shape[1]
+        if cell_count > max_grid_cells:
+            raise ValueError(
+                f"Route grid has {cell_count:,} cells, exceeding max_grid_cells="
+                f"{max_grid_cells:,}. Crop to an approved ROI or raise the limit "
+                "only after benchmarking the intended environment."
+            )
+
+        for name, dataset in datasets.items():
             values = dataset.read(1).astype("float64", copy=False)
             mask = (dataset.read_masks(1) > 0) & np.isfinite(values)
             arrays[name] = values
@@ -178,6 +217,9 @@ def load_aligned_route_rasters(
                 "crs": reference_crs.to_string(),
                 "transform": tuple(reference_transform)[:6],
                 "cell_size_m": cell_size_m,
+                "column_pixel_size_m": pixel_x_m,
+                "row_pixel_size_m": pixel_y_m,
+                "affine_grid_orthogonality_error": normalized_dot,
                 "crs_linear_unit_to_metre_factor": crs_unit_factor,
                 "bounds_native_crs_units": tuple(reference.bounds),
                 "source_paths": {
