@@ -23,14 +23,26 @@ data/processed/*
 !data/processed/.gitkeep
 data/**/*.tif
 data/**/*.tiff
+data/**/*.TIF
+data/**/*.TIFF
 data/**/*.img
+data/**/*.IMG
 data/**/*.img.aux.xml
 data/**/*.vrt
+data/**/*.VRT
+data/**/*.jp2
+data/**/*.JP2
 data/**/*.zip
 data/**/*.tar
+data/**/*.tar.*
+data/**/*.tgz
 data/**/*.gz
+data/**/*.7z
+data/**/*.rar
 data/**/*.h5
 data/**/*.nc
+!data/sample/**
+*.part
 
 # Local outputs
 outputs/

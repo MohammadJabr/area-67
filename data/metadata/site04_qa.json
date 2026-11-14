@@ -1,0 +1,1132 @@
+{
+  "report_schema_version": 1,
+  "study_area": "NASA LOLA Site04 (Shackleton rim)",
+  "study_area_status": "Provisional working choice; not an officially approved team decision.",
+  "sources": {
+    "catalog": "https://pgda.gsfc.nasa.gov/data/LOLA_5mpp/",
+    "method_paper": "https://doi.org/10.1016/j.pss.2020.105119"
+  },
+  "definitions": {
+    "elevation": {
+      "product": "LDEM surface-interpolated elevation",
+      "unit": "m (surface height Z, per PGDA catalog)",
+      "meaning": "Surface height; empty observation bins are filled by interpolation."
+    },
+    "counts": {
+      "product": "LDEC",
+      "unit": "LOLA spot count per pixel (dimensionless count)",
+      "meaning": "Number of LOLA spots in each pixel. Positive counts indicate direct spot support; zero means no spot was binned there and the LDEM is interpolated there."
+    },
+    "slope": {
+      "product": "Slope map",
+      "unit": "degrees",
+      "meaning": "Slope associated with the Site04 topographic product. The catalog does not specify the exact numerical slope operator/window; treat that algorithm detail as unknown."
+    },
+    "z_uncertainty": {
+      "product": "Total Z uncertainty",
+      "unit": "m RMS error (per PGDA catalog)",
+      "meaning": "Estimated elevation uncertainty accounting for track/orbit and interpolation error as described by Barker et al. (2021). It is not a per-pixel independent measurement error guarantee."
+    },
+    "slope_uncertainty": {
+      "product": "Slope uncertainty",
+      "unit": "degrees RMS error (per PGDA catalog)",
+      "meaning": "Estimated slope uncertainty; exact local statistical interpretation follows the source paper's method, not a confidence interval unless otherwise specified."
+    }
+  },
+  "dataset_metadata": {
+    "elevation": {
+      "file": "data\\raw\\moon\\site04\\Site04_final_adj_5mpp_surf.tif",
+      "file_size_bytes": 40980806,
+      "driver": "GTiff",
+      "width": 3200,
+      "height": 3200,
+      "bands": 1,
+      "dtype": "float32",
+      "nodata": "NaN",
+      "crs_wkt": "PROJCS[\"unnamed\",GEOGCS[\"unnamed ellipse\",DATUM[\"unknown\",SPHEROID[\"unnamed\",1737400,0]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH]]",
+      "transform": [
+        5.0,
+        0.0,
+        -9000.0,
+        0.0,
+        -5.0,
+        1000.0
+      ],
+      "bounds": [
+        -9000.0,
+        -15000.0,
+        7000.0,
+        1000.0
+      ],
+      "pixel_size_x": 5.0,
+      "pixel_size_y": 5.0,
+      "area_or_point": "Area",
+      "tags": {
+        "NC_GLOBAL#Conventions": "COARDS, CF-1.5",
+        "NC_GLOBAL#GMT_version": "5.4.5 [64-bit]",
+        "NC_GLOBAL#history": "xyz2grd -bi3 -I5 -R-9.00000000000e+03/7.00000000000e+03/-1.50000000000e+04/1.00000000000e+03 -Gtest.grd -r",
+        "NC_GLOBAL#node_offset": "1",
+        "x#actual_range": "{-9000,7000}",
+        "x#long_name": "x",
+        "y#actual_range": "{-15000,1000}",
+        "y#long_name": "y",
+        "z#actual_range": "{-2847.877197265625,1805.072631835938}",
+        "z#long_name": "z",
+        "z#_FillValue": "nan",
+        "AREA_OR_POINT": "Area"
+      },
+      "band_tags": {
+        "actual_range": "{-2847.877197265625,1805.072631835938}",
+        "long_name": "z",
+        "NETCDF_VARNAME": "z",
+        "_FillValue": "nan"
+      },
+      "gdal_mask_flags": [
+        "nodata"
+      ],
+      "gdal_mask_valid_pixels": 10240000,
+      "nodata_masked_pixel_count": 0,
+      "nonfinite_pixels": 0
+    },
+    "counts": {
+      "file": "data\\raw\\moon\\site04\\Site04_final_adj_5mpp_ldec.tif",
+      "file_size_bytes": 40980740,
+      "driver": "GTiff",
+      "width": 3200,
+      "height": 3200,
+      "bands": 1,
+      "dtype": "float32",
+      "nodata": "NaN",
+      "crs_wkt": "PROJCS[\"unnamed\",GEOGCS[\"unnamed ellipse\",DATUM[\"unknown\",SPHEROID[\"unnamed\",1737400,0]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH]]",
+      "transform": [
+        5.0,
+        0.0,
+        -9000.0,
+        0.0,
+        -5.0,
+        1000.0
+      ],
+      "bounds": [
+        -9000.0,
+        -15000.0,
+        7000.0,
+        1000.0
+      ],
+      "pixel_size_x": 5.0,
+      "pixel_size_y": 5.0,
+      "area_or_point": "Area",
+      "tags": {
+        "NC_GLOBAL#Conventions": "COARDS, CF-1.5",
+        "NC_GLOBAL#GMT_version": "5.4.5 [64-bit]",
+        "NC_GLOBAL#history": "xyz2grd -bi3 -I5 -R-9.00000000000e+03/7.00000000000e+03/-1.50000000000e+04/1.00000000000e+03 -Gtest.grd -r",
+        "NC_GLOBAL#node_offset": "1",
+        "x#actual_range": "{-9000,7000}",
+        "x#long_name": "x",
+        "y#actual_range": "{-15000,1000}",
+        "y#long_name": "y",
+        "z#actual_range": "{0,5}",
+        "z#long_name": "z",
+        "z#_FillValue": "nan",
+        "AREA_OR_POINT": "Area"
+      },
+      "band_tags": {
+        "actual_range": "{0,5}",
+        "long_name": "z",
+        "NETCDF_VARNAME": "z",
+        "_FillValue": "nan"
+      },
+      "gdal_mask_flags": [
+        "nodata"
+      ],
+      "gdal_mask_valid_pixels": 10240000,
+      "nodata_masked_pixel_count": 0,
+      "nonfinite_pixels": 0
+    },
+    "slope": {
+      "file": "data\\raw\\moon\\site04\\Site04_final_adj_5mpp_slp.tif",
+      "file_size_bytes": 40980772,
+      "driver": "GTiff",
+      "width": 3200,
+      "height": 3200,
+      "bands": 1,
+      "dtype": "float32",
+      "nodata": "NaN",
+      "crs_wkt": "PROJCS[\"unnamed\",GEOGCS[\"unnamed ellipse\",DATUM[\"unknown\",SPHEROID[\"unnamed\",1737400,0]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH]]",
+      "transform": [
+        5.0,
+        0.0,
+        -9000.0,
+        0.0,
+        -5.0,
+        1000.0
+      ],
+      "bounds": [
+        -9000.0,
+        -15000.0,
+        7000.0,
+        1000.0
+      ],
+      "pixel_size_x": 5.0,
+      "pixel_size_y": 5.0,
+      "area_or_point": "Area",
+      "tags": {
+        "NC_GLOBAL#Conventions": "COARDS, CF-1.5",
+        "NC_GLOBAL#GMT_version": "5.4.5 [64-bit]",
+        "NC_GLOBAL#history": "xyz2grd -bi3 -I5 -R-9.00000000000e+03/7.00000000000e+03/-1.50000000000e+04/1.00000000000e+03 -Gtest.grd -r",
+        "NC_GLOBAL#node_offset": "1",
+        "x#actual_range": "{-9000,7000}",
+        "x#long_name": "x",
+        "y#actual_range": "{-15000,1000}",
+        "y#long_name": "y",
+        "z#actual_range": "{0,69.64722442626953}",
+        "z#long_name": "z",
+        "z#_FillValue": "nan",
+        "AREA_OR_POINT": "Area"
+      },
+      "band_tags": {
+        "actual_range": "{0,69.64722442626953}",
+        "long_name": "z",
+        "NETCDF_VARNAME": "z",
+        "_FillValue": "nan"
+      },
+      "gdal_mask_flags": [
+        "nodata"
+      ],
+      "gdal_mask_valid_pixels": 10240000,
+      "nodata_masked_pixel_count": 0,
+      "nonfinite_pixels": 0
+    },
+    "z_uncertainty": {
+      "file": "data\\raw\\moon\\site04\\Site04_final_adj_5mpp_toterr.tif",
+      "file_size_bytes": 40980808,
+      "driver": "GTiff",
+      "width": 3200,
+      "height": 3200,
+      "bands": 1,
+      "dtype": "float32",
+      "nodata": "NaN",
+      "crs_wkt": "PROJCS[\"unnamed\",GEOGCS[\"unnamed ellipse\",DATUM[\"unknown\",SPHEROID[\"unnamed\",1737400,0]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH]]",
+      "transform": [
+        5.0,
+        0.0,
+        -9000.0,
+        0.0,
+        -5.0,
+        1000.0
+      ],
+      "bounds": [
+        -9000.0,
+        -15000.0,
+        7000.0,
+        1000.0
+      ],
+      "pixel_size_x": 5.0,
+      "pixel_size_y": 5.0,
+      "area_or_point": "Area",
+      "tags": {
+        "NC_GLOBAL#Conventions": "COARDS, CF-1.5",
+        "NC_GLOBAL#GMT_version": "5.4.5 [64-bit]",
+        "NC_GLOBAL#history": "xyz2grd -bi3 -I5 -R-9.00000000000e+03/7.00000000000e+03/-1.50000000000e+04/1.00000000000e+03 -Gtest.grd -r",
+        "NC_GLOBAL#node_offset": "1",
+        "x#actual_range": "{-9000,7000}",
+        "x#long_name": "x",
+        "y#actual_range": "{-15000,1000}",
+        "y#long_name": "y",
+        "z#actual_range": "{0.06385684758424759,7.635095596313477}",
+        "z#long_name": "z",
+        "z#_FillValue": "nan",
+        "AREA_OR_POINT": "Area"
+      },
+      "band_tags": {
+        "actual_range": "{0.06385684758424759,7.635095596313477}",
+        "long_name": "z",
+        "NETCDF_VARNAME": "z",
+        "_FillValue": "nan"
+      },
+      "gdal_mask_flags": [
+        "nodata"
+      ],
+      "gdal_mask_valid_pixels": 10240000,
+      "nodata_masked_pixel_count": 0,
+      "nonfinite_pixels": 0
+    },
+    "slope_uncertainty": {
+      "file": "data\\raw\\moon\\site04\\Site04_final_adj_5mpp_slperr.tif",
+      "file_size_bytes": 40980806,
+      "driver": "GTiff",
+      "width": 3200,
+      "height": 3200,
+      "bands": 1,
+      "dtype": "float32",
+      "nodata": "NaN",
+      "crs_wkt": "PROJCS[\"unnamed\",GEOGCS[\"unnamed ellipse\",DATUM[\"unknown\",SPHEROID[\"unnamed\",1737400,0]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH]]",
+      "transform": [
+        5.0,
+        0.0,
+        -9000.0,
+        0.0,
+        -5.0,
+        1000.0
+      ],
+      "bounds": [
+        -9000.0,
+        -15000.0,
+        7000.0,
+        1000.0
+      ],
+      "pixel_size_x": 5.0,
+      "pixel_size_y": 5.0,
+      "area_or_point": "Area",
+      "tags": {
+        "NC_GLOBAL#Conventions": "COARDS, CF-1.5",
+        "NC_GLOBAL#GMT_version": "5.4.5 [64-bit]",
+        "NC_GLOBAL#history": "xyz2grd -bi3 -I5 -R-9.00000000000e+03/7.00000000000e+03/-1.50000000000e+04/1.00000000000e+03 -Gtest.grd -r",
+        "NC_GLOBAL#node_offset": "1",
+        "x#actual_range": "{-9000,7000}",
+        "x#long_name": "x",
+        "y#actual_range": "{-15000,1000}",
+        "y#long_name": "y",
+        "z#actual_range": "{0.5000152587890625,28.14303016662598}",
+        "z#long_name": "z",
+        "z#_FillValue": "nan",
+        "AREA_OR_POINT": "Area"
+      },
+      "band_tags": {
+        "actual_range": "{0.5000152587890625,28.14303016662598}",
+        "long_name": "z",
+        "NETCDF_VARNAME": "z",
+        "_FillValue": "nan"
+      },
+      "gdal_mask_flags": [
+        "nodata"
+      ],
+      "gdal_mask_valid_pixels": 10240000,
+      "nodata_masked_pixel_count": 0,
+      "nonfinite_pixels": 0
+    }
+  },
+  "grid_qa": {
+    "array_dimensions_match": true,
+    "dimensions_pixels": {
+      "width": 3200,
+      "height": 3200
+    },
+    "all_gdal_valid_masks_identical": true,
+    "all_finite_valid_masks_identical": true,
+    "common_valid_pixel_count": 10240000,
+    "common_valid_coverage_pct": 100.0,
+    "per_asset_valid_pixel_count": {
+      "elevation": 10240000,
+      "counts": 10240000,
+      "slope": 10240000,
+      "z_uncertainty": 10240000,
+      "slope_uncertainty": 10240000
+    },
+    "mask_mismatch_pixels_vs_elevation": {
+      "elevation": 0,
+      "counts": 0,
+      "slope": 0,
+      "z_uncertainty": 0,
+      "slope_uncertainty": 0
+    },
+    "exact_metadata_grid_alignment": true,
+    "metadata_compared": [
+      "width",
+      "height",
+      "bands",
+      "crs_wkt",
+      "transform",
+      "bounds"
+    ]
+  },
+  "layers": {
+    "elevation": {
+      "valid_pixel_count": 10240000,
+      "statistics": {
+        "minimum": -2847.877197265625,
+        "maximum": 1805.0726318359375,
+        "mean": 245.34379158594027,
+        "median": 668.1879272460938,
+        "standard_deviation_population": 1246.3162681477759,
+        "percentiles": {
+          "0": -2847.877197265625,
+          "1": -2735.689943847656,
+          "5": -2428.6750610351564,
+          "25": -482.8885040283203,
+          "50": 668.1879272460938,
+          "75": 1250.5991516113281,
+          "95": 1582.9215209960935,
+          "99": 1685.4904809570312,
+          "100": 1805.0726318359375
+        },
+        "zero_count": 0,
+        "negative_count": 3380784,
+        "non_integer_count": 10239024
+      },
+      "screening_flags": {},
+      "exploratory_extreme_value_screen": {
+        "method": "Tukey 3-IQR fences; review flag only, not a scientific validity limit",
+        "lower_fence": -5683.351470947266,
+        "upper_fence": 6451.062118530273,
+        "flagged_pixel_count": 0
+      },
+      "coverage": {
+        "gdal_valid_pixels": 10240000,
+        "finite_unmasked_pixels": 10240000,
+        "valid_coverage_pct": 100.0,
+        "interpretation": "Raster value validity only; it does not imply a direct LOLA observation in every pixel."
+      }
+    },
+    "counts": {
+      "valid_pixel_count": 10240000,
+      "statistics": {
+        "minimum": 0.0,
+        "maximum": 5.0,
+        "mean": 0.09608525390625,
+        "median": 0.0,
+        "standard_deviation_population": 0.31023546210986497,
+        "percentiles": {
+          "0": 0.0,
+          "1": 0.0,
+          "5": 0.0,
+          "25": 0.0,
+          "50": 0.0,
+          "75": 0.0,
+          "95": 1.0,
+          "99": 1.0,
+          "100": 5.0
+        },
+        "zero_count": 9302619,
+        "negative_count": 0,
+        "non_integer_count": 0
+      },
+      "direct_observation_support": {
+        "positive_count_pixel_count": 937381,
+        "positive_count_pixel_pct_of_valid": 9.154111328125,
+        "zero_count_pixel_count": 9302619,
+        "zero_count_pixel_pct_of_valid": 90.845888671875,
+        "count_value_frequency": {
+          "0": 9302619,
+          "1": 892370,
+          "2": 43528,
+          "3": 1447,
+          "4": 34,
+          "5": 2
+        },
+        "interpretation": "PGDA defines LDEC as LOLA spots per pixel. Positive values indicate binned LOLA spot support. The Barker et al. method interpolates empty bins; zero LDEC pixels therefore represent interpolated LDEM cells, not direct observations."
+      },
+      "screening_flags": {
+        "negative_values": 0,
+        "non_integer_values": 0
+      }
+    },
+    "slope": {
+      "valid_pixel_count": 10240000,
+      "statistics": {
+        "minimum": 0.0,
+        "maximum": 69.64722442626953,
+        "mean": 20.66414617853889,
+        "median": 20.550517082214355,
+        "standard_deviation_population": 10.101921814217677,
+        "percentiles": {
+          "0": 0.0,
+          "1": 2.3832666873931885,
+          "5": 5.172823905944824,
+          "25": 11.629837274551392,
+          "50": 20.550517082214355,
+          "75": 30.2890567779541,
+          "95": 34.5591510772705,
+          "99": 37.35413360595703,
+          "100": 69.64722442626953
+        },
+        "zero_count": 4,
+        "negative_count": 0,
+        "non_integer_count": 10239974
+      },
+      "screening_flags": {
+        "outside_0_to_90_degrees": 0
+      }
+    },
+    "z_uncertainty": {
+      "valid_pixel_count": 10240000,
+      "statistics": {
+        "minimum": 0.06385684758424759,
+        "maximum": 7.635095596313477,
+        "mean": 0.41166481692317686,
+        "median": 0.35968247056007385,
+        "standard_deviation_population": 0.22262524799770425,
+        "percentiles": {
+          "0": 0.06385684758424759,
+          "1": 0.12964149937033653,
+          "5": 0.16839232742786409,
+          "25": 0.25994979590177536,
+          "50": 0.35968247056007385,
+          "75": 0.5038973987102509,
+          "95": 0.8257322192192067,
+          "99": 1.197422759532928,
+          "100": 7.635095596313477
+        },
+        "zero_count": 0,
+        "negative_count": 0,
+        "non_integer_count": 10240000
+      },
+      "screening_flags": {
+        "negative_values": 0
+      },
+      "exploratory_extreme_value_screen": {
+        "method": "Tukey 3-IQR fences; review flag only, not a scientific validity limit",
+        "lower_fence": -0.4718930125236511,
+        "upper_fence": 1.2357402071356773,
+        "flagged_pixel_count": 88176
+      }
+    },
+    "slope_uncertainty": {
+      "valid_pixel_count": 10240000,
+      "statistics": {
+        "minimum": 0.5000152587890625,
+        "maximum": 28.143030166625977,
+        "mean": 1.7707840924176212,
+        "median": 1.496445119380951,
+        "standard_deviation_population": 0.8759035596204537,
+        "percentiles": {
+          "0": 0.5000152587890625,
+          "1": 0.8797433811426163,
+          "5": 1.0206228196620941,
+          "25": 1.2647052705287933,
+          "50": 1.496445119380951,
+          "75": 1.9395338296890259,
+          "95": 3.5156527042388905,
+          "99": 5.299110074043271,
+          "100": 28.143030166625977
+        },
+        "zero_count": 0,
+        "negative_count": 0,
+        "non_integer_count": 10239999
+      },
+      "screening_flags": {
+        "negative_values": 0
+      },
+      "exploratory_extreme_value_screen": {
+        "method": "Tukey 3-IQR fences; review flag only, not a scientific validity limit",
+        "lower_fence": -0.7597804069519043,
+        "upper_fence": 3.9640195071697235,
+        "flagged_pixel_count": 340478
+      }
+    }
+  },
+  "uncertainty_by_observation_support": {
+    "positive_lola_count": {
+      "pixel_count": 937381,
+      "median_z_uncertainty_m": 0.35695964097976685,
+      "p95_z_uncertainty_m": 1.2624552249908447,
+      "mean_z_uncertainty_m": 0.4835229278013058
+    },
+    "zero_lola_count": {
+      "pixel_count": 9302619,
+      "median_z_uncertainty_m": 0.35982105135917664,
+      "p95_z_uncertainty_m": 0.7770932555198669,
+      "mean_z_uncertainty_m": 0.40442401432413977
+    }
+  },
+  "spatial_support_and_uncertainty": {
+    "tile_size_pixels": 100,
+    "nominal_tile_size_x_m": 500.0,
+    "nominal_tile_size_y_m": 500.0,
+    "high_uncertainty_cutoffs_are_empirical_p95": {
+      "z_uncertainty_m": 0.8257322311401367,
+      "slope_uncertainty_degrees": 3.515652656555176,
+      "note": "These relative screening cutoffs are dataset percentiles, not NASA quality acceptance thresholds."
+    },
+    "weakest_direct_observation_support_tiles": [
+      {
+        "row_start": 300,
+        "row_end_exclusive": 400,
+        "col_start": 1300,
+        "col_end_exclusive": 1400,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 4.84,
+        "zero_count_pixel_pct": 95.16,
+        "median_z_uncertainty_m": 0.4624273180961609,
+        "p95_z_uncertainty_m": 0.8536329865455627,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 6.1,
+        "median_slope_uncertainty_deg": 1.5503723621368408,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 2.97,
+        "center_x_m": -2250.0,
+        "center_y_m": -750.0
+      },
+      {
+        "row_start": 1200,
+        "row_end_exclusive": 1300,
+        "col_start": 900,
+        "col_end_exclusive": 1000,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 5.01,
+        "zero_count_pixel_pct": 94.99,
+        "median_z_uncertainty_m": 0.4012905955314636,
+        "p95_z_uncertainty_m": 0.8141394257545471,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 4.62,
+        "median_slope_uncertainty_deg": 1.545871615409851,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 1.61,
+        "center_x_m": -4250.0,
+        "center_y_m": -5250.0
+      },
+      {
+        "row_start": 400,
+        "row_end_exclusive": 500,
+        "col_start": 1200,
+        "col_end_exclusive": 1300,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 5.09,
+        "zero_count_pixel_pct": 94.91,
+        "median_z_uncertainty_m": 0.4410725235939026,
+        "p95_z_uncertainty_m": 0.7510356307029724,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 2.5,
+        "median_slope_uncertainty_deg": 1.5051130056381226,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 2.49,
+        "center_x_m": -2750.0,
+        "center_y_m": -1250.0
+      },
+      {
+        "row_start": 600,
+        "row_end_exclusive": 700,
+        "col_start": 1000,
+        "col_end_exclusive": 1100,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 5.09,
+        "zero_count_pixel_pct": 94.91,
+        "median_z_uncertainty_m": 0.43021857738494873,
+        "p95_z_uncertainty_m": 0.7726520299911499,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 2.75,
+        "median_slope_uncertainty_deg": 1.5155622959136963,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 2.53,
+        "center_x_m": -3750.0,
+        "center_y_m": -2250.0
+      },
+      {
+        "row_start": 500,
+        "row_end_exclusive": 600,
+        "col_start": 1100,
+        "col_end_exclusive": 1200,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 5.22,
+        "zero_count_pixel_pct": 94.78,
+        "median_z_uncertainty_m": 0.41061049699783325,
+        "p95_z_uncertainty_m": 0.7679644823074341,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 3.3,
+        "median_slope_uncertainty_deg": 1.491125464439392,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 2.64,
+        "center_x_m": -3250.0,
+        "center_y_m": -1750.0
+      },
+      {
+        "row_start": 200,
+        "row_end_exclusive": 300,
+        "col_start": 1200,
+        "col_end_exclusive": 1300,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 5.43,
+        "zero_count_pixel_pct": 94.57,
+        "median_z_uncertainty_m": 0.44090142846107483,
+        "p95_z_uncertainty_m": 0.7825424671173096,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 3.8,
+        "median_slope_uncertainty_deg": 1.4847322702407837,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 2.7,
+        "center_x_m": -2750.0,
+        "center_y_m": -250.0
+      },
+      {
+        "row_start": 0,
+        "row_end_exclusive": 100,
+        "col_start": 900,
+        "col_end_exclusive": 1000,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 5.44,
+        "zero_count_pixel_pct": 94.56,
+        "median_z_uncertainty_m": 0.380618691444397,
+        "p95_z_uncertainty_m": 0.6699439287185669,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 1.21,
+        "median_slope_uncertainty_deg": 1.5211455821990967,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 1.11,
+        "center_x_m": -4250.0,
+        "center_y_m": 750.0
+      },
+      {
+        "row_start": 2000,
+        "row_end_exclusive": 2100,
+        "col_start": 1400,
+        "col_end_exclusive": 1500,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 5.56,
+        "zero_count_pixel_pct": 94.44,
+        "median_z_uncertainty_m": 0.47852256894111633,
+        "p95_z_uncertainty_m": 0.8665639758110046,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 6.61,
+        "median_slope_uncertainty_deg": 1.4753985404968262,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 4.11,
+        "center_x_m": -1750.0,
+        "center_y_m": -9250.0
+      },
+      {
+        "row_start": 1300,
+        "row_end_exclusive": 1400,
+        "col_start": 900,
+        "col_end_exclusive": 1000,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 5.6,
+        "zero_count_pixel_pct": 94.4,
+        "median_z_uncertainty_m": 0.4105910062789917,
+        "p95_z_uncertainty_m": 0.729830801486969,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 1.22,
+        "median_slope_uncertainty_deg": 1.5339384078979492,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 2.36,
+        "center_x_m": -4250.0,
+        "center_y_m": -5750.0
+      },
+      {
+        "row_start": 1400,
+        "row_end_exclusive": 1500,
+        "col_start": 1000,
+        "col_end_exclusive": 1100,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 5.62,
+        "zero_count_pixel_pct": 94.38,
+        "median_z_uncertainty_m": 0.3739730417728424,
+        "p95_z_uncertainty_m": 0.631615400314331,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 0.88,
+        "median_slope_uncertainty_deg": 1.5189052820205688,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 1.59,
+        "center_x_m": -3750.0,
+        "center_y_m": -6250.0
+      },
+      {
+        "row_start": 200,
+        "row_end_exclusive": 300,
+        "col_start": 1100,
+        "col_end_exclusive": 1200,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 5.64,
+        "zero_count_pixel_pct": 94.36,
+        "median_z_uncertainty_m": 0.41976219415664673,
+        "p95_z_uncertainty_m": 0.8031200766563416,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 4.38,
+        "median_slope_uncertainty_deg": 1.4941755533218384,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 3.99,
+        "center_x_m": -3250.0,
+        "center_y_m": -250.0
+      },
+      {
+        "row_start": 1500,
+        "row_end_exclusive": 1600,
+        "col_start": 900,
+        "col_end_exclusive": 1000,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 5.7,
+        "zero_count_pixel_pct": 94.3,
+        "median_z_uncertainty_m": 0.3843214809894562,
+        "p95_z_uncertainty_m": 0.766848087310791,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 3.47,
+        "median_slope_uncertainty_deg": 1.534407615661621,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 1.68,
+        "center_x_m": -4250.0,
+        "center_y_m": -6750.0
+      }
+    ],
+    "highest_median_z_uncertainty_tiles": [
+      {
+        "row_start": 0,
+        "row_end_exclusive": 100,
+        "col_start": 3100,
+        "col_end_exclusive": 3200,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 8.06,
+        "zero_count_pixel_pct": 91.94,
+        "median_z_uncertainty_m": 0.5754226446151733,
+        "p95_z_uncertainty_m": 1.3651217222213745,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 20.61,
+        "median_slope_uncertainty_deg": 1.7650678157806396,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 12.69,
+        "center_x_m": 6750.0,
+        "center_y_m": 750.0
+      },
+      {
+        "row_start": 0,
+        "row_end_exclusive": 100,
+        "col_start": 2800,
+        "col_end_exclusive": 2900,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 6.99,
+        "zero_count_pixel_pct": 93.01,
+        "median_z_uncertainty_m": 0.5669312477111816,
+        "p95_z_uncertainty_m": 1.3413509130477905,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 17.89,
+        "median_slope_uncertainty_deg": 1.663154125213623,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 8.88,
+        "center_x_m": 5250.0,
+        "center_y_m": 750.0
+      },
+      {
+        "row_start": 500,
+        "row_end_exclusive": 600,
+        "col_start": 2100,
+        "col_end_exclusive": 2200,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 7.54,
+        "zero_count_pixel_pct": 92.46,
+        "median_z_uncertainty_m": 0.5432603359222412,
+        "p95_z_uncertainty_m": 1.1029211282730103,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 16.31,
+        "median_slope_uncertainty_deg": 1.526472568511963,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 9.86,
+        "center_x_m": 1750.0,
+        "center_y_m": -1750.0
+      },
+      {
+        "row_start": 3100,
+        "row_end_exclusive": 3200,
+        "col_start": 3100,
+        "col_end_exclusive": 3200,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 7.34,
+        "zero_count_pixel_pct": 92.66,
+        "median_z_uncertainty_m": 0.541135311126709,
+        "p95_z_uncertainty_m": 1.5226268768310547,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 17.08,
+        "median_slope_uncertainty_deg": 1.749422311782837,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 11.01,
+        "center_x_m": 6750.0,
+        "center_y_m": -14750.0
+      },
+      {
+        "row_start": 400,
+        "row_end_exclusive": 500,
+        "col_start": 1900,
+        "col_end_exclusive": 2000,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 7.39,
+        "zero_count_pixel_pct": 92.61,
+        "median_z_uncertainty_m": 0.5395932197570801,
+        "p95_z_uncertainty_m": 1.1108648777008057,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 15.94,
+        "median_slope_uncertainty_deg": 1.5402648448944092,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 7.86,
+        "center_x_m": 750.0,
+        "center_y_m": -1250.0
+      },
+      {
+        "row_start": 400,
+        "row_end_exclusive": 500,
+        "col_start": 2000,
+        "col_end_exclusive": 2100,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 7.26,
+        "zero_count_pixel_pct": 92.74,
+        "median_z_uncertainty_m": 0.5358006954193115,
+        "p95_z_uncertainty_m": 1.1131349802017212,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 15.36,
+        "median_slope_uncertainty_deg": 1.5334749221801758,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 8.39,
+        "center_x_m": 1250.0,
+        "center_y_m": -1250.0
+      },
+      {
+        "row_start": 0,
+        "row_end_exclusive": 100,
+        "col_start": 3000,
+        "col_end_exclusive": 3100,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 8.88,
+        "zero_count_pixel_pct": 91.12,
+        "median_z_uncertainty_m": 0.5354065895080566,
+        "p95_z_uncertainty_m": 1.3368687629699707,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 16.54,
+        "median_slope_uncertainty_deg": 1.7789382934570312,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 11.04,
+        "center_x_m": 6250.0,
+        "center_y_m": 750.0
+      },
+      {
+        "row_start": 500,
+        "row_end_exclusive": 600,
+        "col_start": 2400,
+        "col_end_exclusive": 2500,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 6.87,
+        "zero_count_pixel_pct": 93.13,
+        "median_z_uncertainty_m": 0.5305860042572021,
+        "p95_z_uncertainty_m": 0.9925195574760437,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 13.39,
+        "median_slope_uncertainty_deg": 1.4689412117004395,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 6.59,
+        "center_x_m": 3250.0,
+        "center_y_m": -1750.0
+      },
+      {
+        "row_start": 300,
+        "row_end_exclusive": 400,
+        "col_start": 2300,
+        "col_end_exclusive": 2400,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 5.87,
+        "zero_count_pixel_pct": 94.13,
+        "median_z_uncertainty_m": 0.5277837514877319,
+        "p95_z_uncertainty_m": 0.9394055008888245,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 10.07,
+        "median_slope_uncertainty_deg": 1.4378280639648438,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 4.79,
+        "center_x_m": 2750.0,
+        "center_y_m": -750.0
+      },
+      {
+        "row_start": 0,
+        "row_end_exclusive": 100,
+        "col_start": 2600,
+        "col_end_exclusive": 2700,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 7.53,
+        "zero_count_pixel_pct": 92.47,
+        "median_z_uncertainty_m": 0.5261387825012207,
+        "p95_z_uncertainty_m": 1.4965343475341797,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 15.99,
+        "median_slope_uncertainty_deg": 1.6530413627624512,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 10.42,
+        "center_x_m": 4250.0,
+        "center_y_m": 750.0
+      },
+      {
+        "row_start": 100,
+        "row_end_exclusive": 200,
+        "col_start": 3000,
+        "col_end_exclusive": 3100,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 8.21,
+        "zero_count_pixel_pct": 91.79,
+        "median_z_uncertainty_m": 0.5257142186164856,
+        "p95_z_uncertainty_m": 0.948820948600769,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 10.26,
+        "median_slope_uncertainty_deg": 1.6586523056030273,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 8.41,
+        "center_x_m": 6250.0,
+        "center_y_m": 250.0
+      },
+      {
+        "row_start": 300,
+        "row_end_exclusive": 400,
+        "col_start": 3100,
+        "col_end_exclusive": 3200,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 8.33,
+        "zero_count_pixel_pct": 91.67,
+        "median_z_uncertainty_m": 0.5242176055908203,
+        "p95_z_uncertainty_m": 0.9800153374671936,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 10.85,
+        "median_slope_uncertainty_deg": 1.6234163045883179,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 8.45,
+        "center_x_m": 6750.0,
+        "center_y_m": -750.0
+      }
+    ],
+    "highest_median_slope_uncertainty_tiles": [
+      {
+        "row_start": 2800,
+        "row_end_exclusive": 2900,
+        "col_start": 2400,
+        "col_end_exclusive": 2500,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 14.42,
+        "zero_count_pixel_pct": 85.58,
+        "median_z_uncertainty_m": 0.43374139070510864,
+        "p95_z_uncertainty_m": 1.0438387393951416,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 11.06,
+        "median_slope_uncertainty_deg": 1.9453458786010742,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 16.78,
+        "center_x_m": 3250.0,
+        "center_y_m": -13250.0
+      },
+      {
+        "row_start": 3100,
+        "row_end_exclusive": 3200,
+        "col_start": 2700,
+        "col_end_exclusive": 2800,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 12.43,
+        "zero_count_pixel_pct": 87.57,
+        "median_z_uncertainty_m": 0.45326119661331177,
+        "p95_z_uncertainty_m": 1.226377010345459,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 13.52,
+        "median_slope_uncertainty_deg": 1.9220951795578003,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 14.86,
+        "center_x_m": 4750.0,
+        "center_y_m": -14750.0
+      },
+      {
+        "row_start": 3100,
+        "row_end_exclusive": 3200,
+        "col_start": 2800,
+        "col_end_exclusive": 2900,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 10.9,
+        "zero_count_pixel_pct": 89.1,
+        "median_z_uncertainty_m": 0.501890242099762,
+        "p95_z_uncertainty_m": 1.3297325372695923,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 16.85,
+        "median_slope_uncertainty_deg": 1.9141477346420288,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 14.92,
+        "center_x_m": 5250.0,
+        "center_y_m": -14750.0
+      },
+      {
+        "row_start": 2800,
+        "row_end_exclusive": 2900,
+        "col_start": 2500,
+        "col_end_exclusive": 2600,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 13.06,
+        "zero_count_pixel_pct": 86.94,
+        "median_z_uncertainty_m": 0.44271546602249146,
+        "p95_z_uncertainty_m": 1.0615545511245728,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 11.64,
+        "median_slope_uncertainty_deg": 1.9002933502197266,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 15.74,
+        "center_x_m": 3750.0,
+        "center_y_m": -13250.0
+      },
+      {
+        "row_start": 2700,
+        "row_end_exclusive": 2800,
+        "col_start": 3000,
+        "col_end_exclusive": 3100,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 14.22,
+        "zero_count_pixel_pct": 85.78,
+        "median_z_uncertainty_m": 0.4496908485889435,
+        "p95_z_uncertainty_m": 1.020548939704895,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 10.47,
+        "median_slope_uncertainty_deg": 1.8922736644744873,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 15.9,
+        "center_x_m": 6250.0,
+        "center_y_m": -12750.0
+      },
+      {
+        "row_start": 2800,
+        "row_end_exclusive": 2900,
+        "col_start": 2300,
+        "col_end_exclusive": 2400,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 15.01,
+        "zero_count_pixel_pct": 84.99,
+        "median_z_uncertainty_m": 0.4244340658187866,
+        "p95_z_uncertainty_m": 1.0251102447509766,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 10.85,
+        "median_slope_uncertainty_deg": 1.8773341178894043,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 15.1,
+        "center_x_m": 2750.0,
+        "center_y_m": -13250.0
+      },
+      {
+        "row_start": 2800,
+        "row_end_exclusive": 2900,
+        "col_start": 2200,
+        "col_end_exclusive": 2300,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 15.12,
+        "zero_count_pixel_pct": 84.88,
+        "median_z_uncertainty_m": 0.4093813896179199,
+        "p95_z_uncertainty_m": 0.9606323838233948,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 9.04,
+        "median_slope_uncertainty_deg": 1.8765437602996826,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 15.07,
+        "center_x_m": 2250.0,
+        "center_y_m": -13250.0
+      },
+      {
+        "row_start": 2900,
+        "row_end_exclusive": 3000,
+        "col_start": 2800,
+        "col_end_exclusive": 2900,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 13.39,
+        "zero_count_pixel_pct": 86.61,
+        "median_z_uncertainty_m": 0.4846651554107666,
+        "p95_z_uncertainty_m": 1.0647852420806885,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 13.86,
+        "median_slope_uncertainty_deg": 1.8738607168197632,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 15.17,
+        "center_x_m": 5250.0,
+        "center_y_m": -13750.0
+      },
+      {
+        "row_start": 2700,
+        "row_end_exclusive": 2800,
+        "col_start": 2900,
+        "col_end_exclusive": 3000,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 13.65,
+        "zero_count_pixel_pct": 86.35,
+        "median_z_uncertainty_m": 0.43710634112358093,
+        "p95_z_uncertainty_m": 0.9927788972854614,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 10.35,
+        "median_slope_uncertainty_deg": 1.8644824028015137,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 14.62,
+        "center_x_m": 5750.0,
+        "center_y_m": -12750.0
+      },
+      {
+        "row_start": 2700,
+        "row_end_exclusive": 2800,
+        "col_start": 3100,
+        "col_end_exclusive": 3200,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 13.52,
+        "zero_count_pixel_pct": 86.48,
+        "median_z_uncertainty_m": 0.434781938791275,
+        "p95_z_uncertainty_m": 0.99512779712677,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 10.94,
+        "median_slope_uncertainty_deg": 1.8548641204833984,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 14.25,
+        "center_x_m": 6750.0,
+        "center_y_m": -12750.0
+      },
+      {
+        "row_start": 3000,
+        "row_end_exclusive": 3100,
+        "col_start": 3000,
+        "col_end_exclusive": 3100,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 11.34,
+        "zero_count_pixel_pct": 88.66,
+        "median_z_uncertainty_m": 0.4789489209651947,
+        "p95_z_uncertainty_m": 0.9757730960845947,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 9.92,
+        "median_slope_uncertainty_deg": 1.8361876010894775,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 12.65,
+        "center_x_m": 6250.0,
+        "center_y_m": -14250.0
+      },
+      {
+        "row_start": 2900,
+        "row_end_exclusive": 3000,
+        "col_start": 2400,
+        "col_end_exclusive": 2500,
+        "valid_count_pixels": 10000,
+        "positive_count_pixel_pct": 12.05,
+        "zero_count_pixel_pct": 87.95,
+        "median_z_uncertainty_m": 0.4455448091030121,
+        "p95_z_uncertainty_m": 0.9716389179229736,
+        "fraction_z_uncertainty_at_or_above_global_p95_pct": 9.58,
+        "median_slope_uncertainty_deg": 1.8326225280761719,
+        "fraction_slope_uncertainty_at_or_above_global_p95_pct": 12.61,
+        "center_x_m": 3250.0,
+        "center_y_m": -13750.0
+      }
+    ]
+  },
+  "limitations": [
+    "The 100% valid data mask describes finite raster pixels, not direct instrument observations.",
+    "LDEC counts binned LOLA spots; zero-count cells have interpolated LDEM elevations per the product method.",
+    "The exact slope numerical operator and neighborhood are not specified in the retrieved PGDA catalog and remain unknown here.",
+    "A quality raster's RMS estimate is not a guarantee that every individual cell's true error equals that value.",
+    "Empirical p95 and tile rankings are QA prioritization aids, not mission suitability thresholds.",
+    "The local GeoTIFF CRS WKT identifies the lunar radius and polar stereographic parameters, but names the datum unknown; do not substitute an Earth EPSG CRS.",
+    "Embedded GMT history metadata includes the generic output name test.grd; it is retained as source metadata but is not treated as independent evidence of processing provenance."
+  ]
+}

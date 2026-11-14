@@ -1,0 +1,207 @@
+{
+  "study_area": "NASA LOLA Site04 (Shackleton rim)",
+  "status": "provisional study-area choice; not an officially approved team decision",
+  "source_catalog": "https://pgda.gsfc.nasa.gov/data/LOLA_5mpp/",
+  "assets": {
+    "elevation": {
+      "path": "data/raw/moon/site04/Site04_final_adj_5mpp_surf.tif",
+      "gdal_valid_pixel_count": 10240000,
+      "nodata_masked_pixel_count": 0,
+      "nonfinite_pixel_count_band_1": 0,
+      "file_size_bytes": 40980806,
+      "driver": "GTiff",
+      "width_pixels": 3200,
+      "height_pixels": 3200,
+      "band_count": 1,
+      "data_types": [
+        "float32"
+      ],
+      "nodata": "NaN",
+      "crs": "PROJCS[\"unnamed\",GEOGCS[\"unnamed ellipse\",DATUM[\"unknown\",SPHEROID[\"unnamed\",1737400,0]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH]]",
+      "transform": [
+        5.0,
+        0.0,
+        -9000.0,
+        0.0,
+        -5.0,
+        1000.0
+      ],
+      "bounds": [
+        -9000.0,
+        -15000.0,
+        7000.0,
+        1000.0
+      ],
+      "pixel_size_x": 5.0,
+      "pixel_size_y": 5.0,
+      "statistics_band_1": {
+        "valid_pixel_count": 10240000,
+        "valid_coverage_pct": 100.0,
+        "minimum": -2847.877197265625,
+        "maximum": 1805.0726318359375,
+        "mean": 245.34379158594012,
+        "standard_deviation_population": 1246.316268147776
+      }
+    },
+    "counts": {
+      "path": "data/raw/moon/site04/Site04_final_adj_5mpp_ldec.tif",
+      "gdal_valid_pixel_count": 10240000,
+      "nodata_masked_pixel_count": 0,
+      "nonfinite_pixel_count_band_1": 0,
+      "file_size_bytes": 40980740,
+      "driver": "GTiff",
+      "width_pixels": 3200,
+      "height_pixels": 3200,
+      "band_count": 1,
+      "data_types": [
+        "float32"
+      ],
+      "nodata": "NaN",
+      "crs": "PROJCS[\"unnamed\",GEOGCS[\"unnamed ellipse\",DATUM[\"unknown\",SPHEROID[\"unnamed\",1737400,0]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH]]",
+      "transform": [
+        5.0,
+        0.0,
+        -9000.0,
+        0.0,
+        -5.0,
+        1000.0
+      ],
+      "bounds": [
+        -9000.0,
+        -15000.0,
+        7000.0,
+        1000.0
+      ],
+      "pixel_size_x": 5.0,
+      "pixel_size_y": 5.0,
+      "statistics_band_1": {
+        "valid_pixel_count": 10240000,
+        "valid_coverage_pct": 100.0,
+        "minimum": 0.0,
+        "maximum": 5.0,
+        "mean": 0.09608525390625,
+        "standard_deviation_population": 0.31023546210986497
+      }
+    },
+    "slope": {
+      "path": "data/raw/moon/site04/Site04_final_adj_5mpp_slp.tif",
+      "gdal_valid_pixel_count": 10240000,
+      "nodata_masked_pixel_count": 0,
+      "nonfinite_pixel_count_band_1": 0,
+      "file_size_bytes": 40980772,
+      "driver": "GTiff",
+      "width_pixels": 3200,
+      "height_pixels": 3200,
+      "band_count": 1,
+      "data_types": [
+        "float32"
+      ],
+      "nodata": "NaN",
+      "crs": "PROJCS[\"unnamed\",GEOGCS[\"unnamed ellipse\",DATUM[\"unknown\",SPHEROID[\"unnamed\",1737400,0]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH]]",
+      "transform": [
+        5.0,
+        0.0,
+        -9000.0,
+        0.0,
+        -5.0,
+        1000.0
+      ],
+      "bounds": [
+        -9000.0,
+        -15000.0,
+        7000.0,
+        1000.0
+      ],
+      "pixel_size_x": 5.0,
+      "pixel_size_y": 5.0,
+      "statistics_band_1": {
+        "valid_pixel_count": 10240000,
+        "valid_coverage_pct": 100.0,
+        "minimum": 0.0,
+        "maximum": 69.64722442626953,
+        "mean": 20.664146178538875,
+        "standard_deviation_population": 10.101921814217707
+      }
+    },
+    "z_uncertainty": {
+      "path": "data/raw/moon/site04/Site04_final_adj_5mpp_toterr.tif",
+      "gdal_valid_pixel_count": 10240000,
+      "nodata_masked_pixel_count": 0,
+      "nonfinite_pixel_count_band_1": 0,
+      "file_size_bytes": 40980808,
+      "driver": "GTiff",
+      "width_pixels": 3200,
+      "height_pixels": 3200,
+      "band_count": 1,
+      "data_types": [
+        "float32"
+      ],
+      "nodata": "NaN",
+      "crs": "PROJCS[\"unnamed\",GEOGCS[\"unnamed ellipse\",DATUM[\"unknown\",SPHEROID[\"unnamed\",1737400,0]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH]]",
+      "transform": [
+        5.0,
+        0.0,
+        -9000.0,
+        0.0,
+        -5.0,
+        1000.0
+      ],
+      "bounds": [
+        -9000.0,
+        -15000.0,
+        7000.0,
+        1000.0
+      ],
+      "pixel_size_x": 5.0,
+      "pixel_size_y": 5.0,
+      "statistics_band_1": {
+        "valid_pixel_count": 10240000,
+        "valid_coverage_pct": 100.0,
+        "minimum": 0.06385684758424759,
+        "maximum": 7.635095596313477,
+        "mean": 0.41166481692317686,
+        "standard_deviation_population": 0.22262524799770433
+      }
+    },
+    "slope_uncertainty": {
+      "path": "data/raw/moon/site04/Site04_final_adj_5mpp_slperr.tif",
+      "gdal_valid_pixel_count": 10240000,
+      "nodata_masked_pixel_count": 0,
+      "nonfinite_pixel_count_band_1": 0,
+      "file_size_bytes": 40980806,
+      "driver": "GTiff",
+      "width_pixels": 3200,
+      "height_pixels": 3200,
+      "band_count": 1,
+      "data_types": [
+        "float32"
+      ],
+      "nodata": "NaN",
+      "crs": "PROJCS[\"unnamed\",GEOGCS[\"unnamed ellipse\",DATUM[\"unknown\",SPHEROID[\"unnamed\",1737400,0]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH]]",
+      "transform": [
+        5.0,
+        0.0,
+        -9000.0,
+        0.0,
+        -5.0,
+        1000.0
+      ],
+      "bounds": [
+        -9000.0,
+        -15000.0,
+        7000.0,
+        1000.0
+      ],
+      "pixel_size_x": 5.0,
+      "pixel_size_y": 5.0,
+      "statistics_band_1": {
+        "valid_pixel_count": 10240000,
+        "valid_coverage_pct": 100.0,
+        "minimum": 0.5000152587890625,
+        "maximum": 28.143030166625977,
+        "mean": 1.7707840924176212,
+        "standard_deviation_population": 0.8759035596204494
+      }
+    }
+  }
+}
