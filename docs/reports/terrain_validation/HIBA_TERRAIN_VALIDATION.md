@@ -7,7 +7,7 @@
 
 ## Delivered in this workstream
 
-- `src/features/terrain_fingerprint.py`: array-based feature calculations, fail-closed GeoTIFF/AOI processing, configurable physical scale/window, canonical CSV output and optional derived GeoTIFF maps.
+- `src/features/terrain_fingerprint.py`: array-based feature calculations, fail-closed GeoTIFF/AOI processing, configurable physical scale/window, canonical CSV output and optional derived GeoTIFF maps. Masked integer DEMs are safely converted to floating point before NoData filling.
 - `src/features/validation.py`: integration-contract checks, a Spearman feature-correlation audit and a two-scale sensitivity comparison utility.
 - `tests/test_terrain_fingerprint.py`: synthetic flat, plane, bump, NoData, area-class, connected-patch, scale-guard, output-contract, correlation minimum-sample and sensitivity tests.
 - `docs/TERRAIN_FINGERPRINT_METHOD.md`: feature definitions, formulae, units, scale assumptions, QA rules and usage.
@@ -16,8 +16,8 @@
 
 The focused test module was run in the development workspace using `python -m pytest -q tests/test_terrain_fingerprint.py`.
 
-- **13 passed**
-- Tests cover the analytic slope of a plane, near-zero derivatives for a flat surface, positive TRI around a synthetic bump, strict NoData propagation, percentage closure, spatial connectivity, scale mismatch rejection, contract consistency, correlation sample-size guard and resolution-sensitivity calculation.
+- **15 passed**
+- Tests cover the analytic slope of a plane, near-zero derivatives for a flat surface, positive TRI around a synthetic bump, strict NoData propagation, percentage closure, spatial connectivity, scale mismatch rejection, integer-valued GeoTIFF ingestion, direct-observation provenance without an invented cutoff, contract consistency, correlation sample-size guard and resolution-sensitivity calculation.
 
 These tests validate the implemented calculations on constructed surfaces; they are not validation against NASA or Earth reference terrain products.
 
