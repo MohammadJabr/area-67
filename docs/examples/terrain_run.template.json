@@ -5,7 +5,7 @@
   "slope_mid_max_deg": 25,
   "steep_threshold_deg": 25,
   "connectivity": 8,
-  "minimum_valid_coverage_pct": 80,
-  "local_relief_min_valid_fraction": 0.8,
+  "minimum_valid_coverage_pct": null,
+  "local_relief_min_valid_fraction": null,
   "sites": []
 }
