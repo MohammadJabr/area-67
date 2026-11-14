@@ -432,32 +432,45 @@ def compare_terrain_fingerprints(
                 tolerance_values["terrain_distribution_pp"],
             )
 
-    target_has_largest_patch = "largest_steep_patch_pct" in target
-    candidate_has_largest_patch = "largest_steep_patch_pct" in candidate
-    target_has_generic_pattern = "spatial_pattern_metric" in target
-    candidate_has_generic_pattern = "spatial_pattern_metric" in candidate
+    target_pattern_type = (
+        "largest_steep_patch_pct"
+        if "largest_steep_patch_pct" in target
+        else "spatial_pattern_metric"
+        if "spatial_pattern_metric" in target
+        else None
+    )
+    candidate_pattern_type = (
+        "largest_steep_patch_pct"
+        if "largest_steep_patch_pct" in candidate
+        else "spatial_pattern_metric"
+        if "spatial_pattern_metric" in candidate
+        else None
+    )
 
     if (
-        target_has_largest_patch != candidate_has_largest_patch
-        or target_has_generic_pattern != candidate_has_generic_pattern
-        or (target_has_largest_patch and target_has_generic_pattern)
-        or (candidate_has_largest_patch and candidate_has_generic_pattern)
+        target_pattern_type is not None
+        and candidate_pattern_type is not None
+        and target_pattern_type != candidate_pattern_type
     ):
         raise ValueError(
-            "Target and candidate must provide the same single spatial-pattern metric."
+            "Target and candidate use different spatial-pattern metrics; "
+            "they cannot be compared as if they were interchangeable."
         )
 
-    if target_has_largest_patch and candidate_has_largest_patch:
-        spatial_field = "largest_steep_patch_pct"
+    spatial_field = target_pattern_type or candidate_pattern_type
+    if spatial_field == "largest_steep_patch_pct":
         spatial_tolerance_key = "spatial_pattern_pct"
-    elif target_has_generic_pattern and candidate_has_generic_pattern:
-        spatial_field = "spatial_pattern_metric"
+    elif spatial_field == "spatial_pattern_metric":
         spatial_tolerance_key = "spatial_pattern_metric"
     else:
-        spatial_field = None
         spatial_tolerance_key = None
 
-    if not spatial_method_ready or spatial_field is None:
+    if (
+        not spatial_method_ready
+        or spatial_field is None
+        or spatial_field not in target
+        or spatial_field not in candidate
+    ):
         group_distances["spatial_pattern"] = None
         missing_groups.append("spatial_pattern")
     else:
