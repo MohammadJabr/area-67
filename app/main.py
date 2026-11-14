@@ -1,139 +1,373 @@
-"""AREA 67 Streamlit application. Run: streamlit run app/main.py"""
+"""AREA 67 Streamlit MVP: streamlit run app/main.py."""
 from __future__ import annotations
 import sys
 from pathlib import Path
+from typing import Any
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 from src.data.contracts import FEATURE_GROUPS, validate_fingerprints, validate_rankings
 from src.reporting.passport import build_passport, passport_to_markdown
-st.set_page_config(page_title="AREA 67 | Planetary Analog Explorer", page_icon="🪐", layout="wide")
+
+st.set_page_config(page_title="AREA 67 | Planetary Analog Discovery", page_icon="🪐", layout="wide")
 FP = ROOT / "data/processed/terrain_fingerprints.csv"
 RANK = ROOT / "data/processed/candidate_rankings.csv"
 DEMO_FP = ROOT / "data/sample/demo_terrain_fingerprints.csv"
 DEMO_RANK = ROOT / "data/sample/demo_candidate_rankings.csv"
 
+
 def load_data():
-    """Load only a complete real pair, or a complete labelled demo pair; never mix them."""
-    if FP.exists() and RANK.exists():
+    """Load one complete real pair, or a complete labelled demo pair; never mix them."""
+    real_fp, real_rank = FP.exists(), RANK.exists()
+    if real_fp and real_rank:
         return pd.read_csv(FP), pd.read_csv(RANK), False, []
-    if not FP.exists() and not RANK.exists() and DEMO_FP.exists() and DEMO_RANK.exists():
+    if not real_fp and not real_rank and DEMO_FP.exists() and DEMO_RANK.exists():
         return pd.read_csv(DEMO_FP), pd.read_csv(DEMO_RANK), True, []
-    if FP.exists() != RANK.exists():
-        missing = RANK if not RANK.exists() else FP
-        return None, None, False, [f"One real output is missing: {missing.relative_to(ROOT)}. Demo data will not be mixed with real results."]
-    return None, None, False, ["No processed outputs found. Add the agreed CSV pair under data/processed/."]
+    if real_fp != real_rank:
+        missing = RANK if not real_rank else FP
+        message = f"One real output is missing: {missing.relative_to(ROOT)}. The app will not mix real and synthetic results."
+    else:
+        message = "No complete data pair found. Add the agreed CSV files under data/processed/. No scientific results will be shown."
+    return None, None, False, [message]
 
-def show_comparison(frame: pd.DataFrame, site_ids: list[str]):
-    selected = frame[frame.site_id.astype(str).isin(site_ids)].copy()
-    metrics = [m for m in ["slope_median", "slope_p90", "tri_median", "local_relief_p95_p5", "spatial_pattern_metric"] if m in selected and selected[m].notna().any()]
-    if metrics:
-        long = selected.melt(id_vars=["site_id", "site_name"], value_vars=metrics, var_name="metric", value_name="value")
-        fig = px.bar(long, x="site_name", y="value", color="site_id", facet_col="metric", facet_col_wrap=2, title="Terrain indicators (separate scales by metric)", height=560)
-        fig.update_yaxes(matches=None)
-        st.plotly_chart(fig, use_container_width=True)
-    distribution = [m for m in FEATURE_GROUPS["Terrain distribution"] if m in selected]
-    if distribution:
-        long = selected[["site_name", *distribution]].melt(id_vars="site_name", var_name="terrain_class", value_name="area_percent")
-        st.plotly_chart(px.bar(long, x="site_name", y="area_percent", color="terrain_class", barmode="stack", title="Terrain class distribution (%)"), use_container_width=True)
 
-def main():
+def feature_metrics() -> list[str]:
+    return [metric for metrics in FEATURE_GROUPS.values() for metric in metrics]
+
+
+def value_or_none(value: Any) -> Any:
+    """Preserve missing values rather than converting them to zero."""
+    if value is None:
+        return None
+    try:
+        if pd.isna(value):
+            return None
+    except (TypeError, ValueError):
+        pass
+    if hasattr(value, "item"):
+        try:
+            return value.item()
+        except (TypeError, ValueError):
+            pass
+    return value
+
+
+def site_feature_values(row: pd.Series) -> dict[str, Any]:
+    return {metric: value_or_none(row.get(metric)) for metric in feature_metrics() if metric in row.index}
+
+
+def show_feature_groups(frame: pd.DataFrame, site_ids: list[str]) -> None:
+    selected = frame[frame["site_id"].astype(str).isin(site_ids)].copy()
+    if selected.empty:
+        st.info("No matching target/candidate feature rows are available.")
+        return
+    if "site_name" not in selected:
+        selected["site_name"] = selected["site_id"]
+    for group, metrics in FEATURE_GROUPS.items():
+        available = [
+            metric for metric in metrics
+            if metric in selected.columns
+            and pd.to_numeric(selected[metric], errors="coerce").notna().any()
+        ]
+        with st.expander(group, expanded=True):
+            if available:
+                st.dataframe(selected[["site_id", "site_name", *available]], use_container_width=True, hide_index=True)
+            else:
+                st.write("No measurements supplied for this feature group.")
+
+
+def show_single_parameter_explorer(frame: pd.DataFrame, site_ids: list[str]) -> None:
+    options = {
+        f"{group} · {metric}": metric
+        for group, metrics in FEATURE_GROUPS.items()
+        for metric in metrics
+        if metric in frame.columns and pd.to_numeric(frame[metric], errors="coerce").notna().any()
+    }
+    if not options:
+        st.info("No numeric terrain parameters are available to explore.")
+        return
+    label = st.selectbox("Parameter", list(options), key="single_parameter_choice")
+    metric = options[label]
+    selected = frame[frame["site_id"].astype(str).isin(site_ids)][["site_id", "site_name", metric]].copy()
+    selected[metric] = pd.to_numeric(selected[metric], errors="coerce")
+    selected = selected.dropna(subset=[metric])
+    if selected.empty:
+        st.info("No valid observations are available for this parameter.")
+        return
+    unit_col = f"{metric}_unit"
+    if unit_col in frame.columns:
+        units = frame[unit_col].dropna().astype(str).unique().tolist()
+        if len(units) == 1:
+            st.caption(f"Reported unit: {units[0]}")
+        elif len(units) > 1:
+            st.warning("Unit labels vary across sites; interpret values cautiously.")
+    st.plotly_chart(px.bar(selected, x="site_name", y=metric, color="site_id", title=f"Single-parameter comparison · {metric}"), use_container_width=True)
+
+
+def main() -> None:
     st.title("AREA 67")
-    st.caption("Planetary Analog Discovery & Mission Planning · NASA Space Apps Challenge 2026")
-    st.write("Compare selected Earth terrain environments with a lunar or Martian target using documented topographic evidence.")
-    fingerprints, rankings, demo, messages = load_data()
-    if demo:
-        st.warning("DEMO MODE — all displayed site measurements and rankings are synthetic placeholders for interface testing. They are NOT NASA measurements or validated findings.")
-    for msg in messages:
-        st.info(msg)
+    st.caption("Planetary Analog Discovery & Mission Planning · Discover Earth. Explore Other Worlds.")
+    st.write("An evidence-based platform for finding useful terrestrial analogs for selected lunar or Martian exploration tasks.")
+
+    fingerprints, rankings, demo_mode, messages = load_data()
+    if demo_mode:
+        st.warning("DEMO MODE — displayed measurements and rankings are synthetic interface fixtures. They are NOT NASA observations or validated scientific results.")
+    for message in messages:
+        st.info(message)
+
     if fingerprints is None or rankings is None:
         st.subheader("Data integration status")
-        st.write("The app is ready for the shared outputs. It will not substitute invented scientific results when files are missing.")
-        st.code("data/processed/terrain_fingerprints.csv\ndata/processed/candidate_rankings.csv")
-        st.markdown("See `docs/INTEGRATION_CONTRACT.md` for the expected schemas.")
+        st.write("The app is ready for the GIS, terrain-analysis, and matching outputs. It does not create substitute measurements when those files are absent.")
+        st.code("data/processed/terrain_fingerprints.csv\ndata/processed/candidate_rankings.csv", language="text")
+        st.markdown("See docs/INTEGRATION_CONTRACT.md for the agreed field names and units.")
+        st.info("Active MVP workflow: Space-to-Earth. Earth-to-Space remains in the product architecture but is not implemented in this MVP.")
         st.stop()
+
+    if fingerprints.empty or rankings.empty:
+        st.error("The supplied CSV pair contains no rows; no results can be shown.")
+        st.stop()
+
     errors = validate_fingerprints(fingerprints) + validate_rankings(rankings)
     if errors:
-        st.error("Input data do not satisfy the integration contract.")
+        st.error("Input files do not satisfy the shared integration contract.")
         for error in errors:
             st.write(f"- {error}")
         st.stop()
-    fingerprints["site_id"] = fingerprints.site_id.astype(str)
-    rankings["candidate_site_id"] = rankings.candidate_site_id.astype(str)
-    rankings["target_site_id"] = rankings.target_site_id.astype(str)
-    if "site_name" not in fingerprints:
-        fingerprints["site_name"] = fingerprints.site_id
-    setup, results, passport_tab = st.tabs(["1 · Mission Setup", "2 · Results & Comparison", "3 · Site Passport"])
-    with setup:
+
+    fingerprints = fingerprints.copy()
+    rankings = rankings.copy()
+    fingerprints["site_id"] = fingerprints["site_id"].astype(str)
+    rankings["candidate_site_id"] = rankings["candidate_site_id"].astype(str)
+    rankings["target_site_id"] = rankings["target_site_id"].astype(str)
+    if "site_name" not in fingerprints.columns:
+        fingerprints["site_name"] = fingerprints["site_id"]
+
+    known_ids = set(fingerprints["site_id"])
+    unknown_targets = sorted(set(rankings["target_site_id"]) - known_ids)
+    unknown_candidates = sorted(set(rankings["candidate_site_id"]) - known_ids)
+    if unknown_targets or unknown_candidates:
+        st.warning("Some ranking rows refer to site IDs missing from the fingerprint table. They cannot be fully characterized.")
+        if unknown_targets:
+            st.write("Unknown target IDs: " + ", ".join(unknown_targets))
+        if unknown_candidates:
+            st.write("Unknown candidate IDs: " + ", ".join(unknown_candidates))
+
+    tab_setup, tab_results, tab_passport = st.tabs(["1 · Mission Setup", "2 · Results & Comparison", "3 · Site Passport"])
+
+    with tab_setup:
         st.subheader("Mission setup")
-        targets = sorted(rankings.target_site_id.dropna().unique().tolist())
-        target = st.selectbox("Target site", targets)
-        profiles = sorted(rankings.loc[rankings.target_site_id == target, "mission_profile"].dropna().unique().tolist())
-        profile = st.selectbox("Mission profile", profiles) if profiles else "Not supplied"
-        target_row = fingerprints[fingerprints.site_id == target]
-        st.write(f"**Target body:** {target_row.iloc[0]['planet'] if not target_row.empty else 'Not found'}")
-        st.write(f"**Mission profile:** {profile}")
-        st.caption("The app filters the ranking delivered by the matching module; changing this selection does not recalculate mission weights.")
-    with results:
+        st.info("Space-to-Earth is the active MVP workflow: select a lunar or Martian target and inspect ranked Earth candidates. Earth-to-Space is retained as a future search direction.")
+        targets = sorted(rankings["target_site_id"].dropna().unique().tolist())
+        if not targets:
+            st.error("No target IDs are available in the ranking file.")
+            st.stop()
+        target_id = st.selectbox("Target site", targets, key="area67_target")
+        profiles = sorted(rankings.loc[rankings["target_site_id"] == target_id, "mission_profile"].dropna().astype(str).unique().tolist())
+        if not profiles:
+            st.error("No mission profile is supplied for this target.")
+            st.stop()
+        mission_profile = st.selectbox("Mission profile", profiles, key="area67_mission_profile")
+        target_rows = fingerprints[fingerprints["site_id"] == target_id]
+        target_row = target_rows.iloc[0] if not target_rows.empty else None
+        target_body = str(target_row.get("planet", "Not supplied")) if target_row is not None else "Target row not found"
+        target_name = str(target_row.get("site_name", target_id)) if target_row is not None else target_id
+        c1, c2 = st.columns(2)
+        c1.metric("Target", target_name)
+        c2.metric("Target body", target_body)
+        st.caption("Mission-profile selection filters the ranking produced by the matching module. The app does not recalculate weights or rankings.")
+        st.markdown("#### Extended analysis modules")
+        st.markdown(
+            "| Module | Current status |\n"
+            "|---|---|\n"
+            "| Core Terrain Fingerprint | Integrated when Hiba's CSV is supplied |\n"
+            "| Thermal context (Diviner / THEMIS / MODIS) | Planned / separate evidence layer |\n"
+            "| Geological and mineralogical context | Planned / separate evidence layer |\n"
+            "| Water, ice, dust, and wind context | Planned / separate evidence layer |\n"
+            "| Subsurface environments | Planned / separate evidence layer |\n"
+            "| ShadowTwin illumination analysis | Planned until compatible inputs and calculations are supplied |\n"
+            "| Rover Gauntlet (A* route evaluation) | Planned until a tested route output is supplied |"
+        )
+        st.caption("Context layers are not added to similarity scores until their sources, scales, units, and timing have been checked.")
+
+    with tab_results:
         st.subheader("Candidate results")
-        targets = sorted(rankings.target_site_id.dropna().unique().tolist())
-        target = st.selectbox("Target", targets, key="result_target")
-        profiles = sorted(rankings.loc[rankings.target_site_id == target, "mission_profile"].dropna().unique().tolist())
-        profile = st.selectbox("Mission profile", profiles, key="result_profile") if profiles else None
-        ranked = rankings[(rankings.target_site_id == target) & (rankings.mission_profile == profile)].copy()
-        ranked["rank"] = pd.to_numeric(ranked["rank"], errors="coerce")
-        ranked["similarity_score"] = pd.to_numeric(ranked["similarity_score"], errors="coerce")
-        ranked = ranked.sort_values("rank")
-        merged = ranked.merge(fingerprints, left_on="candidate_site_id", right_on="site_id", how="left", suffixes=("", "_fingerprint"))
-        columns = [c for c in ["rank", "candidate_site_id", "site_name", "planet", "similarity_score", "weighted_distance", "source_id", "analysis_scale_m", "nodata_pct"] if c in merged]
-        st.dataframe(merged[columns], use_container_width=True, hide_index=True)
-        if ranked.similarity_score.notna().any():
-            st.plotly_chart(px.bar(ranked, x="candidate_site_id", y="similarity_score", color="rank", title="Relative similarity score"), use_container_width=True)
-        selected_ids = [target] + ranked.candidate_site_id.tolist()
-        selected_ids = [sid for sid in selected_ids if sid in set(fingerprints.site_id)]
-        show_comparison(fingerprints, selected_ids)
+        selected_rankings = rankings[
+            (rankings["target_site_id"] == target_id)
+            & (rankings["mission_profile"].astype(str) == mission_profile)
+        ].copy()
+        selected_rankings["rank"] = pd.to_numeric(selected_rankings["rank"], errors="coerce")
+        selected_rankings["similarity_score"] = pd.to_numeric(selected_rankings["similarity_score"], errors="coerce")
+        selected_rankings = selected_rankings.sort_values("rank")
+        candidate_count = selected_rankings["candidate_site_id"].nunique()
+        metric_a, metric_b = st.columns(2)
+        metric_a.metric("Earth candidates ranked", candidate_count)
+        metric_b.metric("Mission profile", mission_profile)
+        if candidate_count < 3:
+            st.warning(f"Only {candidate_count} candidate(s) are present for this target/profile. The prototype target is at least three.")
+
+        merged = selected_rankings.merge(
+            fingerprints,
+            left_on="candidate_site_id",
+            right_on="site_id",
+            how="left",
+            suffixes=("", "_fingerprint"),
+        )
+        display_cols = [
+            col for col in (
+                "rank", "candidate_site_id", "site_name", "planet",
+                "similarity_score", "weighted_distance", "source_id",
+                "analysis_scale_m", "nodata_pct",
+            )
+            if col in merged.columns
+        ]
+        st.dataframe(merged[display_cols], use_container_width=True, hide_index=True)
+        if selected_rankings["similarity_score"].notna().any():
+            st.plotly_chart(
+                px.bar(selected_rankings, x="candidate_site_id", y="similarity_score", color="rank", title="Relative similarity score (as supplied by the matcher)"),
+                use_container_width=True,
+            )
+
+        candidate_ids = selected_rankings["candidate_site_id"].tolist()
+        comparison_ids = [sid for sid in [target_id, *candidate_ids] if sid in known_ids]
+        st.markdown("#### Five-feature Terrain Fingerprint")
+        show_feature_groups(fingerprints, comparison_ids)
+        st.markdown("#### Single-Parameter Explorer")
+        show_single_parameter_explorer(fingerprints, comparison_ids)
+
         if {"latitude", "longitude"}.issubset(fingerprints.columns):
-            mapped = fingerprints[fingerprints.site_id.isin(selected_ids)].copy()
-            mapped["latitude"] = pd.to_numeric(mapped.latitude, errors="coerce")
-            mapped["longitude"] = pd.to_numeric(mapped.longitude, errors="coerce")
+            mapped = fingerprints[fingerprints["site_id"].isin(comparison_ids)].copy()
+            mapped["latitude"] = pd.to_numeric(mapped["latitude"], errors="coerce")
+            mapped["longitude"] = pd.to_numeric(mapped["longitude"], errors="coerce")
             mapped = mapped.dropna(subset=["latitude", "longitude"])
             if not mapped.empty:
-                st.plotly_chart(px.scatter_geo(mapped, lat="latitude", lon="longitude", color="planet", hover_name="site_name", hover_data=["site_id"], title="Target and candidate locations"), use_container_width=True)
+                st.plotly_chart(
+                    px.scatter_geo(mapped, lat="latitude", lon="longitude", color="planet", hover_name="site_name", hover_data=["site_id"], title="Target and Earth candidate locations"),
+                    use_container_width=True,
+                )
+            else:
+                st.info("No valid coordinates are available for this target/profile.")
         else:
-            st.info("Coordinates are not included in the fingerprint file; map view is unavailable.")
-        contributions = [c for c in ranked if c.endswith("_contribution")]
-        if contributions:
-            st.write("Per-feature ranking contributions supplied by the matching module")
-            st.dataframe(ranked[["candidate_site_id", *contributions]], use_container_width=True, hide_index=True)
-        st.caption("Similarity is a relative score under supplied features and weights, not a probability of mission success or site certification.")
-    with passport_tab:
+            st.info("Map view is unavailable because latitude/longitude were not supplied. The candidate table remains available.")
+
+        explanation_cols = [col for col in selected_rankings.columns if col.endswith("_contribution") or col.endswith("_difference")]
+        if explanation_cols:
+            st.markdown("#### Matcher-supplied explanation")
+            st.dataframe(selected_rankings[["candidate_site_id", *explanation_cols]], use_container_width=True, hide_index=True)
+        else:
+            st.info("Per-feature differences/contributions have not been supplied by the matcher. The app does not estimate them.")
+
+        quality_cols = [col for col in ("site_id", "site_name", "source_id", "analysis_scale_m", "nodata_pct", "valid_cell_count") if col in fingerprints.columns]
+        if quality_cols:
+            st.markdown("#### Data quality and provenance")
+            st.dataframe(fingerprints[fingerprints["site_id"].isin(comparison_ids)][quality_cols], use_container_width=True, hide_index=True)
+
+        st.caption("Similarity is a relative ranking under supplied features, scaling, and mission weights. It is not a probability of mission success or certification of site suitability.")
+
+    with tab_passport:
         st.subheader("Analog Passport")
-        sites = fingerprints[["site_id", "site_name"]].drop_duplicates()
-        labels = {row.site_id: f"{row.site_name} · {row.site_id}" for row in sites.itertuples()}
-        selected = st.selectbox("Choose a site", sites.site_id.tolist(), format_func=lambda value: labels.get(value, value))
-        site_rows = fingerprints[fingerprints.site_id == selected]
-        match_rows = rankings[rankings.candidate_site_id == selected]
-        match = match_rows.sort_values("rank").iloc[0].to_dict() if not match_rows.empty else None
-        card = build_passport(site_rows.iloc[0].to_dict(), match)
-        st.markdown(f"### {card['identity'].get('site_name', selected)}")
-        st.write(f"**{card['identity'].get('planet', 'Body not specified')}** · `{selected}`")
-        provenance = card["provenance"]
+        passport_sites = fingerprints[fingerprints["site_id"].isin(comparison_ids)][["site_id", "site_name"]].drop_duplicates()
+        if passport_sites.empty:
+            st.info("No target or candidate site rows are available for a Passport.")
+            return
+        labels = {row.site_id: f"{row.site_name} · {row.site_id}" for row in passport_sites.itertuples()}
+        selected_site = st.selectbox("Choose a target/candidate site", passport_sites["site_id"].tolist(), format_func=lambda value: labels.get(value, value), key="passport_site")
+        site_row = fingerprints[fingerprints["site_id"] == selected_site].iloc[0]
+        matched_rows = selected_rankings[selected_rankings["candidate_site_id"] == selected_site]
+        matched_row = matched_rows.iloc[0].to_dict() if not matched_rows.empty else None
+
+        comparison = None
+        if selected_site != target_id:
+            target_match = fingerprints[fingerprints["site_id"] == target_id]
+            if not target_match.empty:
+                matcher_differences = {
+                    key: value_or_none(value)
+                    for key, value in (matched_row or {}).items()
+                    if key.endswith("_difference")
+                }
+                comparison = {
+                    "target_site_id": target_id,
+                    "candidate_site_id": selected_site,
+                    "mission_profile": mission_profile,
+                    "target_features": site_feature_values(target_match.iloc[0]),
+                    "candidate_features": site_feature_values(site_row),
+                    "reported_differences": matcher_differences,
+                }
+
+        passport = build_passport(site_row.to_dict(), matched_row, comparison=comparison)
+        identity = passport["identity"]
+        provenance = passport["provenance"]
+        st.markdown(f"### {identity.get('site_name', selected_site)}")
+        st.write(f"**{identity.get('planet', 'Body not specified')}** · {selected_site}")
         c1, c2, c3 = st.columns(3)
         c1.metric("Analysis scale", f"{provenance.get('analysis_scale_m')} m" if provenance.get("analysis_scale_m") is not None else "Not supplied")
         c2.metric("NoData", f"{provenance.get('nodata_pct')}%" if provenance.get("nodata_pct") is not None else "Not supplied")
-        c3.metric("Data source", str(provenance.get("source_id", "Not supplied")))
-        for group, values in card["fingerprint"].items():
+        c3.metric("Source ID", str(provenance.get("source_id", "Not supplied")))
+
+        st.markdown("#### Terrain Fingerprint evidence")
+        missing_features = []
+        for group, metrics in FEATURE_GROUPS.items():
+            values = passport["fingerprint"].get(group, {})
+            absent = [metric for metric in metrics if metric not in values]
+            missing_features.extend(absent)
             with st.expander(group, expanded=True):
-                st.json(values) if values else st.write("No measurements supplied for this feature group.")
-        st.write("**Provenance and limitations**")
+                if values:
+                    st.json(values)
+                else:
+                    st.write("No measurements supplied for this feature group.")
+                if absent:
+                    st.caption("Not measured or not supplied: " + ", ".join(absent))
+        if missing_features:
+            st.warning("Analog gap: some Terrain Fingerprint measurements are missing for this site. They are not replaced with zero.")
+        else:
+            st.success("All five feature groups have at least one supplied value. This does not by itself establish full scientific validation.")
+
+        st.markdown("#### Source provenance and quality")
         st.json(provenance)
-        report = passport_to_markdown(card, demo_mode=demo)
-        st.download_button("Download Passport (Markdown)", report, file_name=f"analog_passport_{selected}.md", mime="text/markdown")
+        if comparison:
+            st.markdown("#### Target-to-candidate comparison")
+            st.write(f"Target: {target_id} · Mission: {mission_profile}")
+            rows = [
+                {
+                    "Feature": metric,
+                    "Target value": comparison["target_features"].get(metric),
+                    "Candidate value": comparison["candidate_features"].get(metric),
+                }
+                for metric in feature_metrics()
+            ]
+            st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+            if comparison["reported_differences"]:
+                st.write("Differences reported by the matching module")
+                st.json(comparison["reported_differences"])
+            else:
+                st.caption("The matcher has not supplied per-feature differences. The app shows original values and does not invent differences.")
+
+        st.markdown("#### Matching, assumptions, and limitations")
+        if passport["ranking"]:
+            st.json(passport["ranking"])
+        else:
+            st.info("No candidate-ranking row applies to the selected target/site.")
+        suggested_test = passport["other_metadata"].get("suggested_test")
+        st.markdown("**Suggested mission experiment**")
+        st.write(
+            suggested_test
+            if suggested_test
+            else "No site-specific experiment proposal has been supplied. Any future proposal must be labelled as a hypothesis, not a suitability certification."
+        )
+        report = passport_to_markdown(passport, demo_mode=demo_mode)
+        st.download_button(
+            "Download Analog Passport (Markdown)",
+            data=report,
+            file_name=f"analog_passport_{selected_site}.md",
+            mime="text/markdown",
+        )
+
     st.divider()
-    st.caption("AREA 67 prototype · Verify source metadata, analysis scale, units, and data quality before interpreting cross-body comparisons.")
+    st.caption("AREA 67 · Verify sources, units, vertical references, analysis scale, and data quality before interpreting cross-body comparisons.")
+
 
 if __name__ == "__main__":
     main()
