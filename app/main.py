@@ -369,6 +369,7 @@ def main() -> None:
                     "Candidate value": comparison["candidate_features"].get(metric),
                 }
                 for metric in feature_metrics()
+                if metric in fingerprints.columns
             ]
             st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
             if comparison["reported_differences"]:
