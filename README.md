@@ -136,6 +136,7 @@ The following software and data-management components are merged into `main`:
 - Earth DEM acquisition, raster inventory, structural QA, and screening reports for five provisional Copernicus GLO-30 DSM source tiles: Haughton, McMurdo, Askja, Mauna Kea, and Yungay.
 - A separate USGS 3DEP 1 m bare-earth DEM alternative for Mauna Kea, with its different vertical reference documented.
 - Target-aware terrain-matching engine plus a CSV loader/CLI, canonical ranking export, Slope-only baseline, and weight-sensitivity report.
+- Five-group terrain-fingerprint extraction and validation pipeline, including synthetic/GeoTIFF tests, explicit method/provenance metadata, and optional derived feature maps.
 
 ### Current data status
 
@@ -143,7 +144,7 @@ The following software and data-management components are merged into `main`:
 - The Mauna Kea USGS tile is a regional alternative only; it is not a harmonized replacement for all five Copernicus sources.
 - Source manifests, checksums, QA JSON/Markdown, and screening previews are tracked. Large raw DEM rasters remain gitignored and must be acquired locally using the documented tools.
 - No AOI boundaries, final Earth candidate set, common physical analysis scale, reprojection/resampling policy, or target sub-area have been approved.
-- Hiba's feature branch now includes the reusable five-group terrain extraction pipeline, scientific validation utilities, methodology, and synthetic/GeoTIFF tests. The real `data/processed/terrain_fingerprints.csv` is still pending approved AOIs, a shared physical scale, and analysis-ready rasters; no real terrain measurements are claimed. The canonical `candidate_rankings.csv` and robustness report are also absent.
+- Hiba's five-group terrain extraction pipeline, scientific validation utilities, methodology, and synthetic/GeoTIFF tests are now merged into `main`. The real `data/processed/terrain_fingerprints.csv` is still pending approved AOIs, a shared physical scale, and analysis-ready rasters; no real terrain measurements are claimed. The canonical `candidate_rankings.csv` and robustness report are also absent.
 
 ### Running the matching workflow
 
@@ -152,9 +153,9 @@ The matching CLI refuses to run unless the operator explicitly supplies both `--
 ### Application and optional route status
 
 - The application remains in clearly labelled **DEMO MODE** until both real processed files exist and pass the integration contracts. It refuses to mix a single real file with synthetic fixtures.
-- Hiba's feature branch adds the DEM-to-fingerprint extraction pipeline and 16 synthetic/GeoTIFF tests. These verify the implementation against constructed surfaces, not actual lunar or Earth reference terrain.
+- The five-group terrain-fingerprint extraction pipeline is merged into `main` and includes 16 focused synthetic/GeoTIFF tests. These verify the implementation against constructed surfaces, not actual lunar or Earth reference terrain.
 - The matching workflow is software plumbing tested with synthetic fixtures; no real Earth–Moon/Mars ranking is claimed.
 - The optional A* Rover Gauntlet work remains in [Draft PR #9](https://github.com/MohammadJabr/area-67/pull/9), not in `main`. Its updated branch rejects sheared affine grids, enforces a 250,000-cell default software resource guard, and writes a route provenance JSON sidecar. Its latest CI passed 76 synthetic tests; no real route is claimed.
-- The latest full test run on `main` after the CSV matching workflow merge passed **85 tests** (24 warnings).
+- The merged terrain pipeline's latest full CI run passed **101 tests** (41 warnings) on the PR head; the post-merge `main` run is recorded in the Actions history.
 
 The project has a working application and reproducible source/matching software, but **it does not yet have a validated planetary-analog result**. The next priority is to approve study areas and physical scales, produce validated real fingerprints, and run the complete evidence chain—not to add more optional features.
