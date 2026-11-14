@@ -62,8 +62,12 @@ class TerrainConfig:
             raise ValueError("connectivity must be 4 or 8")
         if self.minimum_valid_coverage_pct is not None and not (0 <= self.minimum_valid_coverage_pct <= 100):
             raise ValueError("minimum_valid_coverage_pct must be between 0 and 100 when configured")
-        if not (0 < self.local_relief_min_valid_fraction <= 1):
-            raise ValueError("local_relief_min_valid_fraction must be in (0, 1]")
+        if (
+            self.local_relief_min_valid_fraction is None
+            or not math.isfinite(self.local_relief_min_valid_fraction)
+            or not (0 < self.local_relief_min_valid_fraction <= 1)
+        ):
+            raise ValueError("local_relief_min_valid_fraction must be explicitly set to a finite value in (0, 1]")
 
 
 def _finite_2d(elevation: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
