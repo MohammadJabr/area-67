@@ -114,7 +114,15 @@ def run_weight_sensitivity(
         relative_change,
     )
 
-    scenario_rankings = {}
+    # A simple slope-only baseline helps reveal whether the full feature set
+    # adds value beyond the most obvious terrain descriptor.
+    slope_only_baseline = rank_candidates(
+        candidates=candidates,
+        weights={"slope": 1.0},
+        target_site_id=target_site_id,
+    )
+
+    scenario_rankings = {};
 
     appearance_counts = {
         k: {site_id: 0 for site_id in candidates}
@@ -141,5 +149,6 @@ def run_weight_sensitivity(
         "scenario_count": len(scenarios),
         "relative_change": relative_change,
         "scenario_rankings": scenario_rankings,
+        "slope_only_baseline": slope_only_baseline,
         "top_k_counts": appearance_counts,
     }
