@@ -231,3 +231,12 @@ def test_geotiff_pipeline_accepts_integer_elevation_raster(tmp_path):
     result = analyze_geotiff(dem_path, aoi_path, site, config(scale=10, relief=40))
     assert result["slope_median"] == pytest.approx(np.degrees(np.arctan(0.1)), abs=1e-5)
     assert result["valid_coverage_pct"] == pytest.approx(100.0)
+
+
+def test_local_relief_support_fraction_cannot_be_omitted():
+    with pytest.raises(ValueError, match="must be explicitly set"):
+        TerrainConfig(
+            analysis_scale_m=10,
+            relief_window_m=40,
+            local_relief_min_valid_fraction=None,
+        ).validate()
