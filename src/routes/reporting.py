@@ -180,7 +180,7 @@ def export_route_metadata_json(
     output = Path(output_path)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(
-        json.dumps(document, indent=2, ensure_ascii=False, allow_nan=False) + "\\n",
+        json.dumps(document, indent=2, ensure_ascii=False, allow_nan=False) + "\n",
         encoding="utf-8",
     )
     return output
