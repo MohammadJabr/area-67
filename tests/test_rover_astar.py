@@ -187,3 +187,20 @@ def test_invalid_scale_and_connectivity_are_rejected():
             tri_scale_m=5,
             connectivity=6,
         )
+
+
+
+def test_astar_rejects_grid_above_explicit_memory_guard():
+    elevation, slope, tri = _flat_grids(3, 3)
+    with pytest.raises(ValueError, match="exceeding max_grid_cells"):
+        plan_rover_route(
+            elevation,
+            slope,
+            tri,
+            (0, 0),
+            (2, 2),
+            cell_size_m=10,
+            slope_scale_deg=10,
+            tri_scale_m=5,
+            max_grid_cells=8,
+        )

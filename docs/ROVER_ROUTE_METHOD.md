@@ -14,9 +14,9 @@ The raster workflow accepts three single-band GeoTIFFs:
 2. Slope.
 3. Terrain Ruggedness Index (TRI).
 
-All three must share the same dimensions, CRS, affine transform, and NoData alignment. The CRS must be projected, use square pixels, and declare linear units that can be converted to metres. The loader converts horizontal pixel size to metres, elevation and TRI to metres, and slope to degrees. Units are explicit function arguments; the code does not guess them.
+All three must share the same dimensions, CRS, affine transform, and NoData alignment. The CRS must be projected, use square pixels, and declare linear units that can be converted to metres. The affine row/column basis vectors must also be orthogonal; equal basis lengths alone do not rule out a sheared grid. The loader converts horizontal pixel size to metres, elevation and TRI to metres, and slope to degrees. Units are explicit function arguments; the code does not guess them.
 
-Invalid/NoData cells are combined across all three rasters and remain invalid. The A* search also accepts an optional blocked-cell mask and an optional non-negative penalty grid.
+Invalid/NoData cells are combined across all three rasters and remain invalid. The A* search also accepts an optional blocked-cell mask and an optional non-negative penalty grid. The raster loader and array planner both enforce `max_grid_cells` (default 250,000) before the Python A* search structures are built. This is a software memory/performance guard, not a scientific or rover threshold. Crop to an approved ROI before routing; raise the limit only after benchmarking the target environment.
 
 The current provisional LOLA Site04 package has elevation and slope layers plus observation/uncertainty products, but this does not imply that an aligned TRI raster or Earth candidate rasters are ready. Do not run a route merely because one of the layers exists.
 
@@ -60,6 +60,8 @@ The route result includes:
 
 The CSV exporter records each path cell, the terrain profiles, per-step/cumulative cost, and optional map coordinates in the raster's **native CRS units**, with the CRS identifier in a column. Reproject coordinates before putting them on a basemap.
 
+A JSON sidecar is also written (default: `data/processed/rover_route_metadata.json`). It records start/goal, units, normalization scales, alpha/beta weights, connectivity, maximum grid size, raster CRS/transform/resolution, input raster SHA-256 checksums, optional blocked/penalty layer fingerprints, route summary, and model limitations. Keep the CSV and sidecar together when sharing a route.
+
 ## Run from aligned rasters
 
 Example API call (replace paths, units, start/goal cells, and scales with the actual candidate data and documented study settings):
@@ -82,8 +84,11 @@ result = plan_route_from_rasters(
     beta=1.0,
     connectivity=8,
     output_path="data/processed/rover_route.csv",
+    metadata_output_path="data/processed/rover_route_metadata.json",
+    max_grid_cells=250_000,
 )
 print(result["route"]["total_cost_m"])
+print(result["route_metadata_json"])
 ```
 
 The numeric scales in this example are placeholders, not recommended values. The project team must agree them after reviewing the candidate dataset and mission objective.

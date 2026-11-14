@@ -3,7 +3,11 @@
 from __future__ import annotations
 
 import csv
+import hashlib
+import json
 from pathlib import Path
+
+import numpy as np
 
 from affine import Affine
 from rasterio.transform import xy
@@ -99,4 +103,84 @@ def export_route_profile_csv(
                 "assumptions": assumptions,
             })
 
+    return output
+
+
+
+def _sha256_file(path: str | Path) -> str:
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _array_fingerprint(values) -> dict:
+    if values is None:
+        return {"applied": False}
+    array = np.ascontiguousarray(np.asarray(values))
+    return {
+        "applied": True,
+        "shape": list(array.shape),
+        "dtype": str(array.dtype),
+        "sha256": hashlib.sha256(array.tobytes()).hexdigest(),
+    }
+
+
+def export_route_metadata_json(
+    route_result: dict,
+    output_path: str | Path,
+    *,
+    elevation_path: str | Path,
+    slope_path: str | Path,
+    tri_path: str | Path,
+    parameters: dict,
+    grid_metadata: dict,
+    blocked_mask=None,
+    penalty=None,
+) -> Path:
+    """Write the full route configuration and source provenance beside the CSV."""
+    input_paths = {
+        "elevation": Path(elevation_path),
+        "slope": Path(slope_path),
+        "tri": Path(tri_path),
+    }
+    missing = [name for name, path in input_paths.items() if not path.is_file()]
+    if missing:
+        raise FileNotFoundError(
+            "Cannot fingerprint route inputs; missing: " + ", ".join(missing)
+        )
+
+    document = {
+        "schema_version": 1,
+        "route_model": route_result.get("route_model"),
+        "parameters": parameters,
+        "input_rasters": {
+            name: {"path": str(path), "sha256": _sha256_file(path)}
+            for name, path in input_paths.items()
+        },
+        "optional_cost_layers": {
+            "blocked_mask": _array_fingerprint(blocked_mask),
+            "penalty": _array_fingerprint(penalty),
+        },
+        "grid_metadata": grid_metadata,
+        "route_summary": {
+            "status": route_result.get("status"),
+            "total_cost_m": route_result.get("total_cost_m"),
+            "path_length_m": route_result.get("path_length_m"),
+            "path_cell_count": len(route_result.get("path_cells", [])),
+        },
+        "assumptions": route_result.get("assumptions", []),
+        "limitations": [
+            "This is a hypothetical DEM least-cost path, not rover-safety certification.",
+            "Feature scales and alpha/beta weights are operational assumptions, not NASA or rover-manufacturer limits.",
+            "The route does not model wheel mechanics, regolith bearing strength, rock hazards, energy budgets, or uncertainty propagation unless separately added and validated.",
+        ],
+    }
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(
+        json.dumps(document, indent=2, ensure_ascii=False, allow_nan=False) + "\n",
+        encoding="utf-8",
+    )
     return output
