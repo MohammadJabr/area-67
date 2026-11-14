@@ -137,3 +137,9 @@ def test_a_fully_missing_feature_group_is_reported_as_a_quality_gap():
     fingerprints.loc[0, ["tri_median"]] = float("nan")
     warnings = fingerprint_quality_warnings(fingerprints)
     assert any("Terrain Ruggedness Index (TRI): no usable metric" in warning for warning in warnings)
+
+def test_terrain_distribution_requires_all_three_class_percentages():
+    fingerprints, _ = load_demo_data()
+    fingerprints.loc[0, "terrain_steep_pct"] = float("nan")
+    errors = validate_fingerprints(fingerprints)
+    assert any("terrain_steep_pct contains missing values" in error for error in errors)
