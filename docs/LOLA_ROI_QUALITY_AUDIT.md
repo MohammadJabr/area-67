@@ -52,7 +52,7 @@ Direct-observation support is calculated as positive LDEC cells divided by valid
 
 ## Fail-closed behavior
 
-- The shapefile must declare a CRS. Exact CRS equivalence is checked first; for custom projected lunar WKT, the audit also accepts a narrowly defined mathematical equivalence when the body ellipsoid, prime meridian, projection method/parameters, and axis units/directions match despite differing placeholder metadata names. It does not guess a CRS or reproject a lunar ROI.
+- The shapefile must declare a CRS. Exact CRS equivalence is checked first. The custom projected-lunar fallback requires compatible datum identity as well as matching body shape, prime meridian, projection method/parameters, and axis units/directions: two placeholder datum labels may match each other, and explicit names must match each other. An unknown-to-explicit match and different explicit frame names (for example, MOON_ME versus MOON_PA) are rejected even when projection mathematics match. A both-unknown match is only nominal coordinate-math compatibility; it does not identify the actual Moon-fixed frame. No CRS is guessed and no lunar ROI is reprojected.
 - The five raster layers must have one band each and exactly matching CRS, dimensions, and affine transform.
 - Null, empty, invalid, unsupported, or non-overlapping geometries are reported and not automatically repaired.
 - No raster data are altered, resampled, clipped to disk, or exported.
