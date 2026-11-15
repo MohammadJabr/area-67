@@ -12,6 +12,7 @@ from src.data.build_exploratory_pilot import (
     resample_elevation,
     summarize_count_layer,
     matching,
+    ranking_csv_rows,
 )
 
 
@@ -188,3 +189,26 @@ def test_pilot_matching_includes_tolerance_sensitivity(
     assert weight_sensitivity["weight_sensitivity"]["scenario_count"] == 11
     assert tolerance_sensitivity["scenario_count"] == 11
     assert tolerance_sensitivity["factors"] == [0.5, 1.0, 1.5]
+
+    # The user-facing note must be computed from actual per-scenario ranks,
+    # not a separately maintained count that could drift from the sidecar.
+    tolerance_sensitivity["rank_by_scenario"] = {
+        "baseline": {"EARTH_A": 1},
+        "slope_0.5x": {"EARTH_A": 2},
+        "slope_1.5x": {"EARTH_A": 1},
+    }
+    tolerance_sensitivity["scenario_count"] = 3
+    csv_rows = ranking_csv_rows(
+        result,
+        weight_sensitivity,
+        tolerance_sensitivity,
+        {
+            target_fingerprint["site_id"]: target_fingerprint,
+            "EARTH_A": candidate,
+        },
+        config,
+    )
+    assert csv_rows[0]["tolerance_top1_scenarios"] == 2
+    assert csv_rows[0]["tolerance_sensitivity_scenario_count"] == 3
+    assert "tolerance Top-1 in 2/3" in csv_rows[0]["ranking_stability_note"]
+    assert "undefined" not in csv_rows[0]["ranking_stability_note"]
