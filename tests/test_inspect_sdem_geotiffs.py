@@ -54,3 +54,32 @@ def test_same_grid_requires_equal_crs_shape_and_transform(tmp_path):
     reference = raster_metadata(first)
     assert same_grid(reference, raster_metadata(aligned))
     assert not same_grid(reference, raster_metadata(shifted))
+
+
+def test_compare_grids_explains_resolution_and_extent_differences():
+    from inspect_sdem_geotiffs import compare_grids
+
+    reference = {
+        "crs_wkt": "same-crs",
+        "width": 3200,
+        "height": 3200,
+        "resolution": [5.0, 5.0],
+        "bounds": {"left": -19000.0, "bottom": -20000.0, "right": -3000.0, "top": -4000.0},
+        "transform": [5.0, 0.0, -19000.0, 0.0, -5.0, -4000.0, 0.0, 0.0, 1.0],
+    }
+    companion = {
+        "crs_wkt": "same-crs",
+        "width": 1066,
+        "height": 1066,
+        "resolution": [15.0, 15.0],
+        "bounds": {"left": -19000.0, "bottom": -19990.0, "right": -3010.0, "top": -4000.0},
+        "transform": [15.0, 0.0, -19000.0, 0.0, -15.0, -4000.0, 0.0, 0.0, 1.0],
+    }
+
+    result = compare_grids(reference, companion)
+
+    assert result["same_crs"] is True
+    assert result["same_resolution"] is False
+    assert result["same_extent_within_tolerance"] is False
+    assert result["max_absolute_bound_delta_m"] == 10.0
+    assert result["same_grid"] is False
