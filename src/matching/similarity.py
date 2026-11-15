@@ -24,16 +24,30 @@ def weighted_similarity_distance(
     Each group distance must already be computed and be non-negative.
     """
 
-    if not weights:
-        raise ValueError("At least one group weight is required.")
+    if not isinstance(group_distances, Mapping):
+        raise TypeError("group_distances must be a mapping.")
 
-    if not isfinite(min_completeness) or not 0 <= min_completeness <= 1:
-        raise ValueError("min_completeness must be between 0 and 1.")
+    if not isinstance(weights, Mapping) or not weights:
+        raise ValueError("At least one group weight is required in a mapping.")
+
+    if (
+        isinstance(min_completeness, bool)
+        or not isinstance(min_completeness, (int, float))
+        or not isfinite(min_completeness)
+        or not 0 <= min_completeness <= 1
+    ):
+        raise ValueError("min_completeness must be a finite number between 0 and 1.")
 
     total_weight = 0.0
 
     for group, weight in weights.items():
-        if not isinstance(weight, (int, float)) or not isfinite(weight):
+        if (
+            not isinstance(group, str)
+            or not group.strip()
+            or isinstance(weight, bool)
+            or not isinstance(weight, (int, float))
+            or not isfinite(weight)
+        ):
             raise ValueError(f"Invalid weight for {group}.")
 
         if weight < 0:
@@ -55,7 +69,11 @@ def weighted_similarity_distance(
             missing_groups.append(group)
             continue
 
-        if not isinstance(value, (int, float)) or not isfinite(value):
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not isfinite(value)
+        ):
             raise ValueError(f"Invalid distance for {group}.")
 
         if value < 0:
