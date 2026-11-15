@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import re
 import shutil
 import sys
@@ -250,25 +251,42 @@ def inspect_extracted_rois(site_id: str, extracted_dir: str | Path) -> dict[str,
         raise RuntimeError("ROI geometry inspection requires geopandas from requirements.txt") from exc
 
     for shp_path in shp_files:
-        frame = gpd.read_file(shp_path)
+        relative_name = shp_path.relative_to(extracted_dir).as_posix()
+        try:
+            frame = gpd.read_file(shp_path)
+        except Exception as exc:
+            result["warnings"].append(
+                f"{relative_name}: could not read shapefile: {type(exc).__name__}: {exc}"
+            )
+            continue
         geometries = frame.geometry
         geom_types = sorted(str(value) for value in geometries.geom_type.dropna().unique())
+        null_count = int(geometries.isna().sum())
         empty_count = int(geometries.is_empty.sum())
-        invalid_count = int((~geometries.is_valid & ~geometries.is_empty).sum())
+        invalid_count = int(
+            ((~geometries.is_valid) & (~geometries.is_empty) & geometries.notna()).sum()
+        )
+        usable = geometries.notna() & ~geometries.is_empty
         bounds = None
-        if not frame.empty and not geometries.is_empty.all():
-            raw_bounds = frame.total_bounds.tolist()
-            bounds = [float(value) for value in raw_bounds]
+        if usable.any():
+            raw_bounds = frame.loc[usable].total_bounds.tolist()
+            if all(math.isfinite(float(value)) for value in raw_bounds):
+                bounds = [float(value) for value in raw_bounds]
+            else:
+                result["warnings"].append(
+                    f"{relative_name}: geometry bounds include non-finite values."
+                )
         projected = bool(frame.crs and not frame.crs.is_geographic)
         area_native_units2 = (
-            float(geometries.area.sum()) if projected and len(frame) else None
+            float(geometries.area.sum()) if projected and usable.any() else None
         )
         item = {
-            "shapefile": shp_path.relative_to(extracted_dir).as_posix(),
+            "shapefile": relative_name,
             "feature_count": int(len(frame)),
             "crs": frame.crs.to_string() if frame.crs else None,
             "geometry_types": geom_types,
             "bounds": bounds,
+            "null_geometry_count": null_count,
             "empty_geometry_count": empty_count,
             "invalid_geometry_count": invalid_count,
             "area_native_units2": area_native_units2,
@@ -277,6 +295,10 @@ def inspect_extracted_rois(site_id: str, extracted_dir: str | Path) -> dict[str,
         if frame.crs is None:
             result["warnings"].append(
                 f"{item['shapefile']}: CRS is missing; do not guess or reproject."
+            )
+        if null_count:
+            result["warnings"].append(
+                f"{item['shapefile']}: {null_count} features have null geometries."
             )
         if invalid_count:
             result["warnings"].append(
