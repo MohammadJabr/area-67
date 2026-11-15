@@ -366,6 +366,27 @@ def main() -> None:
         c1.metric("Target region", target_name)
         c2.metric("Target body", target_body)
         c3.metric("Mission profile", mission_profile)
+        earth_rows = fingerprints[fingerprints["planet"].astype(str).str.casefold().eq("earth")]
+        earth_candidate_rows = earth_rows[earth_rows["site_id"].isin(
+            rankings.loc[rankings["target_site_id"] == target_id, "candidate_site_id"].astype(str)
+        )]
+        approved_aoi_count = 0
+        if "aoi_approval" in fingerprints.columns:
+            approved_aoi_count = int(
+                fingerprints["aoi_approval"].astype(str).str.upper().eq("APPROVED").sum()
+            )
+        mars_record_count = int(
+            fingerprints["planet"].astype(str).str.casefold().eq("mars").sum()
+        )
+        st.markdown("#### Evidence readiness")
+        ready_a, ready_b, ready_c = st.columns(3)
+        ready_a.metric("Earth references in this pilot", int(earth_candidate_rows["site_id"].nunique()))
+        ready_b.metric("Scientifically approved AOIs", approved_aoi_count)
+        ready_c.metric("Mars records in current dataset", mars_record_count)
+        st.caption(
+            "The current public demonstration is a single-target lunar exploratory pilot. "
+            "AOI approval and Mars comparison remain scientific/data work, not hidden UI options."
+        )
         st.markdown(
             '<div class="a67-inline-note">Space-to-Earth is the active MVP workflow: start from a lunar or Martian target and inspect ranked Earth reference windows. Earth-to-Space remains a future search direction.</div>',
             unsafe_allow_html=True,
@@ -714,17 +735,108 @@ def main() -> None:
                 f2.metric("Planetary body", str(focus.get("planet", "Not supplied")))
                 scale_value = value_or_none(focus.get("analysis_scale_m"))
                 f3.metric("Analysis scale", f"{float(scale_value):g} m" if scale_value is not None else "Not supplied")
+                qa1, qa2, qa3 = st.columns(3)
+                valid_coverage = pd.to_numeric(
+                    pd.Series([focus.get("valid_coverage_pct")]), errors="coerce"
+                ).iloc[0]
+                direct_coverage = pd.to_numeric(
+                    pd.Series([focus.get("direct_observation_coverage_pct")]), errors="coerce"
+                ).iloc[0]
+                nodata_value = pd.to_numeric(
+                    pd.Series([focus.get("nodata_pct")]), errors="coerce"
+                ).iloc[0]
+                qa1.metric(
+                    "Valid raster coverage",
+                    f"{valid_coverage:.1f}%" if pd.notna(valid_coverage) else "Not supplied",
+                )
+                qa2.metric(
+                    "Direct instrument support",
+                    f"{direct_coverage:.2f}%" if pd.notna(direct_coverage) else "Not supplied",
+                )
+                qa3.metric(
+                    "NoData",
+                    f"{nodata_value:.1f}%" if pd.notna(nodata_value) else "Not supplied",
+                )
+                aoi_value = value_or_none(focus.get("aoi_approval")) or value_or_none(focus.get("aoi_status"))
+                if aoi_value:
+                    st.caption(
+                        f"Study footprint status: {aoi_value}. Raster coverage and direct instrument support are separate evidence measures."
+                    )
             st.markdown("#### Five-group terrain fingerprint")
             show_feature_groups(fingerprints, comparison_ids)
             st.markdown("#### Single-parameter explorer")
             st.caption("Select a measurement to compare its supplied value across the target and currently selected Earth candidates.")
             show_single_parameter_explorer(fingerprints, comparison_ids)
 
+            st.markdown("#### Why does the matcher rank candidates this way?")
+            contribution_columns = {
+                "slope_contribution": "Slope",
+                "tri_contribution": "TRI",
+                "relief_contribution": "Local Relief",
+                "distribution_contribution": "Terrain Distribution",
+                "spatial_pattern_contribution": "Spatial Pattern",
+            }
+            available_contributions = [
+                column for column in contribution_columns if column in selected_rankings.columns
+            ]
+            if available_contributions:
+                contribution_frame = selected_rankings[
+                    ["candidate_site_id", *available_contributions]
+                ].copy()
+                contribution_frame["Candidate"] = contribution_frame["candidate_site_id"].map(
+                    candidate_name_map
+                ).fillna(contribution_frame["candidate_site_id"])
+                contribution_long = contribution_frame.melt(
+                    id_vars=["Candidate"],
+                    value_vars=available_contributions,
+                    var_name="Feature group",
+                    value_name="Reported contribution",
+                )
+                contribution_long["Feature group"] = contribution_long["Feature group"].map(
+                    contribution_columns
+                )
+                contribution_long["Reported contribution"] = pd.to_numeric(
+                    contribution_long["Reported contribution"], errors="coerce"
+                )
+                contribution_long = contribution_long.dropna(subset=["Reported contribution"])
+                if not contribution_long.empty:
+                    contribution_figure = px.bar(
+                        contribution_long,
+                        x="Candidate",
+                        y="Reported contribution",
+                        color="Feature group",
+                        barmode="stack",
+                        title="Matcher-reported feature-group contributions",
+                        template="plotly_dark",
+                        hover_data={"Reported contribution": ":.4f"},
+                    )
+                    contribution_figure.update_layout(
+                        paper_bgcolor="rgba(0,0,0,0)",
+                        plot_bgcolor="rgba(8,18,31,.35)",
+                        font_color="#dce9f8",
+                        margin=dict(l=16, r=16, t=56, b=22),
+                        yaxis_title="Reported contribution value",
+                        xaxis_title="Earth candidate",
+                        legend_title_text="Terrain group",
+                        height=390,
+                    )
+                    st.plotly_chart(
+                        contribution_figure,
+                        width="stretch",
+                        config={"displayModeBar": True, "responsive": True},
+                    )
+                    st.caption(
+                        "These values are supplied by the matching engine as feature-group contributions. "
+                        "They explain this run's weighted comparison; they are not percentages of physical similarity."
+                    )
+            else:
+                st.info("Feature-group contribution values were not supplied by the matching engine.")
+
             explanation_cols = [
                 col for col in selected_rankings.columns
                 if col.endswith("_contribution") or col.endswith("_difference")
             ]
-            with st.expander("Matcher explanation · supplied feature contributions and differences", expanded=False):
+            with st.expander("Matcher explanation · exact supplied values and differences", expanded=False):
                 if explanation_cols:
                     explanation = selected_rankings[["candidate_site_id", *explanation_cols]].copy()
                     explanation = explanation.rename(columns={"candidate_site_id": "Earth candidate"})
