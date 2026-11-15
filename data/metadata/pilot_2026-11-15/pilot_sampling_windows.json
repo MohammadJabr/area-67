@@ -1,0 +1,51 @@
+{
+  "status": "EXPLORATORY_NOT_APPROVED",
+  "window_area_km2": 0.9801,
+  "moon": {
+    "site_id": "MOON_SITE01_PILOT990",
+    "source": "NASA PGDA LOLA Site01 / Connecting Ridge",
+    "bounds_native_m": [-11825.0, -12742.5, -10835.0, -11752.5],
+    "crs_note": "Custom south-polar stereographic WKT; datum label unknown. No coordinate transformation or relabelling.",
+    "aoi_approval": "NOT_APPROVED",
+    "note": "990m x 990m window centered inside the prior 1km read-only Site01 screening square."
+  },
+  "earth": [
+    {
+      "site_id": "EARTH_HAUGHTON_REF990",
+      "reference_anchor_lon_lat": [-89.68, 75.3772222],
+      "anchor_source": "Patterson & Ernst (2020) crater-centre reference",
+      "crs": "EPSG:32616",
+      "bounds_projected_m": [424005.9136, 8366909.4830, 424995.9136, 8367899.4830],
+      "aoi_approval": "NOT_APPROVED",
+      "note": "Reference-centred window only; not a digitized central-basin geological AOI."
+    },
+    {
+      "site_id": "EARTH_YUNGAY_HYPERARID_REF990",
+      "reference_anchor_lon_lat": [-69.8805, -24.0637778],
+      "anchor_source": "Published hyper-arid-core study reference cited in repository review",
+      "crs": "EPSG:32719",
+      "bounds_projected_m": [409990.2221, 7337936.8686, 410980.2221, 7338926.8686],
+      "aoi_approval": "NOT_APPROVED",
+      "note": "Published field reference window; not confirmed as AREA 67 field plot."
+    },
+    {
+      "site_id": "EARTH_MAUNAKEA_REF990",
+      "reference_anchor_lon_lat": [-155.47, 19.82],
+      "anchor_source": "USGS Hawaiian Volcano Observatory Mauna Kea reference",
+      "crs": "EPSG:32605",
+      "bounds_projected_m": [240775.5327, 2192959.4582, 241765.5327, 2193949.4582],
+      "aoi_approval": "NOT_APPROVED",
+      "note": "Reference-centred window only; does not select a summit or flank geomorphic unit."
+    },
+    {
+      "site_id": "EARTH_ASKJA_REF990",
+      "reference_anchor_lon_lat": [-16.783, 65.033],
+      "anchor_source": "Smithsonian Global Volcanism Program",
+      "crs": "EPSG:32628",
+      "bounds_projected_m": [415537.1371, 7212821.9196, 416527.1371, 7213811.9196],
+      "ranking_status": "HELD_OUT",
+      "aoi_approval": "NOT_APPROVED",
+      "note": "Selected window was dominated by flat/equal-elevation samples. Reconsider only after selecting a geomorphic caldera or lava-field AOI."
+    }
+  ]
+}
