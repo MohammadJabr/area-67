@@ -255,6 +255,22 @@ The archive README in the local A306 package contains placeholder `doi:XYZ` cita
 
 This review used header metadata only. No SDEM pixel arrays were read, and no raster was reprojected, resampled, modified or combined.
 
+### Invalid provider ROI geometry and repair-preview evidence
+
+The 2026-11-15 standard ROI quality audit reports source features **0 and 1 as invalid** and intentionally calculates no official raster statistics for them. Source features **2 and 3 are valid** and remain eligible for native-geometry QA. The invalid source features were separately passed through Shapely `make_valid` in memory in an earlier local diagnostic; the original shapefile was not changed.
+
+| Source feature | make_valid polygon component | Area (m²) | Raster pixel centres | Positive LDEC support | Median Z RMS (m) | Median slope (°) | Median slope RMS (°) |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 0 | 0 | 2,137.5 | 88 | 12.50% | 0.4134 | 2.9892 | 1.6728 |
+| 0 | 1 | 3,312.5 | 133 | 8.27% | 0.4295 | 2.9562 | 1.6875 |
+| 1 | 0 | 225.0 | 10 | 10.00% | 0.4651 | 3.5467 | 1.6971 |
+| 1 | 1 | 37.5 | 2 | 50.00% | 0.1211 | 2.5720 | 1.1064 |
+| 1 | 2 | 2,487.5 | 102 | 13.73% | 0.2478 | 2.5022 | 1.4690 |
+
+These are **repair-preview statistics only**. Feature 0 split into two polygon components; feature 1 split into three. Feature 1's 37.5 m² fragment contains only two raster pixel centres, so its 50% direct-support percentage is a two-cell statistic and is not comparable in stability to the larger components. The sums of component areas (5,450 m² for source feature 0; 2,750 m² for source feature 1) describe that in-memory polygonal output only.
+
+The preview does not tell us whether the provider intended these components to be separate ROIs, a single multipart region, or a different boundary topology. The missing linked GMT region-properties product prevents a direct comparison against the provider's original contour geometry. Keep source features 0 and 1 marked `review_required`; do not write the repaired components over the provider shapefile or merge their preview statistics into the official QA table. The new `preview_invalid_roi_repairs.py` tool makes this diagnostic reproducible and adds the exact Shapely validity reason and component inventory.
+
 ## 5. Recommended next steps
 
 1. Retain the existing four provider ROI polygons and their feature attributes as source evidence. Do not alter them or write repaired alternatives over the source.
