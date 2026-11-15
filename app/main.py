@@ -1,10 +1,7 @@
 """AREA 67 Streamlit MVP: streamlit run app/main.py."""
 from __future__ import annotations
 import html
-import io
-import json
 import sys
-import zipfile
 from pathlib import Path
 from typing import Any
 import pandas as pd
@@ -25,6 +22,7 @@ from src.data.contracts import (
     validate_space_to_earth,
 )
 from src.reporting.passport import build_passport, passport_to_markdown
+from src.reporting.evidence_bundle import build_evidence_bundle
 
 st.set_page_config(page_title="AREA 67 | Planetary Analog Discovery", page_icon="🪐", layout="wide")
 FP = ROOT / "data/processed/terrain_fingerprints.csv"
@@ -80,50 +78,6 @@ def render_hero(status: str, site_count: int, candidate_count: int) -> None:
         """,
         unsafe_allow_html=True,
     )
-
-
-def build_evidence_bundle(
-    passport: dict[str, Any],
-    fingerprint_row: dict[str, Any],
-    ranking_row: dict[str, Any] | None,
-    demo_mode: bool = False,
-) -> bytes:
-    """Package supplied evidence and provenance; raw DEM/LOLA assets remain external."""
-    buffer = io.BytesIO()
-    with zipfile.ZipFile(buffer, mode="w", compression=zipfile.ZIP_DEFLATED) as archive:
-        readme = [
-            "AREA 67 — Evidence Bundle",
-            "",
-            "Contents: human-readable Analog Passport, structured Passport JSON, selected",
-            "terrain fingerprint CSV, and matching-result CSV when a ranking row exists.",
-            "",
-            "Raw DEM/LOLA rasters are not included. Use the source URLs, repository",
-            "manifests and processing instructions to reproduce the analysis.",
-            "This export is not an AOI approval or site-suitability certification.",
-            "",
-            "Synthetic demo mode: " + ("YES — synthetic fixtures." if demo_mode else "NO — loaded app result pair."),
-            "Inspect scientific status, AOI approval, coverage, direct-observation support,",
-            "vertical-reference caveats, units and matching assumptions before reuse.",
-        ]
-        archive.writestr("README.txt", "\n".join(readme))
-        archive.writestr(
-            "analog_passport.md",
-            passport_to_markdown(passport, demo_mode=demo_mode),
-        )
-        archive.writestr(
-            "analog_passport.json",
-            json.dumps(passport, ensure_ascii=False, indent=2, default=str),
-        )
-        archive.writestr(
-            "site_terrain_fingerprint.csv",
-            pd.DataFrame([fingerprint_row]).to_csv(index=False),
-        )
-        archive.writestr(
-            "matching_result.csv",
-            pd.DataFrame([ranking_row]).to_csv(index=False) if ranking_row else "",
-        )
-    buffer.seek(0)
-    return buffer.getvalue()
 
 
 def format_display_number(value: Any, digits: int = 2) -> str:
@@ -1058,6 +1012,7 @@ def main() -> None:
             passport=passport,
             fingerprint_row=site_row.to_dict(),
             ranking_row=matched_row,
+            passport_markdown=report,
             demo_mode=demo_mode,
         )
         st.download_button(
