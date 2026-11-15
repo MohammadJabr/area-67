@@ -73,17 +73,20 @@ Do not populate selectable profiles with empty or misleading results. A profile 
 ### Implemented in main
 - Streamlit app with Mission Setup, Results & Comparison, Site Passport and clearly labelled paired synthetic DEMO MODE fixtures.
 - NASA LOLA Site04 acquisition/structural QA workflow; Site04 is provisional.
+- Multi-site NASA PGDA south-pole LOLA acquisition and inspection for Site01, Site04, Site06, Site07 and Site11, including five raster layers (elevation, LDEC counts, slope, Z RMS uncertainty, slope RMS uncertainty).
+- Safe download/extraction and geometry inventory for the five provider-linked ROI archives; polygon-level QA reports raster-valid coverage, positive-shot direct support, zero-count/interpolated share, and elevation/slope plus RMS-uncertainty summaries. The archive batch downloader continues past provider errors and preserves successful files.
 - Five provisional Copernicus GLO-30 Earth DSM source tiles: Haughton, McMurdo, Askja, Mauna Kea and Yungay, with manifest/checksum/structural QA; a separate Mauna Kea USGS 3DEP 1 m alternative is documented.
 - Five-group DEM terrain fingerprint extraction and synthetic/GeoTIFF tests.
 - CSV-driven target-aware matching, candidate ranking, feature contributions, Slope-only baseline and weight sensitivity utilities.
 - Integration contracts, data provenance and judging-readiness gates.
-- Latest previously verified main test result: 101 passed (2026-11-15); re-run CI after roadmap changes.
+- Latest full main CI at commit `2a64c90` (2026-11-15): **128 passed, 66 warnings**.
 
 ### Partially implemented / not scientifically complete
-- Real LOLA target sub-AOI and Earth candidate AOIs/common analysis grid.
-- Real terrain_fingerprints.csv and candidate_rankings.csv.
-- Cross-site real-data validation, feature correlation audit, approved tolerances, weights and completeness gates.
-- End-to-end real-data app/Passport flow.
+- The five provider-defined lunar ROI archive and five-layer audit tools are implemented, but the real archives/rasters still need to be downloaded and inspected locally; provider polygons are not approved AREA 67 study AOIs.
+- No lunar target sub-AOI, Earth candidate AOIs, common analysis grid, or source harmonization policy has been approved.
+- Real `terrain_fingerprints.csv` and `candidate_rankings.csv` are still absent; polygon-level tooling does not itself create terrain fingerprints.
+- Cross-site real-data validation, feature-correlation/double-counting audit, approved tolerances, weights and completeness gates remain pending.
+- End-to-end real-data app/Passport flow remains pending.
 - Rover Gauntlet/A* remains separate optional work; it must be assessed before integration and only used on a documented real ROI.
 - Real global Earth discovery/search is not yet implemented; current five Earth regions are provisional source packages, not a global scan.
 - Thermal context (MODIS/Diviner/THEMIS), SPICE/ShadowTwin, mineralogy/geology fusion, water/ice, dust/process, subsurface and biological evidence are not integrated in the MVP score or a validated end-to-end product.
@@ -145,13 +148,14 @@ Prioritize one vertical at a time, with separate data contracts and tests:
 - A stable demo fallback clearly marked as synthetic if real data is unavailable.
 
 ## 8. Immediate next actions (not silently assigned as approvals)
-1. Inspect and reconcile the current Earth data handover and lunar LOLA QA at file/metadata level.
-2. Convene a short study-design decision on target ROI, Earth AOIs, candidate set, common scale, source policy and vertical/uncertainty treatment. These are team scientific choices, not documentation defaults.
-3. Prepare the data-processing command/config only after those values are explicitly approved.
-4. Run the terrain extractor and produce real fingerprints.
-5. Run real matching, inspect correlations/sensitivity, then connect outputs to the app.
-6. In parallel, evaluate the open Rover Gauntlet branch and decide whether to merge it as a demonstrable extension or keep it out of the scientific MVP.
-7. Scope the first differentiating cross-dimension demonstration (e.g. lunar polar illumination + thermal context) only after source product compatibility is verified.
+1. Download and inspect the official Site01/Site04/Site06/Site07/Site11 ROI archives; compare their actual features/attributes and run the polygon-level support/uncertainty audit for sites with complete local inputs.
+2. Decide which lunar provider ROI(s) to carry forward; use Site01's published illumination context as a research lead, not as an overall base-site ranking.
+3. Finalize 3–5 Earth candidate landform AOIs, stable IDs, and authoritative boundary evidence; the whole 1° DEM tiles are not study ROIs.
+4. Approve a common physical analysis scale, projection, resampling/reprojection policy, vertical-reference treatment, windows, and quality/uncertainty policy.
+5. Have Ghassan hand over analysis-ready target/candidate rasters and manifests; have Hiba produce and validate the real fingerprint CSV.
+6. Agree and document feature tolerances and completeness thresholds; run real matching, inspect correlations/sensitivity, then connect outputs to the app.
+7. In parallel, evaluate the open Rover Gauntlet branch and decide whether to merge it as a demonstrable extension or keep it out of the scientific MVP.
+8. Scope the first differentiating cross-dimension demonstration (e.g. lunar polar illumination + thermal context) only after source product compatibility is verified.
 
 ## 9. Definition of done for AREA 67
 AREA 67 is not "done" because the UI loads or tests pass. A release is complete only when a user can:
