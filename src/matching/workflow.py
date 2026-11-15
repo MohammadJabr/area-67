@@ -37,6 +37,8 @@ def _write_robustness_summary(
     summary = {
         "target_site_id": ranking_result["target_site_id"],
         "candidate_site_ids": ranking_result.get("candidate_site_ids", []),
+        "ranked_candidate_ids": [item["site_id"] for item in ranking_result["ranking"]],
+        "rejected_candidates": ranking_result.get("rejected_candidates", []),
         "mission_profile": ranking_result["mission_profile"],
         "mission_weights": ranking_result.get("mission_weights", {}),
         "feature_tolerances": ranking_result.get("feature_tolerances", {}),
