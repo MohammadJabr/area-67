@@ -262,5 +262,351 @@
       "The result does not establish effective resolution or physical comparability of the sources.",
       "No science-team approval of the default window has been made."
     ]
+  },
+  "candidate_site_ids": [
+    "EARTH_HAUGHTON_REF990",
+    "EARTH_MAUNAKEA_REF990",
+    "EARTH_YUNGAY_HYPERARID_REF990"
+  ],
+  "ranked_candidate_ids": [
+    "EARTH_HAUGHTON_REF990",
+    "EARTH_YUNGAY_HYPERARID_REF990",
+    "EARTH_MAUNAKEA_REF990"
+  ],
+  "tolerance_sensitivity": {
+    "target_site_id": "MOON_SITE01_PILOT990",
+    "scenario_count": 11,
+    "factors": [
+      0.5,
+      1,
+      1.5
+    ],
+    "method": "Baseline plus one-at-a-time 0.5x and 1.5x perturbations of each of the five feature tolerances. Each affected standardized group distance is divided by the tolerance factor; all other groups, weights, completeness gates, candidate fingerprints, and analysis settings are held fixed.",
+    "baseline_order": [
+      "EARTH_HAUGHTON_REF990",
+      "EARTH_YUNGAY_HYPERARID_REF990",
+      "EARTH_MAUNAKEA_REF990"
+    ],
+    "scenario_rankings": {
+      "baseline": [
+        {
+          "site_id": "EARTH_HAUGHTON_REF990",
+          "similarity_distance": 0.35525230496234556,
+          "similarity_score": 73.78699865246007,
+          "rank": 1
+        },
+        {
+          "site_id": "EARTH_YUNGAY_HYPERARID_REF990",
+          "similarity_distance": 0.512116412167177,
+          "similarity_score": 66.13247445458198,
+          "rank": 2
+        },
+        {
+          "site_id": "EARTH_MAUNAKEA_REF990",
+          "similarity_distance": 2.6510027364466993,
+          "similarity_score": 27.389735702396095,
+          "rank": 3
+        }
+      ],
+      "slope_0.5x": [
+        {
+          "site_id": "EARTH_HAUGHTON_REF990",
+          "similarity_distance": 0.6232258130227477,
+          "similarity_score": 61.605723121037265,
+          "rank": 1
+        },
+        {
+          "site_id": "EARTH_YUNGAY_HYPERARID_REF990",
+          "similarity_distance": 0.885860737587046,
+          "similarity_score": 53.02618481147751,
+          "rank": 2
+        },
+        {
+          "site_id": "EARTH_MAUNAKEA_REF990",
+          "similarity_distance": 4.267794913303178,
+          "similarity_score": 18.98327509817478,
+          "rank": 3
+        }
+      ],
+      "slope_1.5x": [
+        {
+          "site_id": "EARTH_HAUGHTON_REF990",
+          "similarity_distance": 0.27865299911356467,
+          "similarity_score": 78.207301018592,
+          "rank": 1
+        },
+        {
+          "site_id": "EARTH_YUNGAY_HYPERARID_REF990",
+          "similarity_distance": 0.40682495988288037,
+          "similarity_score": 71.082048479098,
+          "rank": 2
+        },
+        {
+          "site_id": "EARTH_MAUNAKEA_REF990",
+          "similarity_distance": 2.226271830983692,
+          "similarity_score": 30.995528349361045,
+          "rank": 3
+        }
+      ],
+      "tri_0.5x": [
+        {
+          "site_id": "EARTH_HAUGHTON_REF990",
+          "similarity_distance": 0.4629328584729388,
+          "similarity_score": 68.35583698925427,
+          "rank": 1
+        },
+        {
+          "site_id": "EARTH_YUNGAY_HYPERARID_REF990",
+          "similarity_distance": 0.6522719005845642,
+          "similarity_score": 60.522726292579684,
+          "rank": 2
+        },
+        {
+          "site_id": "EARTH_MAUNAKEA_REF990",
+          "similarity_distance": 3.39585727191859,
+          "similarity_score": 22.748691282316038,
+          "rank": 3
+        }
+      ],
+      "tri_1.5x": [
+        {
+          "site_id": "EARTH_HAUGHTON_REF990",
+          "similarity_distance": 0.33149494429552234,
+          "similarity_score": 75.10355216024404,
+          "rank": 1
+        },
+        {
+          "site_id": "EARTH_YUNGAY_HYPERARID_REF990",
+          "similarity_distance": 0.4817072211335822,
+          "similarity_score": 67.48971630407178,
+          "rank": 2
+        },
+        {
+          "site_id": "EARTH_MAUNAKEA_REF990",
+          "similarity_distance": 2.4887216949337856,
+          "similarity_score": 28.663794003751267,
+          "rank": 3
+        }
+      ],
+      "local_relief_0.5x": [
+        {
+          "site_id": "EARTH_HAUGHTON_REF990",
+          "similarity_distance": 0.3804768638453578,
+          "similarity_score": 72.43873665614876,
+          "rank": 1
+        },
+        {
+          "site_id": "EARTH_YUNGAY_HYPERARID_REF990",
+          "similarity_distance": 0.5959720380372798,
+          "similarity_score": 62.65773936928094,
+          "rank": 2
+        },
+        {
+          "site_id": "EARTH_MAUNAKEA_REF990",
+          "similarity_distance": 3.2626496507954914,
+          "similarity_score": 23.459586921795953,
+          "rank": 3
+        }
+      ],
+      "local_relief_1.5x": [
+        {
+          "site_id": "EARTH_HAUGHTON_REF990",
+          "similarity_distance": 0.35038186502759916,
+          "similarity_score": 74.05312718558775,
+          "rank": 1
+        },
+        {
+          "site_id": "EARTH_YUNGAY_HYPERARID_REF990",
+          "similarity_distance": 0.49503122523810167,
+          "similarity_score": 66.88823504945444,
+          "rank": 2
+        },
+        {
+          "site_id": "EARTH_MAUNAKEA_REF990",
+          "similarity_distance": 2.521505154242664,
+          "similarity_score": 28.39694835588166,
+          "rank": 3
+        }
+      ],
+      "terrain_distribution_0.5x": [
+        {
+          "site_id": "EARTH_HAUGHTON_REF990",
+          "similarity_distance": 0.3687133193607545,
+          "similarity_score": 73.06131867461048,
+          "rank": 1
+        },
+        {
+          "site_id": "EARTH_YUNGAY_HYPERARID_REF990",
+          "similarity_distance": 0.5200499865052391,
+          "similarity_score": 65.78731021202199,
+          "rank": 2
+        },
+        {
+          "site_id": "EARTH_MAUNAKEA_REF990",
+          "similarity_distance": 2.878441648944267,
+          "similarity_score": 25.783551501211974,
+          "rank": 3
+        }
+      ],
+      "terrain_distribution_1.5x": [
+        {
+          "site_id": "EARTH_HAUGHTON_REF990",
+          "similarity_distance": 0.35270315114910733,
+          "similarity_score": 73.92604941819721,
+          "rank": 1
+        },
+        {
+          "site_id": "EARTH_YUNGAY_HYPERARID_REF990",
+          "similarity_distance": 0.5106337052471944,
+          "similarity_score": 66.19738435111667,
+          "rank": 2
+        },
+        {
+          "site_id": "EARTH_MAUNAKEA_REF990",
+          "similarity_distance": 2.6067076200594173,
+          "similarity_score": 27.726117704642938,
+          "rank": 3
+        }
+      ],
+      "spatial_pattern_0.5x": [
+        {
+          "site_id": "EARTH_HAUGHTON_REF990",
+          "similarity_distance": 0.35525230496234556,
+          "similarity_score": 73.78699865246007,
+          "rank": 1
+        },
+        {
+          "site_id": "EARTH_YUNGAY_HYPERARID_REF990",
+          "similarity_distance": 0.512116412167177,
+          "similarity_score": 66.13247445458198,
+          "rank": 2
+        },
+        {
+          "site_id": "EARTH_MAUNAKEA_REF990",
+          "similarity_distance": 2.747052050054987,
+          "similarity_score": 26.687646358830946,
+          "rank": 3
+        }
+      ],
+      "spatial_pattern_1.5x": [
+        {
+          "site_id": "EARTH_HAUGHTON_REF990",
+          "similarity_distance": 0.35525230496234556,
+          "similarity_score": 73.78699865246007,
+          "rank": 1
+        },
+        {
+          "site_id": "EARTH_YUNGAY_HYPERARID_REF990",
+          "similarity_distance": 0.512116412167177,
+          "similarity_score": 66.13247445458198,
+          "rank": 2
+        },
+        {
+          "site_id": "EARTH_MAUNAKEA_REF990",
+          "similarity_distance": 2.6328313266096033,
+          "similarity_score": 27.526739066447814,
+          "rank": 3
+        }
+      ]
+    },
+    "rank_by_scenario": {
+      "baseline": {
+        "EARTH_HAUGHTON_REF990": 1,
+        "EARTH_YUNGAY_HYPERARID_REF990": 2,
+        "EARTH_MAUNAKEA_REF990": 3
+      },
+      "slope_0.5x": {
+        "EARTH_HAUGHTON_REF990": 1,
+        "EARTH_YUNGAY_HYPERARID_REF990": 2,
+        "EARTH_MAUNAKEA_REF990": 3
+      },
+      "slope_1.5x": {
+        "EARTH_HAUGHTON_REF990": 1,
+        "EARTH_YUNGAY_HYPERARID_REF990": 2,
+        "EARTH_MAUNAKEA_REF990": 3
+      },
+      "tri_0.5x": {
+        "EARTH_HAUGHTON_REF990": 1,
+        "EARTH_YUNGAY_HYPERARID_REF990": 2,
+        "EARTH_MAUNAKEA_REF990": 3
+      },
+      "tri_1.5x": {
+        "EARTH_HAUGHTON_REF990": 1,
+        "EARTH_YUNGAY_HYPERARID_REF990": 2,
+        "EARTH_MAUNAKEA_REF990": 3
+      },
+      "local_relief_0.5x": {
+        "EARTH_HAUGHTON_REF990": 1,
+        "EARTH_YUNGAY_HYPERARID_REF990": 2,
+        "EARTH_MAUNAKEA_REF990": 3
+      },
+      "local_relief_1.5x": {
+        "EARTH_HAUGHTON_REF990": 1,
+        "EARTH_YUNGAY_HYPERARID_REF990": 2,
+        "EARTH_MAUNAKEA_REF990": 3
+      },
+      "terrain_distribution_0.5x": {
+        "EARTH_HAUGHTON_REF990": 1,
+        "EARTH_YUNGAY_HYPERARID_REF990": 2,
+        "EARTH_MAUNAKEA_REF990": 3
+      },
+      "terrain_distribution_1.5x": {
+        "EARTH_HAUGHTON_REF990": 1,
+        "EARTH_YUNGAY_HYPERARID_REF990": 2,
+        "EARTH_MAUNAKEA_REF990": 3
+      },
+      "spatial_pattern_0.5x": {
+        "EARTH_HAUGHTON_REF990": 1,
+        "EARTH_YUNGAY_HYPERARID_REF990": 2,
+        "EARTH_MAUNAKEA_REF990": 3
+      },
+      "spatial_pattern_1.5x": {
+        "EARTH_HAUGHTON_REF990": 1,
+        "EARTH_YUNGAY_HYPERARID_REF990": 2,
+        "EARTH_MAUNAKEA_REF990": 3
+      }
+    },
+    "top_k_counts": {
+      "1": {
+        "EARTH_HAUGHTON_REF990": 11,
+        "EARTH_YUNGAY_HYPERARID_REF990": 0,
+        "EARTH_MAUNAKEA_REF990": 0
+      },
+      "2": {
+        "EARTH_HAUGHTON_REF990": 11,
+        "EARTH_YUNGAY_HYPERARID_REF990": 11,
+        "EARTH_MAUNAKEA_REF990": 0
+      }
+    },
+    "rejected_candidates_by_scenario": {
+      "baseline": [],
+      "slope_0.5x": [],
+      "slope_1.5x": [],
+      "tri_0.5x": [],
+      "tri_1.5x": [],
+      "local_relief_0.5x": [],
+      "local_relief_1.5x": [],
+      "terrain_distribution_0.5x": [],
+      "terrain_distribution_1.5x": [],
+      "spatial_pattern_0.5x": [],
+      "spatial_pattern_1.5x": []
+    },
+    "interpretation": "Top-K appearances and rank changes are descriptive sensitivity results, not probabilities, confidence intervals, scientific tolerance validation, or site certification."
+  },
+  "run_provenance": {
+    "status": "MATCHING_ONLY_REFRESH_FROM_TRACKED_EXPLORATORY_FINGERPRINTS",
+    "fingerprint_input": {
+      "path": "data/processed/terrain_fingerprints.csv",
+      "git_blob_sha1": "0b098044875b545921ca950aba881272a975e0f0"
+    },
+    "tolerance_config": {
+      "path": "config/exploratory_pilot_2026-11-15.json",
+      "git_blob_sha1": "f7ac21b4e8120cc3b69586c798222df809600f2b"
+    },
+    "method": "Tolerance sensitivity recomputed from the committed matching group distances. The baseline was checked against the existing weighted distances (maximum absolute difference 4.441e-16). No DEM extraction or raster processing was rerun.",
+    "limitations": [
+      "This refresh does not approve AOIs, scales, candidate identity, weights, tolerances, or completeness thresholds.",
+      "The tracked fingerprint table remains an exploratory reference-window dataset; Yungay is not the frozen canonical candidate shortlist."
+    ]
   }
 }
