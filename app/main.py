@@ -37,24 +37,40 @@ def apply_theme() -> None:
 
 
 def render_hero(status: str, site_count: int, candidate_count: int) -> None:
-    """Render the product identity and the current data scope."""
+    """Render the product identity and a mission-console overview."""
     safe_status = html.escape(status)
     st.markdown(
         f"""
         <section class="a67-hero">
           <div class="a67-hero-top">
-            <div class="a67-brand-chip">AREA <span>67</span></div>
+            <div>
+              <div class="a67-brand-chip">AREA <span>67</span></div>
+              <p class="a67-eyebrow">MISSION INTELLIGENCE / SPACE-TO-EARTH</p>
+            </div>
             <div class="a67-status-pill">{safe_status}</div>
           </div>
-          <div class="a67-hero-copy">
-            <p class="a67-eyebrow">MISSION INTELLIGENCE / SPACE-TO-EARTH</p>
-            <h1>Find Earth's <span>terrain analogs</span><br>for other worlds.</h1>
-            <p>Explore mission-specific terrain comparisons with traceable data, transparent uncertainty and evidence you can inspect — from the Moon to Earth.</p>
-            <div class="a67-hero-foot">
-              <span class="a67-hero-chip">{site_count} fingerprint records</span>
-              <span class="a67-hero-chip">{candidate_count} ranked Earth references</span>
-              <span class="a67-hero-chip">5 terrain evidence groups</span>
+          <div class="a67-hero-grid">
+            <div class="a67-hero-copy">
+              <h1>Find Earth's <span>terrain analogs</span><br>for other worlds.</h1>
+              <p>Mission-specific terrain comparison with traceable measurements, transparent uncertainty, and evidence you can inspect — from the Moon to Earth.</p>
+              <div class="a67-hero-foot">
+                <span class="a67-hero-chip"><strong>{site_count}</strong> fingerprint records</span>
+                <span class="a67-hero-chip"><strong>{candidate_count}</strong> ranked Earth references</span>
+                <span class="a67-hero-chip"><strong>05</strong> terrain evidence groups</span>
+              </div>
             </div>
+            <div class="a67-hero-orbit" aria-hidden="true">
+              <div class="a67-orbit orbit-one"></div>
+              <div class="a67-orbit orbit-two"></div>
+              <div class="a67-orbit orbit-three"></div>
+              <div class="a67-orbit-core"><span>67</span><small>MISSION<br>INTELLIGENCE</small></div>
+              <span class="a67-orbit-dot dot-one"></span>
+              <span class="a67-orbit-dot dot-two"></span>
+            </div>
+          </div>
+          <div class="a67-hero-bottom">
+            <span>DISCOVER EARTH</span><i></i><span>EXPLORE OTHER WORLDS</span>
+            <span class="a67-hero-bottom-right">EVIDENCE FIRST · NO FABRICATED SCORES</span>
           </div>
         </section>
         """,
@@ -254,14 +270,19 @@ def main() -> None:
         exploratory_rows = exploratory_rows or (~fingerprints["aoi_approval"].astype(str).str.upper().eq("APPROVED")).any()
     if exploratory_rows:
         st.warning(
-            "EXPLORATORY REAL-DATA PILOT — these measurements come from real NASA LOLA and Copernicus rasters, "
-            "but every footprint is a provisional reference-centred sampling window, not an approved geomorphic AOI. "
-            "The tracked ranking is a historical exploratory set (Haughton, Yungay, Mauna Kea), not the frozen study "
-            "shortlist (Haughton, Askja, Mauna Kea). Yungay is held out from the canonical study. Askja's current "
-            "reference-centred test window was held out as near-flat/equal-elevation; this is not a conclusion about "
-            "all Askja terrain. Site01 positive LOLA LDEC support is 9.235%, distinct from 100% valid-raster coverage. "
-            "Scores are exploratory relative rankings only; do not present them as site certification or rover-safety evidence."
+            "EXPLORATORY REAL-DATA PILOT — these are provisional reference-centred windows, "
+            "not an approved geomorphic AOI. Scores are relative indices, not site certification "
+            "or rover-safety evidence."
         )
+        with st.expander("Why this pilot is exploratory · scope and evidence limits", expanded=False):
+            st.markdown(
+                "- The tracked historical sample set is Haughton, Yungay and Mauna Kea; "
+                "the frozen study shortlist is Haughton, Askja and Mauna Kea.\n"
+                "- Yungay is held out from the canonical study. Askja's current test window "
+                "was held as near-flat/equal-elevation; this is not a conclusion about all Askja terrain.\n"
+                "- Site01 positive LOLA LDEC support is 9.235%, distinct from valid-raster coverage.\n"
+                "- AOI boundaries, common analysis settings and scientific approvals remain outstanding."
+            )
 
     fingerprints = fingerprints.copy()
     rankings = rankings.copy()
@@ -380,6 +401,20 @@ def main() -> None:
         selected_rankings["rank"] = pd.to_numeric(selected_rankings["rank"], errors="coerce")
         selected_rankings["similarity_score"] = pd.to_numeric(selected_rankings["similarity_score"], errors="coerce")
         selected_rankings = selected_rankings.sort_values("rank")
+        all_candidate_ids = selected_rankings["candidate_site_id"].tolist()
+        candidate_name_map = fingerprints.set_index("site_id")["site_name"].to_dict()
+        st.markdown("#### Refine the radar view")
+        selected_candidate_ids = st.multiselect(
+            "Compare Earth candidates",
+            options=all_candidate_ids,
+            default=all_candidate_ids,
+            format_func=lambda site_id: f"{candidate_name_map.get(site_id, site_id)} · {site_id}",
+            key="area67_candidate_filter",
+            help="Filter the cards, ranking chart, map, and terrain comparison. This does not change the matcher ranking.",
+        )
+        selected_rankings = selected_rankings[
+            selected_rankings["candidate_site_id"].isin(selected_candidate_ids)
+        ].copy()
         candidate_count = selected_rankings["candidate_site_id"].nunique()
         metric_a, metric_b = st.columns(2)
         metric_a.metric("Earth candidates ranked", candidate_count)
@@ -416,21 +451,50 @@ def main() -> None:
         else:
             st.dataframe(merged[display_cols], width="stretch", hide_index=True)
 
+        if not selected_rankings.empty:
+            spotlight_options = selected_rankings["candidate_site_id"].tolist()
+            spotlight_id = st.selectbox(
+                "Candidate spotlight",
+                options=spotlight_options,
+                format_func=lambda site_id: f"{candidate_name_map.get(site_id, site_id)} · {site_id}",
+                key="area67_candidate_spotlight",
+            )
+            spotlight = selected_rankings[
+                selected_rankings["candidate_site_id"] == spotlight_id
+            ].iloc[0]
+            spotlight_rank = value_or_none(spotlight.get("rank"))
+            spotlight_score = value_or_none(spotlight.get("similarity_score", spotlight.get("relative_similarity")))
+            spotlight_distance = value_or_none(spotlight.get("weighted_distance", spotlight.get("similarity_distance")))
+            spotlight_completeness = value_or_none(spotlight.get("data_completeness"))
+            s1, s2, s3, s4 = st.columns(4)
+            s1.metric("Current rank", f"#{int(float(spotlight_rank))}" if spotlight_rank is not None else "Not supplied")
+            s2.metric("Relative match index", format_display_number(spotlight_score, 2))
+            s3.metric("Weighted distance", format_display_number(spotlight_distance, 3))
+            s4.metric("Data completeness", f"{float(spotlight_completeness):.1%}" if spotlight_completeness is not None else "Not supplied")
+            spotlight_note = value_or_none(spotlight.get("ranking_stability_note")) or value_or_none(spotlight.get("ranking_note"))
+            if spotlight_note is not None:
+                st.caption(str(spotlight_note))
+        else:
+            st.info("Select at least one candidate to populate the radar, map, and terrain comparison.")
+
         if selected_rankings["similarity_score"].notna().any():
             ranking_figure = px.bar(
-                selected_rankings,
-                x="candidate_site_id",
-                y="similarity_score",
+                selected_rankings.sort_values("rank", ascending=True),
+                x="similarity_score",
+                y="candidate_site_id",
                 color="rank",
-                title="Relative similarity index · supplied by the matcher",
+                orientation="h",
+                title="Relative match index · reported by the matcher",
                 template="plotly_dark",
+                hover_data={"weighted_distance":":.4f","rank":True},
             )
             ranking_figure.update_layout(
                 paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(8,18,31,.35)",
-                font_color="#dce9f8", margin=dict(l=16, r=16, t=56, b=25),
-                xaxis_title="Earth reference window", yaxis_title="Relative index",
-                legend_title_text="Rank",
+                font_color="#dce9f8", margin=dict(l=16, r=22, t=56, b=22),
+                xaxis_title="Relative match index", yaxis_title="Earth reference window",
+                legend_title_text="Rank", height=330, bargap=0.42,
             )
+            ranking_figure.update_yaxes(autorange="reversed")
             st.plotly_chart(
                 ranking_figure, width="stretch",
                 config={"displayModeBar": True, "scrollZoom": True, "responsive": True},
@@ -478,8 +542,8 @@ def main() -> None:
 
         explanation_cols = [col for col in selected_rankings.columns if col.endswith("_contribution") or col.endswith("_difference")]
         if explanation_cols:
-            st.markdown("#### Matcher-supplied explanation")
-            st.dataframe(selected_rankings[["candidate_site_id", *explanation_cols]], width="stretch", hide_index=True)
+            with st.expander("Matcher explanation · feature contributions and differences", expanded=False):
+                st.dataframe(selected_rankings[["candidate_site_id", *explanation_cols]], width="stretch", hide_index=True)
         else:
             st.info("Per-feature differences/contributions have not been supplied by the matcher. The app does not estimate them.")
 
@@ -489,8 +553,8 @@ def main() -> None:
             "aoi_status", "aoi_approval", "source_checksum_sha256",
         ) if col in fingerprints.columns]
         if quality_cols:
-            st.markdown("#### Data quality and provenance")
-            st.dataframe(fingerprints[fingerprints["site_id"].isin(comparison_ids)][quality_cols], width="stretch", hide_index=True)
+            with st.expander("Data quality & provenance audit", expanded=False):
+                st.dataframe(fingerprints[fingerprints["site_id"].isin(comparison_ids)][quality_cols], width="stretch", hide_index=True)
 
         st.caption("Similarity is a relative ranking under supplied features, scaling, and mission weights. It is not a probability of mission success or certification of site suitability.")
 
