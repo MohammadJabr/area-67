@@ -12,6 +12,11 @@ on:
           - earth
           - moon
         default: both
+      include_rois:
+        description: Also acquire official PGDA ROI archives (optional)
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -40,7 +45,8 @@ jobs:
           python -m pip install -r requirements.txt
 
       - name: Acquire Earth candidate DEM source tiles
-        if: github.event_name == 'push' || inputs.dataset == 'earth' || inputs.dataset == 'both'
+        id: earth_acquire
+        if: inputs.dataset == 'earth' || inputs.dataset == 'both'
         continue-on-error: true
         run: |
           python -m src.data.earth_dem_acquisition \
@@ -48,7 +54,8 @@ jobs:
             --confirm-download --max-file-mb 250
 
       - name: Acquire lunar LOLA layers for Site01 and Site04
-        if: github.event_name == 'push' || inputs.dataset == 'moon' || inputs.dataset == 'both'
+        id: moon_acquire
+        if: inputs.dataset == 'moon' || inputs.dataset == 'both'
         continue-on-error: true
         run: |
           python -m src.data.lola_south_pole download \
@@ -57,7 +64,8 @@ jobs:
             --confirm-download --max-file-mb 500
 
       - name: Acquire and inspect official lunar ROI archives
-        if: inputs.dataset == 'moon' || inputs.dataset == 'both'
+        id: roi_acquire
+        if: inputs.include_rois == true && (inputs.dataset == 'moon' || inputs.dataset == 'both')
         continue-on-error: true
         run: |
           python -m src.data.lola_roi_acquisition download \
@@ -85,7 +93,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: area67-gis-${{ github.event_name == 'push' && 'both' || inputs.dataset }}-${{ github.run_id }}
+          name: area67-gis-${{ inputs.dataset }}-${{ github.run_id }}
           path: |
             data/raw/earth/
             data/raw/moon/
@@ -94,3 +102,22 @@ jobs:
             data/metadata/lola_rois/
           if-no-files-found: warn
           retention-days: 14
+
+      - name: Report acquisition failures after preserving the artifact
+        if: always()
+        shell: bash
+        env:
+          EARTH_OUTCOME: ${{ steps.earth_acquire.outcome }}
+          MOON_OUTCOME: ${{ steps.moon_acquire.outcome }}
+          ROI_OUTCOME: ${{ steps.roi_acquire.outcome }}
+        run: |
+          failed=0
+          for outcome in "$EARTH_OUTCOME" "$MOON_OUTCOME" "$ROI_OUTCOME"; do
+            if [[ "$outcome" == "failure" ]]; then
+              echo "::error::At least one acquisition step failed; inspect its logs and the uploaded partial artifact."
+              failed=1
+            fi
+          done
+          if [[ "$failed" -ne 0 ]]; then
+            exit 1
+          fi
