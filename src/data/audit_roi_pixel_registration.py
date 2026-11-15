@@ -101,6 +101,20 @@ def audit_shapefile_registration(
     with rasterio.open(raster_path) as dataset:
         if dataset.crs is None:
             raise ValueError(f"{raster_path}: raster CRS is missing")
+        try:
+            linear_unit_name, linear_unit_to_metre = dataset.crs.linear_units_factor
+        except (AttributeError, TypeError, ValueError) as exc:
+            raise ValueError(
+                f"{raster_path}: raster CRS does not expose a projected linear unit"
+            ) from exc
+        if (
+            str(linear_unit_name).casefold() not in {"metre", "meter", "metres", "meters"}
+            or not math.isclose(float(linear_unit_to_metre), 1.0, rel_tol=0, abs_tol=1e-12)
+        ):
+            raise ValueError(
+                f"{raster_path}: this audit reports residuals in metres and requires "
+                f"a metre-based projected CRS; found {linear_unit_name!r}"
+            )
         if not same_crs(frame.crs, dataset.crs):
             raise ValueError(
                 "Shapefile CRS is not nominally compatible with the raster CRS; "
@@ -220,6 +234,7 @@ def audit_shapefile_registration(
                     float(math.hypot(transform.b, transform.e)),
                 ],
                 "area_or_point": tags.get("AREA_OR_POINT"),
+                "linear_units": str(linear_unit_name),
                 "crs_wkt": dataset.crs.to_wkt(),
             },
             "tolerance_m": float(tolerance_m),
