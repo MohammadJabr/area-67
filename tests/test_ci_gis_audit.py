@@ -39,8 +39,8 @@ def test_source_documentation_reads_lunar_layer_manifest(tmp_path, monkeypatch):
     manifest = tmp_path / "data" / "metadata" / "lunar_5mpp_manifest.csv"
     manifest.parent.mkdir(parents=True)
     manifest.write_text(
-        "relative_path,data_kind,value_unit,coordinate_reference_frame,frame_source_url,vertical_reference,vertical_reference_status,vertical_reference_applicable,source_product,source_url,pixel_posting_m,notes\\n"
-        "data/raw/moon/site01/Site01_final_adj_5mpp_slp.tif,slope,degrees,MOON_ME/DE421,https://pgda.gsfc.nasa.gov/products/78,,not_applicable,false,NASA PGDA LOLA,https://pgda.gsfc.nasa.gov/products/78,5,Slope in degrees\\n",
+        "relative_path,data_kind,value_unit,coordinate_reference_frame,frame_source_url,vertical_reference,vertical_reference_status,vertical_reference_applicable,source_product,source_url,pixel_posting_m,notes\n"
+        "data/raw/moon/site01/Site01_final_adj_5mpp_slp.tif,slope,degrees,MOON_ME/DE421,https://pgda.gsfc.nasa.gov/products/78,,not_applicable,false,NASA PGDA LOLA,https://pgda.gsfc.nasa.gov/products/78,5,Slope in degrees\n",
         encoding="utf-8",
     )
     path = tmp_path / "data" / "raw" / "moon" / "site01" / "Site01_final_adj_5mpp_slp.tif"
@@ -59,8 +59,8 @@ def test_source_documentation_reads_earth_manifest(tmp_path, monkeypatch):
     manifest = tmp_path / "data" / "metadata" / "earth_dem_manifest.csv"
     manifest.parent.mkdir(parents=True)
     manifest.write_text(
-        "source_id,source_name,source_url,crs,vertical_datum,elevation_unit,effective_resolution_note,quality_layers,uncertainty_note\\n"
-        "copernicus_tile,Copernicus DEM GLO-30 DSM,https://example.invalid/tile.tif,EPSG:4326,EGM2008 (product documentation),m (product documentation),1 arc-second grid,not included,not retrieved\\n",
+        "source_id,source_name,source_url,crs,vertical_datum,elevation_unit,effective_resolution_note,quality_layers,uncertainty_note\n"
+        "copernicus_tile,Copernicus DEM GLO-30 DSM,https://example.invalid/tile.tif,EPSG:4326,EGM2008 (product documentation),m (product documentation),1 arc-second grid,not included,not retrieved\n",
         encoding="utf-8",
     )
     path = tmp_path / "data" / "raw" / "earth" / "copernicus_tile.tif"
@@ -82,8 +82,8 @@ def test_build_report_passes_layer_semantics_to_preflight(tmp_path, monkeypatch)
     manifest = tmp_path / "data" / "metadata" / "lunar_5mpp_manifest.csv"
     manifest.parent.mkdir(parents=True)
     manifest.write_text(
-        "relative_path,data_kind,value_unit,coordinate_reference_frame,frame_source_url,vertical_reference,vertical_reference_status,vertical_reference_applicable,source_product,source_url,pixel_posting_m,notes\\n"
-        "data/raw/moon/site01/Site01_final_adj_5mpp_slp.tif,slope,degrees,MOON_ME/DE421,https://pgda.gsfc.nasa.gov/products/78,,not_applicable,false,NASA PGDA LOLA,https://pgda.gsfc.nasa.gov/products/78,5,Slope in degrees\\n",
+        "relative_path,data_kind,value_unit,coordinate_reference_frame,frame_source_url,vertical_reference,vertical_reference_status,vertical_reference_applicable,source_product,source_url,pixel_posting_m,notes\n"
+        "data/raw/moon/site01/Site01_final_adj_5mpp_slp.tif,slope,degrees,MOON_ME/DE421,https://pgda.gsfc.nasa.gov/products/78,,not_applicable,false,NASA PGDA LOLA,https://pgda.gsfc.nasa.gov/products/78,5,Slope in degrees\n",
         encoding="utf-8",
     )
     monkeypatch.setattr(ci_gis_audit, "ROOT", tmp_path)
