@@ -1,47 +1,62 @@
 # Hiba Terrain Validation — Handoff Assessment
 
 **Assessment date:** 2026-11-15  
-**Source reviewed:** `03_Hiba_Sbouh_Terrain_Validation.pdf` (9-page personal execution playbook)
+**Source reviewed:** `03_Hiba_Sbouh_Terrain_Validation.pdf` (9-page personal 24-hour execution playbook).
 
 ## Executive decision
 
-The supplied PDF is a **methodology and 24-hour execution playbook**, not a completed scientific validation report. It is suitable to hand over as the description of Hiba's intended workflow, but it must not be presented as proof that the canonical terrain-fingerprint work is complete.
+The original playbook defines a practical MVP method and execution schedule. It is not, by itself, evidence that the canonical real-data scientific validation has been completed.
 
-The playbook defines the five terrain groups, proposed calculations, synthetic checks, schedule, and expected deliverables. It does not contain completed run outputs, a canonical fingerprint table, derived map package, or recorded sensitivity results.
+The repository now contains the five-group extractor, synthetic tests, method report, test evidence, and a detailed execution-readiness runbook. PR #103 was merged and its PR CI plus post-merge main CI both passed.
 
-## Evidence already present in the repository
+## What the playbook requires and current evidence
 
-- `src/features/terrain_fingerprint.py` implements the five terrain groups and the documented extraction workflow.
-- `tests/test_terrain_fingerprint.py` contains synthetic validation tests.
-- The application integration contract expects Hiba's `data/processed/terrain_fingerprints.csv` and Omar's `candidate_rankings.csv`.
-- Full test suite passed on current main commit `fca5d07c34c8882e195d7e649ee2cfc78931ffee` (GitHub Actions run [#43706721339](https://github.com/MohammadJabr/area-67/actions/runs/43706721339)).
-- GIS acquisition/audit run [#14](https://github.com/MohammadJabr/area-67/actions/runs/43705622148) succeeded and rebuilt the exploratory pilot outputs. This is evidence of a successful exploratory workflow, not canonical AOI approval or final Hiba validation.
-
-## Remaining closure criteria
-
-| Item | Current evidence | Required to close |
+| Playbook requirement | Current evidence | Status |
 |---|---|---|
-| Study AOIs and coordinate frames | No final Earth AOIs approved; lunar provider ROI frame still unresolved | Source-backed AOI geometry and documented CRS/frame decisions |
-| Common analysis grid | Canonical settings intentionally remain blank | Approved metric grid, scale, alignment, resampling and NoData policy |
-| Canonical fingerprints | Canonical config has null scale/window/coverage and an empty `sites` list | Run the extractor for the approved lunar target and Earth shortlist; deliver the canonical CSV |
-| Quality and uncertainty | ROI audits distinguish LDEC support, raster-valid coverage and RMS uncertainty | Attach site-level quality/support/uncertainty summaries without conflating these measures |
-| Validation package | Synthetic tests exist and CI passes | Record test outcomes, scale-sensitivity results, and any reference comparison actually performed |
-| Feature package | No final canonical package verified | CSV, derived maps where available, and a short README with definitions, units, scale and limitations |
+| One lunar/Martian target and at least three Earth candidates | Working sprint scope: Site01, Haughton, Askja, Mauna Kea | Selected shortlist; AOIs not approved |
+| Five feature groups | Extractor implements Slope, Riley TRI, Local Relief, Terrain Distribution and Spatial Pattern | Software implemented |
+| One documented indicator per group | Method report defines formulas, units and summaries | Documented |
+| Unified one-row-per-site fingerprint table | App contract and extractor output schema exist | Canonical CSV pending |
+| Synthetic tests | Tests cover flat/plane/bump, NoData, distribution, patch pattern, scale, raster pipeline and config | CI passed |
+| Real DEM masks and scale checks | Source inventories, raster preflight and GIS acquisition/audit workflow exist | Raw/source QA exists; common-grid AOI inputs pending |
+| Three Earth candidate fingerprints | No approved candidate AOIs/common analysis grid | Pending |
+| Scale/window sensitivity | Comparison utility exists | Canonical two-scale results pending |
+| Feature redundancy/correlation | Spearman audit exists; Terrain Distribution explicitly derived from Slope | Canonical audit pending until comparable rows exist |
+| Independent reference comparison | No completed same-footprint reference comparison recorded | Optional; not yet done |
+| Quality/uncertainty | Site01/Site04 provider ROI support audit reports valid coverage, positive LDEC support and RMS separately | Source audit exists; per-pixel quality propagation into fingerprints remains incomplete |
+| Derived maps and handoff package | Extractor can write slope/TRI/local-relief GeoTIFFs; runbook and method package committed | Code/docs ready; canonical maps pending |
 
-## Important scientific boundary
+## Data availability and limitations
 
-The existing exploratory pilot uses reference-centred sample windows, not approved geomorphic AOIs. Its ranking must remain labelled exploratory. Do not substitute those pilot rows for Hiba's canonical fingerprints or claim a validated planetary-analog ranking.
+- Earth Copernicus GLO-30 DSM tiles are inventoried for Haughton, Askja, Mauna Kea, Yungay and McMurdo. Local per-pixel quality companions are absent; effective terrain resolution is not established.
+- The local USGS 3DEP 1 m Mauna Kea tile has EPSG:26904 / NAVD88 and its provisional point is about 150 m from the eastern edge. Do not mix it with GLO-30 without a declared source, vertical-reference and resampling policy.
+- NASA PGDA Site01/Site04 five-layer LOLA rasters and provider ROI support/uncertainty audits are available. The raster GeoTIFF frame is documented by Product 78; the provider ROI shapefile frame remains unverified. Invalid polygons remain unrepaired.
+- Site01 Feature 4 is the current primary registration/quality review anchor and Feature 2 the direct-support cross-check. Neither is an approved operations AOI.
 
-The frozen sprint shortlist is Haughton, Askja and Mauna Kea. The earlier exploratory pilot's Haughton/Yungay/Mauna Kea rows are a separate regression/demo artifact; Askja has not yet been fingerprinted for an approved contiguous AOI.
+## Hard blockers for canonical scientific completion
 
-## Ready-to-send handoff note
+1. Source-backed, approved Earth AOI polygons and complete DEM coverage.
+2. Verified lunar ROI geometry frame and selected target footprint.
+3. Common projected metric grid, alignment, scale(s), layer-specific resampling/aggregation and NoData policy.
+4. Explicit vertical-reference handling and no unsupported cross-planet elevation comparison.
+5. Approved Hiba settings: scale, relief window, local neighbourhood support fraction, slope classes, steep threshold and connectivity.
+6. A populated canonical run config and real extraction outputs.
+7. Quality/uncertainty reporting, scale sensitivity where valid, and downstream Omar/Mohammed handoff.
 
-> I reviewed Hiba's Terrain Fingerprint document. It is a complete methodology and execution playbook, and the extractor plus synthetic tests are present in the repository; the latest full CI run passes. However, the PDF itself is not a completed scientific validation report. Canonical AOI approval, the common-grid decisions, final fingerprints for the approved shortlist, and the complete quality/sensitivity package remain outstanding. I am handing over the playbook as the methodology document and tracking those items as the remaining scientific closure criteria.
+The canonical template is intentionally blank until these decisions are approved. Exploratory reference-centred pilot windows must not be substituted for geomorphic AOIs.
 
-## Source documents in the repository
+## Verified software/CI evidence
 
-- `docs/CANONICAL_TERRAIN_RUN_CHECKLIST.md`
-- `docs/INTEGRATION_CONTRACT.md`
-- `docs/LOCAL_JUDGING_READINESS.md`
-- `src/features/terrain_fingerprint.py`
-- `tests/test_terrain_fingerprint.py`
+- PR #103: [full test suite passed](https://github.com/MohammadJabr/area-67/actions/runs/43708031319).
+- PR #103 merged to main as `873ba8aa5773cf4cf7f9900f92914ea33d1bd626`.
+- Post-merge main full test suite: [run #43708208185 passed](https://github.com/MohammadJabr/area-67/actions/runs/43708208185).
+
+A passing CI run verifies the tested software behaviours. It does not approve the scientific inputs or validate a planetary-analog ranking.
+
+## Final verdict
+
+**Ready:** extractor implementation, synthetic test coverage, method documentation, execution runbook and CI for PR #103.
+
+**Not yet complete:** canonical fingerprints/derived maps for Site01 plus Haughton, Askja and Mauna Kea, because AOIs, coordinate-frame handling, common-grid decisions and approved run settings are not yet available.
+
+See [Hiba execution readiness](HIBA_EXECUTION_READINESS_2026-11-15.md) for the exact sequence and commands.
