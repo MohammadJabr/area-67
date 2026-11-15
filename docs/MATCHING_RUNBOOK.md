@@ -29,7 +29,7 @@ The committed `candidate_rankings.csv` and `ranking_robustness.json` describe an
 To rerun without overwriting the app-facing pilot outputs, write to separate filenames:
 
 ```powershell
-python -m src.matching.cli --fingerprints data/processed/terrain_fingerprints.csv --target-site-id MOON_SITE01_PILOT990 --tolerances-json config/matching_tolerances.exploratory.json --min-feature-group-completeness 1.0 --min-data-completeness 0.95 --output data/processed/omar_pilot_rankings.recomputed.csv --robustness-output data/processed/omar_pilot_robustness.recomputed.json
+python -m src.matching.cli --fingerprints data/processed/terrain_fingerprints.csv --target-site-id MOON_SITE01_PILOT990 --candidate-site-ids EARTH_HAUGHTON_REF990 EARTH_YUNGAY_HYPERARID_REF990 EARTH_MAUNAKEA_REF990 --tolerances-json config/matching_tolerances.exploratory.json --min-feature-group-completeness 1.0 --min-data-completeness 0.95 --output data/processed/omar_pilot_rankings.recomputed.csv --robustness-output data/processed/omar_pilot_robustness.recomputed.json
 ```
 
 The run must still be labelled `EXPLORATORY_NOT_APPROVED`. Do not replace the canonical output pair or remove the application warning on the basis of this pilot rerun.
@@ -99,3 +99,8 @@ The display score is `100 / (1 + weighted_distance)`. It is a monotonic relative
 ## Tolerance sensitivity
 
 Every matching workflow now records tolerance sensitivity in `data/processed/ranking_robustness.json`: one baseline plus one-at-a-time 0.5× and 1.5× changes for each feature tolerance. All other tolerances, weights, completeness gates, and fingerprint inputs are held fixed. The output records per-scenario ranks, Top-1/Top-3/Top-5 appearance counts, and rejection reasons. These are descriptive sensitivity results, not probabilities, confidence intervals, or a method for choosing scientifically valid tolerances automatically.
+
+
+## Explicit candidate scope
+
+Every CSV-driven CLI run requires `--candidate-site-ids`. This is an allowlist: only the named Earth rows are eligible, and any requested ID missing from the CSV or not labelled Earth causes a clear error. For the frozen canonical MVP, pass the exact approved Haughton, Askja, and Mauna Kea IDs supplied by the GIS/fingerprint handoff. Do not copy the exploratory Yungay ID into the canonical run. The exploratory reproduction test passes its historical Haughton/Yungay/Mauna Kea IDs explicitly to preserve reproducibility without changing the canonical shortlist.
