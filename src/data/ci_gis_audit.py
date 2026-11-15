@@ -19,8 +19,6 @@ from src.data.raster_preflight import preflight_raster
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_RAW = ROOT / "data" / "raw"
 DEFAULT_OUTPUT = ROOT / "data" / "metadata" / "ci_gis_audit"
-EARTH_MANIFEST = ROOT / "data" / "metadata" / "earth_dem_manifest.csv"
-LUNAR_MANIFEST = ROOT / "data" / "metadata" / "lunar_5mpp_manifest.csv"
 
 
 def _read_manifest(path: Path) -> list[dict[str, str]]:
@@ -39,7 +37,7 @@ def _source_documentation(path: Path) -> dict[str, Any]:
 
     if relative.startswith("data/raw/earth/"):
         source_id = path.stem
-        for row in _read_manifest(EARTH_MANIFEST):
+        for row in _read_manifest(ROOT / "data" / "metadata" / "earth_dem_manifest.csv"):
             if row.get("source_id") != source_id:
                 continue
             unit_text = (row.get("elevation_unit") or "").strip()
@@ -59,7 +57,7 @@ def _source_documentation(path: Path) -> dict[str, Any]:
             }
 
     if relative.startswith("data/raw/moon/"):
-        for row in _read_manifest(LUNAR_MANIFEST):
+        for row in _read_manifest(ROOT / "data" / "metadata" / "lunar_5mpp_manifest.csv"):
             if row.get("relative_path") != relative:
                 continue
             applicable = (row.get("vertical_reference_applicable") or "").strip().lower() == "true"
