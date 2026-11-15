@@ -109,6 +109,8 @@ The previously tested 1.2 km, 1.5 km and 2.0 km windows were centered on the com
 
 All three contain the four provider ROI bounds and have 100% valid coverage in all five local Site04 raster layers. The 1.2 km square is the smallest of those three tested windows that encloses all four provider ROIs.
 
+The 1.2 km square bounds are X=[-3335, -2135] m and Y=[-6950, -5750] m. The Mazarico Site 4 / Artemis Site 004 (SP-4) point at (-2742.09, -6081.54) m also falls inside this 1.2 km square, with a minimum clearance of 331.54 m to the window edge. The 1.5 km and 2.0 km windows contain it as well. Thus, for the provisional SP-4 vicinity interpretation, the 1.2 km window covers both the local ROI cluster and the published SP-4 point; this is a useful exploratory footprint result, not AOI approval.
+
 These windows were **not** designed to contain the Data Book R04 point at (-1000.04, -7000.35) m. Therefore:
 - the 1.2 km result remains a valid compact-window comparison for the four-feature provider-ROI cluster;
 - it must not be described as covering the Data Book R04 coordinate;
