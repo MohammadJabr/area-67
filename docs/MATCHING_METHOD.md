@@ -149,3 +149,8 @@ export_rankings_csv(
 - A* route planning over an agreed, analysis-ready candidate DEM.
 
 Until these items are completed, this is a tested matching implementation and synthetic validation suite, not a validated planetary analog result.
+
+
+## Candidate-set control
+
+CSV-driven matching requires an explicit candidate ID allowlist. Unlisted Earth rows are excluded before ranking; requested IDs that are missing or not labelled Earth fail closed. This prevents held-out sites and exploratory rows from silently entering the canonical MVP ranking. The exact requested candidate IDs are recorded in the ranking result/robustness sidecar.

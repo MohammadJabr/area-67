@@ -50,10 +50,13 @@ def test_workflow_reads_fingerprints_and_exports_results(
         "largest_steep_patch_pct": 30.0,
     })
 
+    held_out = dict(candidate_b)
+    held_out.update({"site_id": "EARTH_HELD_OUT", "source_id": "DEM_HELD_OUT"})
+
     fingerprints_path = tmp_path / "terrain_fingerprints.csv"
     _write_fingerprint_csv(
         fingerprints_path,
-        [target_fingerprint, candidate_a, candidate_b],
+        [target_fingerprint, candidate_a, candidate_b, held_out],
     )
 
     ranking_path = tmp_path / "candidate_rankings.csv"
@@ -64,6 +67,7 @@ def test_workflow_reads_fingerprints_and_exports_results(
         "MOON_SITE04",
         get_mission_weights(),
         matching_tolerances,
+        candidate_site_ids=["EARTH_A", "EARTH_B"],
         mission_profile=ROVER_NAVIGATION_PROFILE["name"],
         min_feature_group_completeness=0.0,
         min_data_completeness=0.0,
@@ -114,6 +118,12 @@ def test_workflow_reads_fingerprints_and_exports_results(
         "top_k": [3, 5],
     }
     assert "slope_only_baseline" in summary
+    assert summary["candidate_site_ids"] == ["EARTH_A", "EARTH_B"]
+    assert summary["ranked_candidate_ids"] == ["EARTH_A", "EARTH_B"]
+    assert summary["rejected_candidates"] == []
+    assert "EARTH_HELD_OUT" not in {
+        row["site_id"] for row in result["ranking_result"]["ranking"]
+    }
 
 
 
@@ -133,4 +143,30 @@ def test_workflow_refuses_to_run_without_explicit_completeness_policy(
             get_mission_weights(),
             matching_tolerances,
             mission_profile=ROVER_NAVIGATION_PROFILE["name"],
+        )
+
+
+def test_workflow_rejects_unknown_or_non_earth_candidate_ids(
+    tmp_path, target_fingerprint, earth_candidate, matching_tolerances
+):
+    from src.data.fingerprint_loader import select_space_to_earth_fingerprints
+
+    candidate = dict(earth_candidate)
+    candidate["site_id"] = "EARTH_A"
+    candidate["source_id"] = "DEM_A"
+    records = [target_fingerprint, candidate]
+
+    with pytest.raises(ValueError, match="missing or are not Earth rows"):
+        select_space_to_earth_fingerprints(
+            records, "MOON_SITE04", candidate_site_ids=["EARTH_NOT_IN_TABLE"]
+        )
+
+    with pytest.raises(ValueError, match="duplicates"):
+        select_space_to_earth_fingerprints(
+            records, "MOON_SITE04", candidate_site_ids=["EARTH_A", "EARTH_A"]
+        )
+
+    with pytest.raises(ValueError, match="non-empty"):
+        select_space_to_earth_fingerprints(
+            records, "MOON_SITE04", candidate_site_ids=[]
         )

@@ -3,7 +3,8 @@
 Example:
 python -m src.matching.cli \
   --fingerprints data/processed/terrain_fingerprints.csv \
-  --target-site-id MOON_SITE04 \
+  --target-site-id MOON_SITE01 \
+  --candidate-site-ids EARTH_HAUGHTON EARTH_ASKJA EARTH_MAUNAKEA \
   --tolerances-json config/matching_tolerances.json
 """
 
@@ -50,6 +51,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--target-site-id",
         required=True,
         help="Exact site_id of the Moon/Mars target row.",
+    )
+    parser.add_argument(
+        "--candidate-site-ids",
+        nargs="+",
+        required=True,
+        help="Explicit allowlist of Earth candidate site_id values; unlisted Earth rows are excluded.",
     )
     parser.add_argument(
         "--tolerances-json",
@@ -110,6 +117,8 @@ def main(argv: list[str] | None = None) -> int:
             target_site_id=args.target_site_id,
             weights=get_mission_weights(),
             tolerances=tolerances,
+            candidate_site_ids=args.candidate_site_ids,
+            tolerance_config_path=args.tolerances_json,
             mission_profile=ROVER_NAVIGATION_PROFILE["name"],
             ranking_output_path=args.output,
             robustness_output_path=args.robustness_output,
@@ -123,6 +132,7 @@ def main(argv: list[str] | None = None) -> int:
         ranking = result["ranking_result"]["ranking"]
         print(f"Target: {result['ranking_result']['target_site_id']}")
         print(f"Mission: {result['ranking_result']['mission_profile']}")
+        print("Requested Earth candidates: " + ", ".join(result["ranking_result"]["candidate_site_ids"]))
         print(f"Ranked Earth candidates: {len(ranking)}")
         if len(ranking) < 3:
             print(

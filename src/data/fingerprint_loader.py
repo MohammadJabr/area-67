@@ -147,8 +147,13 @@ def load_terrain_fingerprints_csv(path: str | Path) -> list[dict[str, Any]]:
 def select_space_to_earth_fingerprints(
     records: list[dict[str, Any]],
     target_site_id: str,
+    candidate_site_ids: list[str] | tuple[str, ...] | None = None,
 ) -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
-    """Select one Moon/Mars target and all Earth candidate rows."""
+    """Select one Moon/Mars target and an explicit Earth candidate set.
+
+    When candidate_site_ids is supplied, no other Earth rows are eligible.
+    This prevents exploratory or held-out sites from silently entering an MVP run.
+    """
     if not isinstance(target_site_id, str) or not target_site_id.strip():
         raise ValueError("target_site_id must be a non-empty string.")
 
@@ -175,5 +180,21 @@ def select_space_to_earth_fingerprints(
     }
     if not candidates:
         raise ValueError("No Earth candidate fingerprints were found in the CSV.")
+
+    if candidate_site_ids is not None:
+        if not isinstance(candidate_site_ids, (list, tuple)) or not candidate_site_ids:
+            raise ValueError("candidate_site_ids must be a non-empty list or tuple.")
+        if any(not isinstance(site_id, str) or not site_id.strip() for site_id in candidate_site_ids):
+            raise ValueError("Every candidate_site_id must be a non-empty string.")
+        requested = [site_id.strip() for site_id in candidate_site_ids]
+        if len(requested) != len(set(requested)):
+            raise ValueError("candidate_site_ids must not contain duplicates.")
+        missing = [site_id for site_id in requested if site_id not in candidates]
+        if missing:
+            raise ValueError(
+                "Requested candidate IDs are missing or are not Earth rows: "
+                + ", ".join(missing)
+            )
+        candidates = {site_id: candidates[site_id] for site_id in requested}
 
     return target, candidates

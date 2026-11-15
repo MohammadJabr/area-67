@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import Mapping
 from pathlib import Path
@@ -24,6 +25,7 @@ def _write_robustness_summary(
     ranking_result: Mapping,
     robustness_result: Mapping,
     tolerance_sensitivity: Mapping,
+    run_provenance: Mapping | None = None,
 ) -> Path:
     """Write a compact, reproducible JSON sidecar for baseline/sensitivity."""
     path = Path(output_path)
@@ -34,6 +36,9 @@ def _write_robustness_summary(
 
     summary = {
         "target_site_id": ranking_result["target_site_id"],
+        "candidate_site_ids": ranking_result.get("candidate_site_ids", []),
+        "ranked_candidate_ids": [item["site_id"] for item in ranking_result["ranking"]],
+        "rejected_candidates": ranking_result.get("rejected_candidates", []),
         "mission_profile": ranking_result["mission_profile"],
         "mission_weights": ranking_result.get("mission_weights", {}),
         "feature_tolerances": ranking_result.get("feature_tolerances", {}),
@@ -57,6 +62,7 @@ def _write_robustness_summary(
             "interpretation": sensitivity["interpretation"],
         },
         "tolerance_sensitivity": tolerance_sensitivity,
+        "run_provenance": dict(run_provenance or {}),
         "slope_only_baseline": {
             "ranking": [
                 {
@@ -98,6 +104,7 @@ def run_matching_workflow(
     distribution_sum_tolerance_pp: float = 0.5,
     weight_relative_change: float = 0.20,
     top_k: tuple[int, ...] = (3, 5),
+    run_provenance: Mapping | None = None,
 ) -> dict:
     """Execute one complete target-to-Earth matching and export workflow.
 
@@ -164,6 +171,7 @@ def run_matching_workflow(
         ranking_result,
         robustness_result,
         tolerance_sensitivity,
+        run_provenance,
     )
 
     return {
@@ -180,6 +188,9 @@ def run_matching_from_csv(
     target_site_id: str,
     weights: Mapping[str, float],
     tolerances: Mapping[str, float],
+    *,
+    candidate_site_ids: list[str] | tuple[str, ...],
+    tolerance_config_path: str | Path | None = None,
     **workflow_options,
 ) -> dict:
     """Load the canonical fingerprint table and execute the matching workflow."""
@@ -197,11 +208,49 @@ def run_matching_from_csv(
     target, candidates = select_space_to_earth_fingerprints(
         records,
         target_site_id,
+        candidate_site_ids=candidate_site_ids,
     )
+
+    fingerprint_path = Path(fingerprints_csv)
+    fingerprint_sha256 = hashlib.sha256(fingerprint_path.read_bytes()).hexdigest()
+    semantic_configuration = {
+        "target_site_id": target_site_id,
+        "candidate_site_ids": sorted(candidates),
+        "mission_profile": workflow_options.get("mission_profile"),
+        "weights": weights,
+        "tolerances": tolerances,
+        "min_feature_group_completeness": workflow_options.get("min_feature_group_completeness"),
+        "min_data_completeness": workflow_options.get("min_data_completeness"),
+        "scale_relative_tolerance": workflow_options.get("scale_relative_tolerance", 0.01),
+        "distribution_sum_tolerance_pp": workflow_options.get("distribution_sum_tolerance_pp", 0.5),
+        "weight_relative_change": workflow_options.get("weight_relative_change", 0.20),
+    }
+    semantic_json = json.dumps(
+        semantic_configuration, sort_keys=True, separators=(",", ":"),
+        ensure_ascii=False, allow_nan=False,
+    )
+    run_provenance = {
+        "fingerprint_input": {
+            "filename": fingerprint_path.name,
+            "sha256": fingerprint_sha256,
+        },
+        "matching_configuration": {
+            "sha256": hashlib.sha256(semantic_json.encode("utf-8")).hexdigest(),
+            "canonicalization": "UTF-8 JSON, sorted keys, compact separators",
+        },
+    }
+    if tolerance_config_path is not None:
+        tolerance_path = Path(tolerance_config_path)
+        run_provenance["tolerance_config_file"] = {
+            "filename": tolerance_path.name,
+            "sha256": hashlib.sha256(tolerance_path.read_bytes()).hexdigest(),
+        }
+
     return run_matching_workflow(
         target,
         candidates,
         weights,
         tolerances,
+        run_provenance=run_provenance,
         **workflow_options,
     )
