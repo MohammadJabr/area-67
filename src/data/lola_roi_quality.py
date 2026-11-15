@@ -65,13 +65,53 @@ def _projection_parameter_signature(crs: Any) -> tuple[str, tuple[tuple[str, flo
     return str(operation.method_name).casefold(), parameters
 
 
+def _datum_identity_compatible(left_geodetic: Any, right_geodetic: Any) -> bool:
+    """Return whether two CRS datum labels are compatible for lunar screening.
+
+    Generic placeholder names may match each other. A placeholder cannot match
+    an explicit name, and distinct explicit names are kept separate.
+    """
+    left_datum = left_geodetic.datum
+    right_datum = right_geodetic.datum
+    if left_datum is None or right_datum is None:
+        return False
+
+    left_name = " ".join(str(left_datum.name).casefold().split())
+    right_name = " ".join(str(right_datum.name).casefold().split())
+    placeholders = {"", "unknown", "unnamed", "unknown datum", "unnamed datum"}
+    left_placeholder = left_name in placeholders
+    right_placeholder = right_name in placeholders
+    if left_placeholder != right_placeholder:
+        return False
+    return left_placeholder or left_name == right_name
+
+
+def _is_lunar_spherical_projected_crs(crs: Any) -> bool:
+    """Identify the project's Moon-radius spherical projected coordinate systems."""
+    if not crs.is_projected or crs.geodetic_crs is None:
+        return False
+    ellipsoid = crs.geodetic_crs.ellipsoid
+    return all(
+        math.isclose(
+            float(value),
+            1_737_400.0,
+            rel_tol=1e-12,
+            abs_tol=1e-6,
+        )
+        for value in (ellipsoid.semi_major_metre, ellipsoid.semi_minor_metre)
+    )
+
+
 def _equivalent_custom_projected_crs(left: Any, right: Any) -> bool:
     """Compare projection mathematics while ignoring non-semantic WKT labels.
 
     This narrow fallback is intended for custom lunar CRS WKT where providers
     serialize the same sphere/projection with different placeholder names.
-    It requires identical geodetic body dimensions, prime meridian, projection
-    method and normalized parameters, and coordinate-axis directions/units.
+    Datum identity must also be compatible: two generic placeholder names may
+    match, but an unknown datum cannot match an explicit one, and two different
+    explicit datum names are never treated as equivalent. The fallback also
+    requires identical body dimensions, prime meridian, projection method and
+    normalized parameters, and coordinate-axis directions/units.
     """
     if not (left.is_projected and right.is_projected):
         return False
@@ -79,6 +119,9 @@ def _equivalent_custom_projected_crs(left: Any, right: Any) -> bool:
     left_geodetic = left.geodetic_crs
     right_geodetic = right.geodetic_crs
     if left_geodetic is None or right_geodetic is None:
+        return False
+
+    if not _datum_identity_compatible(left_geodetic, right_geodetic):
         return False
 
     left_ellipsoid = left_geodetic.ellipsoid
@@ -136,6 +179,18 @@ def same_crs(left: Any, right: Any) -> bool:
 
         left_crs = CRS.from_user_input(left)
         right_crs = CRS.from_user_input(right)
+
+        # PROJ may consider custom planetary CRS equal while ignoring a datum
+        # label. Check lunar frame identity before the general equality shortcut.
+        if (
+            _is_lunar_spherical_projected_crs(left_crs)
+            and _is_lunar_spherical_projected_crs(right_crs)
+            and not _datum_identity_compatible(
+                left_crs.geodetic_crs, right_crs.geodetic_crs
+            )
+        ):
+            return False
+
         if left_crs.equals(right_crs, ignore_axis_order=True):
             return True
         return _equivalent_custom_projected_crs(left_crs, right_crs)
@@ -295,6 +350,7 @@ def build_roi_quality_report(
             "NoData, interpolated LDEM values, and zero LDEC counts are distinct states.",
             "Raster posting is not effective resolution or a per-pixel accuracy guarantee.",
             "No reprojection, resampling, geometry repair, or vertical-reference transformation is performed.",
+            "For custom lunar CRS with placeholder datum labels, matching projection mathematics is only nominal compatibility; it does not identify the Moon-fixed frame (ME/PA).",
             "Statistics use native raster pixel centers within each polygon; no pixel-area weighting is applied.",
         ],
     }

@@ -71,6 +71,26 @@ def test_same_crs_accepts_equivalent_lunar_polar_stereographic_wkt():
     assert same_crs(SITE04_SHAPEFILE_CRS_WKT, SITE04_RASTER_CRS_WKT)
 
 
+def test_same_crs_rejects_different_or_partially_unknown_lunar_datums():
+    moon_me_shape = SITE04_SHAPEFILE_CRS_WKT.replace(
+        'DATUM["unknown"', 'DATUM["MOON_ME"'
+    )
+    moon_me_raster = SITE04_RASTER_CRS_WKT.replace(
+        'DATUM["unknown"', 'DATUM["MOON_ME"'
+    )
+    moon_pa = SITE04_RASTER_CRS_WKT.replace(
+        'DATUM["unknown"', 'DATUM["MOON_PA"'
+    )
+
+    # Different known body-fixed frames must not pass on matching projection math.
+    assert not same_crs(moon_me_shape, moon_pa)
+    # An unknown frame must not be silently equated with a named frame.
+    assert not same_crs(SITE04_SHAPEFILE_CRS_WKT, moon_me_raster)
+    assert not same_crs(moon_pa, SITE04_RASTER_CRS_WKT)
+    # Different placeholder labels around the same explicit frame remain compatible.
+    assert same_crs(moon_me_shape, moon_me_raster)
+
+
 def test_same_crs_rejects_different_lunar_projection_parameters():
     different_meridian = SITE04_SHAPEFILE_CRS_WKT.replace(
         'PARAMETER["central_meridian",0]',
