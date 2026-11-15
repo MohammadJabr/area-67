@@ -156,7 +156,7 @@
   },
   "limitations": [
     "All study footprints are provisional reference-centred windows, not approved geomorphic AOIs.",
-    "Site01's local LOLA GeoTIFF WKT has an unknown datum label; no relabelling or frame transformation was performed.",
+    "Site01's embedded LOLA GeoTIFF WKT has a placeholder datum, but official PGDA Product 78 documentation identifies the GeoTIFF layers as MOON_ME/DE421; no raw WKT rewrite or coordinate transformation was performed. The provider ROI shapefile frame remains unverified.",
     "Positive LDEC support in the Site01 window is 9.235%, distinct from 100% raster-valid mask coverage.",
     "Copernicus DSM effective terrain resolution and per-pixel quality were not independently established for these windows; quality companion rasters were not retrieved.",
     "Earth vertical reference is product-level EGM2008 documentation. Absolute cross-body elevations were not compared.",
