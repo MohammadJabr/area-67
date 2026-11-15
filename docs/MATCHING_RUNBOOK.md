@@ -104,3 +104,8 @@ Every matching workflow now records tolerance sensitivity in `data/processed/ran
 ## Explicit candidate scope
 
 Every CSV-driven CLI run requires `--candidate-site-ids`. This is an allowlist: only the named Earth rows are eligible, and any requested ID missing from the CSV or not labelled Earth causes a clear error. For the frozen canonical MVP, pass the exact approved Haughton, Askja, and Mauna Kea IDs supplied by the GIS/fingerprint handoff. Do not copy the exploratory Yungay ID into the canonical run. The exploratory reproduction test passes its historical Haughton/Yungay/Mauna Kea IDs explicitly to preserve reproducibility without changing the canonical shortlist.
+
+
+## Reproducibility hashes and exclusions
+
+The robustness JSON records the exact fingerprint CSV SHA-256, the exact tolerance JSON file SHA-256 when invoked through the CLI, and a canonical semantic configuration SHA-256 covering target, candidate allowlist, mission profile, weights, tolerances, completeness cutoffs, scale/distribution safeguards, and weight perturbation. It also lists the requested candidate IDs, ranked IDs, and baseline rejection reasons. Preserve the input CSV and tolerance JSON alongside the sidecar; a hash identifies bytes/configuration but does not itself establish scientific validity.
