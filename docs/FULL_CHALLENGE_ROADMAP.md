@@ -74,12 +74,12 @@ Do not populate selectable profiles with empty or misleading results. A profile 
 - Streamlit app with Mission Setup, Results & Comparison, Site Passport and clearly labelled paired synthetic DEMO MODE fixtures.
 - NASA LOLA Site04 acquisition/structural QA workflow; Site04 is provisional.
 - Multi-site NASA PGDA south-pole LOLA acquisition and inspection for Site01, Site04, Site06, Site07 and Site11, including five raster layers (elevation, LDEC counts, slope, Z RMS uncertainty, slope RMS uncertainty).
-- Safe download/extraction and geometry inventory for the five provider-linked ROI archives; polygon-level QA reports raster-valid coverage, positive-shot direct support, zero-count/interpolated share, and elevation/slope plus RMS-uncertainty summaries. The archive batch downloader continues past provider errors and preserves successful files.
+- Safe download/extraction and geometry inventory for the five provider-linked ROI archives; polygon-level QA reports raster-valid coverage, positive-shot direct support, zero-count/interpolated share, and elevation/slope plus RMS-uncertainty summaries. Both ROI-archive and five-layer raster batch downloaders continue past individual provider errors, preserve successful files, and report failed items.
 - Five provisional Copernicus GLO-30 Earth DSM source tiles: Haughton, McMurdo, Askja, Mauna Kea and Yungay, with manifest/checksum/structural QA; a separate Mauna Kea USGS 3DEP 1 m alternative is documented.
 - Five-group DEM terrain fingerprint extraction and synthetic/GeoTIFF tests.
 - CSV-driven target-aware matching, candidate ranking, feature contributions, Slope-only baseline and weight sensitivity utilities.
 - Integration contracts, data provenance and judging-readiness gates.
-- Latest full main CI at commit `2a64c90` (2026-11-15): **128 passed, 66 warnings**.
+- Latest full main CI at commit `1ea2f0b` (2026-11-15): **130 passed, 66 warnings in 3.36s**. The warnings are not test failures; inspect the run logs if their details matter for a release.
 
 ### Partially implemented / not scientifically complete
 - The five provider-defined lunar ROI archive and five-layer audit tools are implemented, but the real archives/rasters still need to be downloaded and inspected locally; provider polygons are not approved AREA 67 study AOIs.
