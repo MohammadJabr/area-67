@@ -49,8 +49,7 @@ def _source_documentation(path: Path) -> dict[str, Any]:
                 "value_unit": unit_text.split(" (", 1)[0] or None,
                 "vertical_reference": datum_text.split(" (", 1)[0] or None,
                 "vertical_reference_applicable": True,
-                "coordinate_reference_frame": row.get("crs") or None,
-                "coordinate_reference_frame_source": "Copernicus DEM product documentation and Earth DEM source manifest",
+                "horizontal_crs": row.get("crs") or None,
                 "effective_resolution_note": row.get("effective_resolution_note"),
                 "quality_layers": row.get("quality_layers"),
                 "uncertainty_note": row.get("uncertainty_note"),
@@ -114,7 +113,7 @@ def _markdown(report: dict[str, Any]) -> str:
     documented = [item for item in report["rasters"] if item.get("source_documentation")]
     if documented:
         lines.extend(["", "## Product documentation metadata", "",
-                      "| Raster | Data kind | Value unit | Documented frame | Vertical reference | Source |",
+                      "| Raster | Data kind | Value unit | Horizontal CRS | Coordinate frame | Vertical reference | Source |",
                       "|---|---|---|---|---|---|"])
         for item in documented:
             doc = item["source_documentation"]
