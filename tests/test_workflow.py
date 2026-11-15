@@ -119,6 +119,8 @@ def test_workflow_reads_fingerprints_and_exports_results(
     }
     assert "slope_only_baseline" in summary
     assert summary["candidate_site_ids"] == ["EARTH_A", "EARTH_B"]
+    assert summary["ranked_candidate_ids"] == ["EARTH_A", "EARTH_B"]
+    assert summary["rejected_candidates"] == []
     assert "EARTH_HELD_OUT" not in {
         row["site_id"] for row in result["ranking_result"]["ranking"]
     }
