@@ -180,6 +180,8 @@ def run_matching_from_csv(
     target_site_id: str,
     weights: Mapping[str, float],
     tolerances: Mapping[str, float],
+    *,
+    candidate_site_ids: list[str] | tuple[str, ...],
     **workflow_options,
 ) -> dict:
     """Load the canonical fingerprint table and execute the matching workflow."""
@@ -197,6 +199,7 @@ def run_matching_from_csv(
     target, candidates = select_space_to_earth_fingerprints(
         records,
         target_site_id,
+        candidate_site_ids=candidate_site_ids,
     )
     return run_matching_workflow(
         target,
