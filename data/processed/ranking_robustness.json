@@ -1,0 +1,66 @@
+{
+  "status": "EXPLORATORY_NOT_APPROVED",
+  "target_site_id": "MOON_SITE01_PILOT990",
+  "mission_profile": "Rover Navigation / Terrain Traversal",
+  "scope": {
+    "target": "NASA PGDA Site01 / Connecting Ridge, sampled as a 990 m x 990 m window within the earlier 1 km read-only screen.",
+    "candidate_windows": ["EARTH_HAUGHTON_REF990", "EARTH_YUNGAY_HYPERARID_REF990", "EARTH_MAUNAKEA_REF990"],
+    "window_area_km2": 0.9801,
+    "all_aois_approved": false,
+    "askja_holdout": {
+      "site_id": "EARTH_ASKJA_REF990",
+      "reason": "Its selected reference-centred 990 m window is dominated by near-flat/equal-elevation samples. It is held out until a caldera, lava-field, or lake-margin landform AOI is selected."
+    }
+  },
+  "mission_weights": {"slope": 0.30, "tri": 0.25, "local_relief": 0.20, "spatial_pattern": 0.20, "terrain_distribution": 0.05},
+  "feature_tolerances": {"slope_deg": 5.0, "tri_m": 10.0, "local_relief_m": 15.0, "terrain_distribution_pp": 20.0, "spatial_pattern_pct": 15.0},
+  "completeness_policy": {
+    "min_feature_group_completeness": 1.0,
+    "min_data_completeness": 0.95,
+    "note": "Pilot gates are operational assumptions. Data completeness describes supplied feature groups and raster-valid coverage; it does not describe direct LOLA observation support."
+  },
+  "analysis_configuration": {
+    "analysis_scale_m": 30.0,
+    "relief_window_m": 150.0,
+    "local_relief_min_valid_fraction": 0.80,
+    "tri_definition": "Riley eight-neighbour TRI, one-cell radius",
+    "slope_classes_deg": {"low": "<10", "mid": "10 to <25", "high": ">=25"},
+    "spatial_pattern": "largest 8-connected patch of slope >=25 degrees, divided by valid slope area",
+    "resampling": "bilinear elevation only",
+    "vertical_offset_applied": false
+  },
+  "ranking": [
+    {"rank": 1, "site_id": "EARTH_HAUGHTON_REF990", "weighted_distance": 0.35525230496234556, "similarity_score": 73.78699865246007, "group_distances": {"slope": 0.5397594256670749, "tri": 0.34273922306979815, "local_relief": 0.1758713722229004, "terrain_distribution": 0.2548896714654711, "spatial_pattern": 0.0}, "top1_scenarios": 11, "top2_scenarios": 11},
+    {"rank": 2, "site_id": "EARTH_YUNGAY_HYPERARID_REF990", "weighted_distance": 0.512116412167177, "similarity_score": 66.13247445458198, "group_distances": {"slope": 0.7619317750059044, "tri": 0.4664695955525472, "local_relief": 0.39352986017862956, "terrain_distribution": 0.23364886551001526, "spatial_pattern": 0.0}, "top1_scenarios": 0, "top2_scenarios": 11},
+    {"rank": 3, "site_id": "EARTH_MAUNAKEA_REF990", "weighted_distance": 2.651002736446699, "similarity_score": 27.3897357023961, "group_distances": {"slope": 3.525503575278068, "tri": 2.450586624353302, "local_relief": 2.4552892684936523, "terrain_distribution": 2.895526224746381, "spatial_pattern": 0.929587235518557}, "top1_scenarios": 0, "top2_scenarios": 0}
+  ],
+  "slope_only_baseline": [
+    {"site_id": "EARTH_HAUGHTON_REF990", "rank": 1, "similarity_distance": 0.5397594256670749, "similarity_score": 64.94521048746084},
+    {"site_id": "EARTH_YUNGAY_HYPERARID_REF990", "rank": 2, "similarity_distance": 0.7619317750059044, "similarity_score": 56.75588658911886},
+    {"site_id": "EARTH_MAUNAKEA_REF990", "rank": 3, "similarity_distance": 3.525503575278068, "similarity_score": 22.09698839843598}
+  ],
+  "rank_comparison": [
+    {"site_id": "EARTH_HAUGHTON_REF990", "multi_feature_rank": 1, "slope_only_rank": 1, "rank_change": 0},
+    {"site_id": "EARTH_YUNGAY_HYPERARID_REF990", "multi_feature_rank": 2, "slope_only_rank": 2, "rank_change": 0},
+    {"site_id": "EARTH_MAUNAKEA_REF990", "multi_feature_rank": 3, "slope_only_rank": 3, "rank_change": 0}
+  ],
+  "weight_sensitivity": {
+    "scenario_count": 11,
+    "relative_change": 0.20,
+    "method": "Baseline plus one-at-a-time +/-20% perturbation of each of the five mission weights, with weights renormalized.",
+    "top_k_counts": {
+      "1": {"EARTH_HAUGHTON_REF990": 11, "EARTH_YUNGAY_HYPERARID_REF990": 0, "EARTH_MAUNAKEA_REF990": 0},
+      "2": {"EARTH_HAUGHTON_REF990": 11, "EARTH_YUNGAY_HYPERARID_REF990": 11, "EARTH_MAUNAKEA_REF990": 0}
+    },
+    "interpretation": "Counts across tested scenarios are descriptive robustness checks, not probabilities or confidence levels."
+  },
+  "limitations": [
+    "All study footprints are provisional reference-centred windows, not approved geomorphic AOIs.",
+    "Site01's local LOLA GeoTIFF WKT has an unknown datum label; no relabelling or frame transformation was performed.",
+    "Positive LDEC support in the Site01 window is 9.235%, distinct from 100% raster-valid mask coverage.",
+    "Copernicus DSM effective terrain resolution and per-pixel quality were not independently established for these windows; quality companion rasters were not retrieved.",
+    "Earth vertical reference is product-level EGM2008 documentation. Absolute cross-body elevations were not compared.",
+    "The 30 m scale, 150 m relief window, valid-neighbour fraction, weights, and tolerances are provisional pilot assumptions, not NASA or rover-manufacturer standards.",
+    "The score is 100/(1+weighted_distance): a relative ranking index, not a probability, safety assessment, or site certification."
+  ]
+}
