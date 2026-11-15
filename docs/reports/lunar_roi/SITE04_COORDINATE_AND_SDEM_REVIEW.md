@@ -180,6 +180,19 @@ The local Site04 ROI shapefile and SP-4 coordinates were previously calculated i
 
 There is one remaining coordinate-reference caveat: the SDEM GeoTIFFs explicitly identify the Moon (2015) datum/IAU CRS, while the legacy Site04 shapefile WKT names its datum/spheroid as `unknown` (although its nominal sphere radius and projection parameters match). The direct projected-coordinate comparison is therefore the correct screening result under the apparent common map plane, but a definitive physical co-registration claim requires the shapefile's original source/reference-frame provenance to be confirmed. The fact that Product 104 SDEMs are geodetically consistent with their LOLA reference is relevant, but it does not by itself prove the legacy shapefile WKT's datum identity.
 
+### Reference-frame interpretation: do not apply a generic ME/PA offset
+
+The coordinate-frame distinction must be handled with source-specific provenance:
+
+- NASA PGDA Product 78 states that its Site04 LDEM and other 5 m GeoTIFF layers use the **MOON_ME reference frame of JPL ephemeris DE421**. It explicitly excludes the ROI shapefiles from that GeoTIFF CRS statement, so the local shapefile's missing datum label remains a genuine provenance gap.
+- The SDEM paper states that the LOLA-based LDEM is its geodetic reference, that the SDEM is registered to that LDEM, and that the released GeoTIFF products use the **Moon (2015) South Polar Stereographic** projection. This is evidence of a LOLA geodetic tie for the SDEM, but the raster WKT alone does not document every upstream frame/registration operation.
+- NASA's 2024 Lunar Reference Frames white paper explains that Mean Earth (ME) and Principal Axis (PA) are distinct body-fixed frames and equivalent surface positions may differ by up to about 875 m. It also states that ME is commonly used for lunar surface mapping and that Artemis uses ME for site selection and surface analyses.
+
+**Do not add or apply the generic 875 m ME/PA displacement simply because the A306 WKT says “Moon (2015).”** First establish whether a particular input is actually PA or ME. The SDEM paper's LOLA geodetic tie argues against treating A306 as an arbitrary PA-only dataset. The remaining uncertainty in this review is specifically the frame provenance of the legacy Site04 ROI shapefile and whether its coordinate values are directly co-registered with the Site04 LDEM.
+
+Until the original ROI archive/source metadata resolves that point, retain the A306 projected-bounds comparison as a strong screening result under the apparent common map plane, not as a final survey-grade registration proof. Do not apply a frame rotation to make the geometries overlap; that would be an unsupported correction.
+
+
 ### Candidate next regional products
 
 The Zenodo archive separately lists:
@@ -206,6 +219,8 @@ This review used header metadata only. No SDEM pixel arrays were read, and no ra
 - NASA GSFC PGDA Product 78, High-Resolution LOLA Topography for Lunar South Pole Sites: https://pgda.gsfc.nasa.gov/products/78
 - NASA GSFC, Lunar Surface Data Book, ACD-50044 Rev A (2023), Appendix A, Table A2-2: https://ntrs.nasa.gov/api/citations/20230007818/downloads/ACD-50044%20Lunar%20Surface%20Data%20Book%20Rev%20A.pdf
 - Patterson et al. (2024), “Lithologies and Chronologic Opportunities of Materials to Be Returned From the Artemis Exploration Zone,” section 1.2.2: https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2023JE008275
+- NASA GSFC, “Lunar Reference Frames,” 2024 Moon to Mars Architecture Concept Review: https://www.nasa.gov/wp-content/uploads/2024/12/acr24-lunar-reference-frames.pdf
+- U.S. Geological Survey, McClernan et al. (2025), “Lunar Grid Systems, Coordinate Systems, and Map Projections for the Artemis Missions and Lunar Surface Navigation,” https://doi.org/10.3133/tm11E1
 - NASA GSFC PGDA Product 104, Enhanced Topography Models for Selected Lunar South Pole Regions with Shape-from-Shading: https://pgda.gsfc.nasa.gov/products/104
 - Bertone et al. (2026), “Enhanced Topography Models for selected Lunar South Pole regions with Shape-from-Shading,” The Planetary Science Journal, 7, 118, DOI: https://doi.org/10.3847/PSJ/ae5b70
 - Bertone et al. (2025), archived SDEM geospatial products, Zenodo record 17954508: https://zenodo.org/records/17954508
