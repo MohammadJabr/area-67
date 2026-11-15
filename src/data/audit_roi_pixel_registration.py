@@ -134,7 +134,7 @@ def audit_shapefile_registration(
             center_residuals: list[float] = []
             corner_residuals: list[float] = []
             for x, y in _iter_geometry_vertices(geometry):
-                column, row = inverse_transform * (x, y)
+                column, row = inverse_transform @ (x, y)
                 _, _, center_error = _nearest_lattice_residual(
                     column, row, offset=0.5, transform=transform
                 )
@@ -209,6 +209,22 @@ def audit_shapefile_registration(
         else:
             overall_class = "off_grid"
 
+        # Calculate the envelope from affine-transformed outer corners.
+        # This avoids Rasterio's deprecated Affine '*' implementation used by
+        # dataset.bounds and remains correct for rotated/sheared grids.
+        grid_corners = [
+            transform @ (0.0, 0.0),
+            transform @ (float(dataset.width), 0.0),
+            transform @ (0.0, float(dataset.height)),
+            transform @ (float(dataset.width), float(dataset.height)),
+        ]
+        grid_bounds = [
+            float(min(x for x, _ in grid_corners)),
+            float(min(y for _, y in grid_corners)),
+            float(max(x for x, _ in grid_corners)),
+            float(max(y for _, y in grid_corners)),
+        ]
+
         tags = dataset.tags()
         report = {
             "schema_version": 1,
@@ -223,12 +239,7 @@ def audit_shapefile_registration(
                 "width": int(dataset.width),
                 "height": int(dataset.height),
                 "transform": list(transform)[:6],
-                "bounds": [
-                    float(dataset.bounds.left),
-                    float(dataset.bounds.bottom),
-                    float(dataset.bounds.right),
-                    float(dataset.bounds.top),
-                ],
+                "bounds": grid_bounds,
                 "pixel_size_map_units": [
                     float(math.hypot(transform.a, transform.d)),
                     float(math.hypot(transform.b, transform.e)),

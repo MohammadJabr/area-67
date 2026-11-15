@@ -114,7 +114,10 @@ The team-local acquisition record and the user's archive-extraction manifest ide
 
 The four regular files are `Site04_ROIs.shp`, `Site04_ROIs.shx`, `Site04_ROIs.dbf`, and `Site04_ROIs.prj`. The fifth entry is a symbolic link named `Site04_ROIs.gmt` whose target is `Site04_final_adj_5mpp_01_regionProps_avgillGT070.gmt`. The extraction manifest records `target_member_listed: false` and `action: skipped_not_created_or_followed`; the target file is not included in this archive. The extractor correctly did not follow or create the symbolic link.
 
-The link target's `regionProps_avgillGT070` name is a provenance clue only. The `avgillGT070` suffix may suggest a region-properties product associated with an average-illumination threshold, but the target contents and naming convention have not been independently verified. **Do not claim that the four ROI polygons were selected by an average-illumination-greater-than-70% criterion** on the basis of this filename alone.
+The link target's `regionProps_avgillGT070` name is a provenance clue. Barker et al. (2021), Figure 3 and its caption, provide a matching published method for the four Product 78 study sites: the outlined regions at Sites 1, 4, 7 and 11 are areas where the average visible fraction of the Sun's disk is **greater than 70%**, evaluated **1 m above the surface** over **2024-01-01 through 2026-01-01**, with each region having area **greater than 2,500 m²**. The `avgillGT070` filename suffix is consistent with that threshold, and the paper's Site 4 panel is directly relevant to this archive.
+
+This makes the published illumination-threshold method a strong provenance lead for the four local polygons, but it does not substitute for the missing linked GMT file. The archive does not contain the link target, and its content/geometry could not be independently compared with the four shapefile polygons. Therefore describe the polygons as **likely associated with the published >70% average-illumination regions**, not as a confirmed exact reproduction of those contours. Retain the threshold, altitude, dates and area floor as the paper's stated method; do not infer any additional selection conditions.
+
 
 The extracted `Site04_ROIs.prj` WKT recorded in the local CRS inspection declares a spherical ellipsoid with radius **1,737,400 m**, a datum named **`unknown`**, a prime meridian named **`Reference meridian`** at 0°, and a south-polar stereographic projection with latitude of origin -90°, central meridian 0°, false offsets 0 m, and metre units.
 
@@ -123,6 +126,24 @@ The Site04 GeoTIFF WKT has the same nominal sphere and polar-stereographic param
 This distinction is explicit in NASA PGDA Product 78: its MOON_ME / DE421 CRS statement applies to the GeoTIFF products, **excluding the ROI shapefiles**. The product-level README also documents the raster products' GMT pixel-registered convention (X/Y coordinates at pixel centres), but it does not supply the absent linked region-properties file or explicitly assign a body-fixed frame to the ROI shapefile. Therefore, neither the GeoTIFF frame description nor the link target's filename can be inherited as a shapefile frame/selection rule. The archive checksum and explicit four-file/one-link inventory establish what was acquired, but they do not supply a frame definition. No source-authoritative ME/PA assignment for the legacy ROI shapefile has been found in the evidence reviewed here.
 
 **Disposition:** keep the Site04 shapefile frame as unknown. Do not relabel it MOON_ME, MOON_PA, or Moon (2015), and do not apply a frame shift to force alignment. The local shapefile-to-local-Site04-raster ROI statistics remain useful as a nominal same-product coordinate comparison; comparisons against external lunar products remain conditional until the shapefile's frame provenance is confirmed.
+
+### Measured Site04 ROI-to-raster pixel registration
+
+The read-only `audit_roi_pixel_registration.py` utility was run by the team on 2026-11-15 against the original four-feature `Site04_ROIs.shp` and the native Site04 surface-height GeoTIFF. The generated local report was `data/metadata/site04_roi_registration_20261115.json`.
+
+| Source feature index | Ring vertices counted (including ring closure) | Pixel-centre aligned | Pixel-corner aligned | Maximum centre residual |
+|---:|---:|---:|---:|---:|
+| 0 | 121 | 121 (100%) | 0 | 0 m |
+| 1 | 87 | 87 (100%) | 0 | 0 m |
+| 2 | 59 | 59 (100%) | 0 | 0 m |
+| 3 | 58 | 58 (100%) | 0 | 0 m |
+| **Total** | **325** | **325 (100%)** | **0** | **0 m** |
+
+The maximum residual to the pixel-corner lattice was **3.5355339 m**. The reference raster is 3,200 × 3,200, has 5 m square pixels, affine transform `[5, 0, -9000, 0, -5, 1000]`, and declares `AREA_OR_POINT=Area`. The audit used a numerical tolerance of 1e-6 m and made no reprojection, shift, geometry repair, or source modification.
+
+**Interpretation:** all 325 recorded ring vertices lie exactly on the native raster's pixel-centre lattice. This is strong direct evidence that the ROI geometry coordinates are represented on the same nominal 5 m pixel-centre grid as the local Site04 raster. **No half-pixel shift should be applied** when sampling this local raster using these source coordinates. This resolves the local pixel-registration question for the audited shapefile/raster pair.
+
+This result does **not** establish the physical lunar body-fixed frame (ME versus PA), the vertical reference, or the missing illumination/region-properties selection rule. The nominal CRS compatibility check intentionally retains the datum as unknown. Do not generalize the pixel-lattice finding to unrelated lunar products such as A306 SDEM without independent source-frame and registration checks.
 
 ## 3. Exploratory window result remains scoped to the ROI cluster
 

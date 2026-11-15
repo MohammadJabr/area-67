@@ -4,8 +4,8 @@ from pathlib import Path
 import geopandas as gpd
 import numpy as np
 import rasterio
-from rasterio.transform import from_origin
-from shapely.geometry import box
+from affine import Affine
+from shapely.geometry import Polygon, box
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src" / "data"))
 from audit_roi_pixel_registration import audit_shapefile_registration  # noqa: E402
@@ -21,7 +21,7 @@ def write_raster(path: Path, *, crs="EPSG:3031"):
         count=1,
         dtype="float32",
         crs=crs,
-        transform=from_origin(0, 10, 1, 1),
+        transform=Affine(1.0, 0.0, 0.0, 0.0, -1.0, 10.0),
     ) as dataset:
         dataset.write(np.zeros((10, 10), dtype="float32"), 1)
     return path
@@ -50,7 +50,43 @@ def test_reports_vertices_aligned_to_pixel_centres(tmp_path):
     assert report["summary"]["vertex_count"] == 5
     assert report["summary"]["pixel_center_aligned_vertex_count"] == 5
     assert report["summary"]["pixel_center_aligned_pct"] == 100.0
-    assert report["summary"]["maximum_pixel_center_residual_m"] == 0.0
+    assert report["summary"]["maximum_pixel_center_residual_m"] <= 1e-12
+
+
+def test_handles_rotated_and_sheared_affine_pixel_centres(tmp_path):
+    transform = Affine(1.0, 0.2, 100.0, 0.1, -1.0, 200.0)
+    raster_path = tmp_path / "sheared.tif"
+    with rasterio.open(
+        raster_path,
+        "w",
+        driver="GTiff",
+        width=10,
+        height=10,
+        count=1,
+        dtype="float32",
+        crs="EPSG:3031",
+        transform=transform,
+    ) as dataset:
+        dataset.write(np.zeros((10, 10), dtype="float32"), 1)
+
+    ring = [
+        transform @ (0.5, 0.5),
+        transform @ (4.5, 0.5),
+        transform @ (4.5, 4.5),
+        transform @ (0.5, 4.5),
+        transform @ (0.5, 0.5),
+    ]
+    shapefile = write_shapefile(
+        tmp_path / "sheared_roi.shp",
+        Polygon(ring),
+    )
+
+    report = audit_shapefile_registration(shapefile, raster_path)
+
+    assert report["summary"]["alignment_class"] == "pixel_centres"
+    assert report["summary"]["pixel_center_aligned_pct"] == 100.0
+    assert report["summary"]["maximum_pixel_center_residual_m"] <= 1e-12
+    assert report["raster_grid"]["bounds"] == [100.0, 190.0, 112.0, 201.0]
 
 
 def test_reports_vertices_aligned_to_pixel_corners(tmp_path):
