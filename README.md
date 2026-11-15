@@ -26,6 +26,12 @@ The **Single-Parameter Explorer** is an analysis utility in the comparison exper
 
 See [Product Architecture](docs/PRODUCT_ARCHITECTURE.md) and [Application Integration Contract](docs/INTEGRATION_CONTRACT.md).
 
+## Full challenge vision and lunar target library
+
+AREA 67 is intended to grow beyond a single lunar target and one rover-navigation profile. The current NASA LOLA acquisition workflow supports a provisional Site04 baseline; the official PGDA catalogue also publishes additional south-pole sites and ROI archives for Site01, Site04, Site06, Site07, and Site11. See the [Lunar Target Catalogue](docs/LUNAR_TARGET_CATALOG.md) and [LOLA ROI / multi-site workflow](docs/LOLA_ROI_AND_MULTI_SITE_WORKFLOW.md). These are provider-defined target options, not an approved ranking of permanent-base locations.
+
+The broader challenge roadmap covers global Earth discovery and separate evidence layers for terrain, geology/materials, thermal conditions, illumination, water/ice/resources, dust/processes, biological context, and subsurface environments. These dimensions must not be collapsed into one score before their datasets and methods are compatible.
+
 ## Core Terrain Fingerprint
 
 All five groups are required:
