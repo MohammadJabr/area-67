@@ -33,8 +33,9 @@ Tool: **src/data/lola_roi_acquisition.py**
 - Requires explicit --confirm-download.
 - Enforces a configurable download-size limit and checks gzip/tar structure.
 - Never overwrites an existing archive or partial download.
-- Extracts only regular files and directories; rejects absolute paths, parent traversal, links and special files.
-- Stages extraction and publishes only after validation.
+- Extracts regular files and directories; records relative symbolic links in an extraction manifest but never creates or follows them. Hard links and special files are rejected.
+- Rejects absolute paths, parent traversal, duplicate case-insensitive paths, and extraction-manifest path collisions.
+- Stages extraction and publishes only after validation. The inspection report surfaces every skipped symbolic link as a review warning.
 - Inventories every .shp through GeoPandas, recording feature count, CRS, geometry types, bounds, empty/invalid geometries, fields, and native-CRS area when projected.
 - Does not reproject, repair, clip, simplify or label any geometry as an approved AREA 67 AOI.
 
@@ -54,6 +55,7 @@ Outputs:
 - Original archives: data/raw/moon/roi_archives/<SiteID>/
 - Extracted source shapefiles: data/raw/moon/roi_shapes/<SiteID>/
 - Inspection reports: data/metadata/lola_rois/<SiteID>_roi_inspection.json
+- Extraction manifest (including skipped symbolic links): data/raw/moon/roi_shapes/<SiteID>/archive_extraction_manifest.json
 
 ### Multi-site LOLA raster downloader
 
