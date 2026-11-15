@@ -32,7 +32,7 @@ See [Product Architecture](docs/PRODUCT_ARCHITECTURE.md) and [Application Integr
 
 ## Full challenge vision and lunar target library
 
-AREA 67 is intended to grow beyond a single lunar target and one rover-navigation profile. The current NASA LOLA acquisition workflow supports a provisional Site04 baseline; the official PGDA catalogue also publishes additional south-pole sites and ROI archives for Site01, Site04, Site06, Site07, and Site11. See the [Lunar Target Catalogue](docs/LUNAR_TARGET_CATALOG.md), [LOLA ROI / multi-site workflow](docs/LOLA_ROI_AND_MULTI_SITE_WORKFLOW.md), and [ROI-level LOLA support audit](docs/LOLA_ROI_QUALITY_AUDIT.md). These are provider-defined target options, not an approved ranking of permanent-base locations.
+AREA 67 is intended to grow beyond a single lunar target and one rover-navigation profile. The working lunar MVP execution baseline is NASA PGDA Site01 (Connecting Ridge), selected for a rover surface-operations study because NASA reports favorable illumination metrics and a corresponding A306 shape-from-shading product suite is available. Site04 (Shackleton rim) remains a reviewed alternative. This is a working study direction only: neither provider ROI set is an approved AREA 67 study AOI, and no permanent-base ranking is claimed. See the [Science Execution Decision](docs/SCIENCE_EXECUTION_DECISION_2026-11-15.md), [Lunar Target Catalogue](docs/LUNAR_TARGET_CATALOG.md), [LOLA ROI / multi-site workflow](docs/LOLA_ROI_AND_MULTI_SITE_WORKFLOW.md), and [ROI-level LOLA support audit](docs/LOLA_ROI_QUALITY_AUDIT.md). The official PGDA catalogue also publishes additional south-pole sites and ROI archives for Site01, Site04, Site06, Site07, and Site11.
 
 The broader challenge roadmap covers global Earth discovery and separate evidence layers for terrain, geology/materials, thermal conditions, illumination, water/ice/resources, dust/processes, biological context, and subsurface environments. These dimensions must not be collapsed into one score before their datasets and methods are compatible.
 
@@ -132,17 +132,17 @@ Synthetic CSVs are used only when neither real file exists. The app refuses to m
 When the agreed `data/processed/terrain_fingerprints.csv` is available and the team has approved explicit feature tolerances, run the Space-to-Earth matching pipeline from the repository root:
 
 ```powershell
-python -m src.matching.cli --fingerprints data/processed/terrain_fingerprints.csv --target-site-id MOON_SITE04 --tolerances-json config/matching_tolerances.json --min-feature-group-completeness <TEAM_APPROVED_FRACTION> --min-data-completeness <TEAM_APPROVED_FRACTION>
+python -m src.matching.cli --fingerprints data/processed/terrain_fingerprints.csv --target-site-id SITE_ID_FROM_APPROVED_FINGERPRINT_CSV --tolerances-json config/matching_tolerances.json --min-feature-group-completeness <TEAM_APPROVED_FRACTION> --min-data-completeness <TEAM_APPROVED_FRACTION>
 ```
 
-Replace both completeness placeholders with team-approved fractions between 0 and 1; the CLI refuses to run if they are omitted. A value of `0.0` explicitly disables that gate and must not be used for a real study without team approval. The command writes the canonical `data/processed/candidate_rankings.csv` and a `data/processed/ranking_robustness.json` sidecar. Start from `config/matching_tolerances.template.json`, but replace its null values only with study-specific tolerances agreed by the team. See [the matching runbook](docs/MATCHING_RUNBOOK.md) for input requirements, configuration, outputs and limitations.
+Replace `SITE_ID_FROM_APPROVED_FINGERPRINT_CSV` with the exact target `site_id` present in the validated fingerprint CSV. Replace both completeness placeholders with team-approved fractions between 0 and 1; the CLI refuses to run if they are omitted. A value of `0.0` explicitly disables that gate and must not be used for a real study without team approval. The command writes the canonical `data/processed/candidate_rankings.csv` and a `data/processed/ranking_robustness.json` sidecar. Start from `config/matching_tolerances.template.json`, but replace its null values only with study-specific tolerances agreed by the team. See [the matching runbook](docs/MATCHING_RUNBOOK.md) for input requirements, configuration, outputs and limitations.
 
 ## Current implementation status
 
 The following software and data-management components are merged into `main`:
 
 - Streamlit MVP, Analog Passport, application contracts, and paired synthetic demo fixtures.
-- NASA LOLA Site04 acquisition and structural QA workflow; Site04 remains a **provisional lunar target**.
+- NASA LOLA Site01 and Site04 acquisition and structural QA workflows. Site01 is the working MVP execution baseline and Site04 remains a reviewed alternative; both provider ROI sets remain provisional and are not approved AREA 67 study AOIs. See the [Science Execution Decision](docs/SCIENCE_EXECUTION_DECISION_2026-11-15.md).
 - Earth DEM acquisition, raster inventory, structural QA, candidate screening, and local-raster audit tooling for five provisional Copernicus GLO-30 DSM source tiles: Haughton, McMurdo, Askja, Mauna Kea, and Yungay.
 - Two adjacent Mauna Kea USGS 3DEP 1 m bare-earth tiles are recorded. The western tile has EPSG:26904 / NAVD88 / metres in its source record; the eastern tile is EPSG:26905, but its vertical reference and elevation units remain unverified. They must not be mosaicked or treated as a harmonized replacement for the Copernicus DSM.
 - Read-only remote COG inspection using HTTP byte-range preflight and bounded 500 × 500 pixel windows for ArcticDEM Haughton, REMA McMurdo, and ÍslandsDEM Askja catalog assets; no full high-resolution raster assets were downloaded.
