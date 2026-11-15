@@ -48,6 +48,6 @@ NASA PGDA Product 78 describes Site01 RoIs 4–6 as generally having favorable i
 ## Provenance
 
 - Local output: data/metadata/lola_candidate_screening_20261115/
-- Local screening utility used: src/data/screen_lola_roi_candidates.py (local working copy at the time of screening; the utility is being versioned separately).
+- Local screening utility used: a local working copy of src/data/screen_lola_roi_candidates.py. The follow-on versioned utility is now in the repository; GitHub CI validates its synthetic fixtures, but the local raw rasters were not available to rerun the historical screening output from this environment.
 - Machine-readable local outputs: candidate_screening.csv and candidate_screening.json.
 - Related visual QA: preview_manifest.json, which records the raw-coordinate overlay limitation and the 0-pixel vertex-to-raster-centre registration residual for the valid Site01/Site04/Site07/Site11 features.

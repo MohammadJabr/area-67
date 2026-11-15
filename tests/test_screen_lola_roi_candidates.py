@@ -90,6 +90,22 @@ def test_crs_comparison_rejects_geographic_coordinates_even_when_equal():
         compare_roi_raster_crs("EPSG:4326", "EPSG:4326")
 
 
+def test_crs_comparison_rejects_different_standard_parallel_and_scale():
+    reference = CRS.from_proj4(
+        "+proj=stere +lat_0=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +k=1 +units=m"
+    )
+    different_parallel = CRS.from_proj4(
+        "+proj=stere +lat_ts=-80 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m"
+    )
+    different_scale = CRS.from_proj4(
+        "+proj=stere +lat_0=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +k=0.9 +units=m"
+    )
+    with pytest.raises(ValueError, match="do not match"):
+        compare_roi_raster_crs(reference, different_parallel)
+    with pytest.raises(ValueError, match="do not match"):
+        compare_roi_raster_crs(reference, different_scale)
+
+
 def test_read_candidate_reports_native_layer_coverage(tmp_path):
     paths = _write_layers(tmp_path / "rasters")
     gdf = gpd.GeoDataFrame({"id": [1]}, geometry=[box(5, 5, 15, 15)], crs="EPSG:3857")
