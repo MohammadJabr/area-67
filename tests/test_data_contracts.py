@@ -186,3 +186,19 @@ def test_ranking_distance_cannot_be_negative():
     rankings.loc[0, "weighted_distance"] = -0.1
     errors = validate_rankings(rankings)
     assert any("weighted_distance must be non-negative" in error for error in errors)
+
+
+def test_fingerprint_numeric_contract_rejects_boolean_measurements():
+    fingerprints, _ = load_demo_data()
+    fingerprints.loc[0, "slope_median"] = True
+    errors = validate_fingerprints(fingerprints)
+    assert any("slope_median contains 1 boolean value(s)" in error for error in errors)
+
+
+def test_ranking_numeric_contract_rejects_boolean_rank_and_score():
+    _, rankings = load_demo_data()
+    rankings.loc[0, "rank"] = True
+    rankings.loc[1, "similarity_score"] = False
+    errors = validate_rankings(rankings)
+    assert any("rank contains 1 boolean value(s)" in error for error in errors)
+    assert any("similarity_score contains 1 boolean value(s)" in error for error in errors)
