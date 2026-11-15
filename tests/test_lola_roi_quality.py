@@ -215,7 +215,8 @@ def test_roi_quality_audit_exports_exact_native_geometry(tmp_path):
     assert feature["native_bounds"] == [1.0, 1.0, 5.0, 5.0]
     assert feature["native_area_m2"] == pytest.approx(16.0)
     assert feature["native_geometry"]["type"] == "Polygon"
-    assert feature["native_geometry"]["coordinates"][0][0] == (5.0, 1.0)
+    native_ring = {tuple(point) for point in feature["native_geometry"]["coordinates"][0]}
+    assert {(1.0, 1.0), (5.0, 1.0), (5.0, 5.0), (1.0, 5.0)}.issubset(native_ring)
     assert shp["coordinate_handling"] == "native source coordinates; no reprojection or transformation"
     assert shp["coordinate_reference_frame_status"] == "not_assessed"
 
