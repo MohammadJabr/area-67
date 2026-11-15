@@ -95,19 +95,23 @@ def nominal_polar_signature(crs_like: Any) -> dict[str, Any]:
     if flattening not in (None, 0.0):
         raise ValueError(f"CRS ellipsoid is not spherical (inverse flattening={flattening})")
 
-    lat0 = _safe_float(proj_dict.get("lat_0"))
+    lat0 = _safe_float(proj_dict.get("lat_0", proj_dict.get("lat_ts")))
+    lat_ts = _safe_float(proj_dict.get("lat_ts", lat0))
     lon0 = _safe_float(proj_dict.get("lon_0"))
     x0 = _safe_float(proj_dict.get("x_0", 0.0))
     y0 = _safe_float(proj_dict.get("y_0", 0.0))
-    if lat0 is None or lon0 is None or x0 is None or y0 is None:
+    scale = _safe_float(proj_dict.get("k_0", proj_dict.get("k", 1.0)))
+    if any(value is None for value in (lat0, lat_ts, lon0, x0, y0, scale)):
         raise ValueError(f"CRS is missing polar stereographic parameters: {proj_dict}")
     return {
         "projection": projection,
         "radius_m": radius,
         "latitude_of_origin_deg": lat0,
+        "standard_parallel_deg": lat_ts,
         "central_meridian_deg": lon0,
         "false_easting_m": x0,
         "false_northing_m": y0,
+        "scale_factor": scale,
         "linear_units": axis_units[:2],
         "datum_name": crs.datum.name if crs.datum else None,
         "crs_wkt": crs.to_wkt(),
@@ -121,9 +125,11 @@ def same_nominal_polar_math(left: Any, right: Any, tolerance: float = 1e-6) -> b
     numeric_keys = (
         "radius_m",
         "latitude_of_origin_deg",
+        "standard_parallel_deg",
         "central_meridian_deg",
         "false_easting_m",
         "false_northing_m",
+        "scale_factor",
     )
     return (
         a["projection"] == b["projection"]
