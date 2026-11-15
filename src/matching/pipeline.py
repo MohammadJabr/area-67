@@ -141,6 +141,7 @@ def rank_terrain_fingerprints(
         "min_feature_group_completeness": float(min_feature_group_completeness),
         "min_data_completeness": float(min_data_completeness),
         "scale_relative_tolerance": float(scale_relative_tolerance),
+        "distribution_sum_tolerance_pp": float(distribution_sum_tolerance_pp),
         "ranking": ranked,
         "rejected_candidates": rejected,
         "matching_method": {
