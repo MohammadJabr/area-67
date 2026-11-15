@@ -78,6 +78,19 @@ Converting 204.27°E to -155.73° longitude and projecting with the local shapef
 
 This point is within the combined provider-ROI bounding rectangle and close to the feature-centroid cluster. It is not inside every provider polygon, and this proximity does not establish that it is the exact center or identifier of the shapefile's four features.
 
+A follow-up point-to-feature check against the four original shapefile geometries reported the following distances for SP-4:
+
+| Feature | Original geometry validity | SP-4 inside feature? | Reported distance |
+|---|---|---:|---:|
+| 0 | Invalid: ring self-intersection | No | 445.08 m |
+| 1 | Invalid: ring self-intersection | No | 181.55 m |
+| 2 | Valid | No | **49.27 m** |
+| 3 | Valid | No | **99.10 m** |
+
+For the Data Book R04 point, the same check returned 1,814.41 m to Feature 0, 1,842.38 m to Feature 1, 1,875.06 m to valid Feature 2 and 1,921.88 m to valid Feature 3; it was not contained by any feature.
+
+The distances to valid Features 2 and 3 provide the more reliable geometric comparison. Distances reported for self-intersecting Features 0 and 1 are diagnostic only: invalid polygon topology can make geometric operations less dependable. Neither published point is covered by any of the four original provider ROI polygons. In particular, SP-4 is a nearby reference point, not a point proven to lie within the provider's ROI footprint.
+
 ### Disposition
 
 The two published references should not be conflated. They may refer to different Site04/R04/Artemis Site 004 point definitions, or there may be a source-definition inconsistency. The current evidence does not settle that question. Keep both coordinate records, their source labels, and their original longitude conventions in the project manifest until the team/GIS reviewer reconciles them.
