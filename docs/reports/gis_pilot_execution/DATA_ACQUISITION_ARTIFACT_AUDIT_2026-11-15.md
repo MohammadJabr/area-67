@@ -118,7 +118,7 @@ The following independent check uses the same pixel-center inclusion rule (all_t
 | Site04 / 2 | 102 | 14.71% | 85.29% | 0.266 | 1.604 |
 | Site04 / 3 | 101 | 13.86% | 86.14% | 0.268 | 1.473 |
 
-Every valid polygon had 100% valid elevation and LDEC coverage among its included pixel centers, but positive direct-shot support ranged from 4.73% to 17.78%. A valid raster mask is therefore not a substitute for direct LOLA observation support. The four invalid polygons remain review-required and have no computed polygon statistics.
+Every valid polygon had 100% valid elevation and LDEC coverage among its included pixel centers, but positive direct-shot support ranged from 4.73% to 17.78%. A valid raster mask is therefore not a substitute for direct LOLA observation support. The four invalid polygons remain review-required and have no computed polygon statistics. The PGDA Product 78 description also notes that roughly 90% of 5 m polar LDEM pixels are interpolated because LOLA cross-track and inter-spot spacing is much larger than the pixel posting. The observed zero-LDEC share is therefore an expected product characteristic, not a NoData rate; direct-shot support must still be reported separately.
 
 ### Site01 pilot-window overlap check
 
