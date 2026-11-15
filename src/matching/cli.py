@@ -118,6 +118,7 @@ def main(argv: list[str] | None = None) -> int:
             weights=get_mission_weights(),
             tolerances=tolerances,
             candidate_site_ids=args.candidate_site_ids,
+            tolerance_config_path=args.tolerances_json,
             mission_profile=ROVER_NAVIGATION_PROFILE["name"],
             ranking_output_path=args.output,
             robustness_output_path=args.robustness_output,
