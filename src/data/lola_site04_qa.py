@@ -13,7 +13,7 @@ import numpy as np
 import rasterio
 
 try:
-    from .lola_site04 import ASSETS, RAW_DIR, REPO_ROOT
+    from src.data.lola_site04 import ASSETS, RAW_DIR, REPO_ROOT
 except ImportError:  # direct script execution from the repository root
     from lola_site04 import ASSETS, RAW_DIR, REPO_ROOT
 
