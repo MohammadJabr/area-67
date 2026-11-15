@@ -30,6 +30,29 @@ def _portable_path(path: str | Path) -> str:
         return str(supplied)
 
 
+def _portable_metadata_value(value: Any, source_path: str | Path) -> Any:
+    """Remove checkout-specific absolute source paths from embedded GDAL tags.
+
+    GDAL may expose derived-subdataset metadata containing the absolute raster
+    path even when the report's primary path field is repository-relative.
+    Normalize those references too, while preserving all other metadata.
+    """
+    if isinstance(value, str):
+        resolved = Path(source_path).resolve()
+        portable = _portable_path(source_path)
+        candidates = {str(resolved), resolved.as_posix()}
+        for candidate in sorted(candidates, key=len, reverse=True):
+            value = value.replace(candidate, portable)
+        return value
+    if isinstance(value, dict):
+        return {key: _portable_metadata_value(item, source_path) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_portable_metadata_value(item, source_path) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_portable_metadata_value(item, source_path) for item in value)
+    return value
+
+
 def sha256_file(path: str | Path, chunk_size: int = 1024 * 1024) -> str:
     """Return a streaming SHA-256 digest without loading a file into memory."""
     digest = hashlib.sha256()
@@ -154,6 +177,8 @@ def inventory_raster(
             for namespace in band_namespaces:
                 tags[namespace] = ds.tags(index, ns=namespace)
             band_metadata_tags.append(tags)
+        metadata_tags = _portable_metadata_value(metadata_tags, raster_path)
+        band_metadata_tags = _portable_metadata_value(band_metadata_tags, raster_path)
         crs_units = None
         if parsed_crs and parsed_crs.axis_info:
             crs_units = parsed_crs.axis_info[0].unit_name
