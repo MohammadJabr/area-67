@@ -135,6 +135,7 @@ def rank_terrain_fingerprints(
 
     return {
         "target_site_id": target_site_id.strip(),
+        "candidate_site_ids": sorted(candidate_fingerprints),
         "mission_profile": mission_profile.strip(),
         "mission_weights": dict(weights),
         "feature_tolerances": dict(tolerances),
