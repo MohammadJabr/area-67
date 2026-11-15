@@ -2,6 +2,8 @@
 
 **Status: EXPLORATORY / NOT APPROVED FOR SCIENTIFIC SITE CERTIFICATION**
 
+**Reproducibility update:** The implementation gap described later in this report was addressed after this report was first written. `src/data/build_exploratory_pilot.py` now records the exact Site01 5 m-to-30 m elevation resampling, reads LDEC and RMS companions on their native 5 m grid over the same pixel-centre footprint, invokes the canonical fingerprint and matching implementations, and writes a run manifest with input/output checksums. See [Omar's matching execution record](../OMAR_MATCHING_EXECUTION_2026-11-15.md) and [the final MVP method and results](../FINAL_MVP_METHOD_AND_RESULTS_2026-11-15.md). Scientific approval remains pending; reproducible code does not approve AOIs or provisional settings.
+
 This pilot connects real NASA LOLA and Copernicus DEM source rasters to the project's five-group terrain fingerprint and mission-matching concepts. It is an engineering demonstration of an evidence pipeline, not a final planetary-analog study.
 
 ## Pilot scope
