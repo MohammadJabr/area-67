@@ -17,6 +17,7 @@ from typing import Any
 
 import numpy as np
 import rasterio
+from pyproj import CRS
 from rasterio.errors import WindowError
 from rasterio.features import geometry_mask, geometry_window
 from shapely.geometry import mapping
