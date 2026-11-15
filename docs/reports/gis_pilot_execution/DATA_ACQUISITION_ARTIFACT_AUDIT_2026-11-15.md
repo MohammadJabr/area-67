@@ -2,6 +2,25 @@
 
 **Purpose:** Record a read-only inspection of the raw Earth and lunar rasters produced by GitHub Actions run [#43700032212](https://github.com/MohammadJabr/area-67/actions/runs/43700032212). This report is an acquisition and structural inventory, not AOI approval, terrain fingerprinting, or scientific validation.
 
+
+## Latest source-aware preflight result — run #43703726732
+
+The latest main-branch acquisition/audit run used commit 2e532799f50ac1053223ad046e696f88a1a5981f and completed successfully. It inspected all 15 GeoTIFFs, recorded no inspection errors, and reported **8 structural PASS / 7 REVIEW / 0 FAIL**. The compact artifact is area67-gis-reports-43703726732.zip (artifact ID 14157886823; 21,683 bytes); the separate raw artifact is 405,038,411 bytes (artifact ID 14157836969).
+
+| Group | Count | Result | Reason |
+|---|---:|---|---|
+| Earth Copernicus GLO-30 DSM tiles | 5 | REVIEW | Product unit m and EGM2008 vertical datum are documented; source CRS is EPSG:4326, so these are not yet approved metric analysis grids. |
+| Lunar LDEC count layers | 2 | PASS | Count units and MOON_ME/DE421 raster frame are documented; vertical reference is not applicable. |
+| Lunar slope layers | 2 | PASS | Degree units and MOON_ME/DE421 raster frame are documented; vertical reference is not applicable. |
+| Lunar slope-uncertainty layers | 2 | PASS | Degree RMS units and MOON_ME/DE421 raster frame are documented; vertical reference is not applicable. |
+| Lunar total-Z-uncertainty layers | 2 | PASS | Metre RMS units and MOON_ME/DE421 raster frame are documented; vertical reference is not applicable to the uncertainty magnitude. |
+| Lunar surface-elevation layers | 2 | REVIEW | Metre units and MOON_ME/DE421 raster frame are documented, but the product page does not state a separate vertical-height reference. |
+
+The 8 PASS results are structural and metadata checks only. They do not approve the provider ROI shapefile frame, AOI boundaries, effective resolution, a common analysis scale, or scientific suitability. The source-aware JSON contains the correct horizontal_crs field for Earth and coordinate_reference_frame for lunar rasters. The Markdown summary generated in this run has a column-alignment defect in its product-metadata table; PR #95 adds a regression test and corrects the rendering. The JSON counts and source metadata are unaffected.
+
+The earlier **0 PASS / 15 REVIEW** count recorded later in this report came from a generic elevation-only preflight and is superseded by this source-aware run. It remains as historical evidence of the previous audit behavior, not the current result.
+
+
 ## Run and artifact provenance
 
 - Workflow run: 43700032212 — AREA 67 GIS data acquisition and audit.
