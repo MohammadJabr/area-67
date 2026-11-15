@@ -96,14 +96,17 @@ def test_download_cleans_partial_on_invalid_response(tmp_path):
         status = 200
         headers = {"Content-Length": str(len(payload))}
 
+        def __init__(self):
+            self.stream = io.BytesIO(payload)
+
         def __enter__(self):
             return self
 
         def __exit__(self, *_args):
-            pass
+            self.stream.close()
 
         def read(self, size=-1):
-            return payload
+            return self.stream.read(size)
 
     destination = tmp_path / "bad.tif"
     with patch("lola_south_pole.urllib.request.urlopen", return_value=FakeResponse()):
