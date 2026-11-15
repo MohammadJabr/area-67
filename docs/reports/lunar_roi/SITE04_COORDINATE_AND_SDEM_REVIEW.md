@@ -124,6 +124,24 @@ This distinction is explicit in NASA PGDA Product 78: its MOON_ME / DE421 CRS st
 
 **Disposition:** keep the Site04 shapefile frame as unknown. Do not relabel it MOON_ME, MOON_PA, or Moon (2015), and do not apply a frame shift to force alignment. The local shapefile-to-local-Site04-raster ROI statistics remain useful as a nominal same-product coordinate comparison; comparisons against external lunar products remain conditional until the shapefile's frame provenance is confirmed.
 
+### Measured Site04 ROI-to-raster pixel registration
+
+The read-only `audit_roi_pixel_registration.py` utility was run by the team on 2026-11-15 against the original four-feature `Site04_ROIs.shp` and the native Site04 surface-height GeoTIFF. The generated local report was `data/metadata/site04_roi_registration_20261115.json`.
+
+| Source feature index | Ring vertices counted (including ring closure) | Pixel-centre aligned | Pixel-corner aligned | Maximum centre residual |
+|---:|---:|---:|---:|---:|
+| 0 | 121 | 121 (100%) | 0 | 0 m |
+| 1 | 87 | 87 (100%) | 0 | 0 m |
+| 2 | 59 | 59 (100%) | 0 | 0 m |
+| 3 | 58 | 58 (100%) | 0 | 0 m |
+| **Total** | **325** | **325 (100%)** | **0** | **0 m** |
+
+The maximum residual to the pixel-corner lattice was **3.5355339 m**. The reference raster is 3,200 × 3,200, has 5 m square pixels, affine transform `[5, 0, -9000, 0, -5, 1000]`, and declares `AREA_OR_POINT=Area`. The audit used a numerical tolerance of 1e-6 m and made no reprojection, shift, geometry repair, or source modification.
+
+**Interpretation:** all 325 recorded ring vertices lie exactly on the native raster's pixel-centre lattice. This is strong direct evidence that the ROI geometry coordinates are represented on the same nominal 5 m pixel-centre grid as the local Site04 raster. **No half-pixel shift should be applied** when sampling this local raster using these source coordinates. This resolves the local pixel-registration question for the audited shapefile/raster pair.
+
+This result does **not** establish the physical lunar body-fixed frame (ME versus PA), the vertical reference, or the missing illumination/region-properties selection rule. The nominal CRS compatibility check intentionally retains the datum as unknown. Do not generalize the pixel-lattice finding to unrelated lunar products such as A306 SDEM without independent source-frame and registration checks.
+
 ## 3. Exploratory window result remains scoped to the ROI cluster
 
 The previously tested 1.2 km, 1.5 km and 2.0 km windows were centered on the combined provider-ROI bounds at (-2735.0, -6352.5) m.
