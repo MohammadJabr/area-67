@@ -92,6 +92,11 @@ def test_report_keeps_invalid_source_stats_separate_from_preview(tmp_path):
     assert features[0]["status"] == "repair_preview_only"
     assert features[0]["repair_preview_statistics"]["preview_only"] is True
     assert features[0]["repair_preview_statistics"]["roi_pixel_center_count"] > 0
+    assert len(features[0]["repair_preview_component_statistics"]) == 2
+    assert all(
+        item["statistics"]["preview_only"]
+        for item in features[0]["repair_preview_component_statistics"]
+    )
     assert "source_statistics" not in features[0]
     assert features[1]["status"] == "valid_source_geometry"
     assert "source_statistics" in features[1]
