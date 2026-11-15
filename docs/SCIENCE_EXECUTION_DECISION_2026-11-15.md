@@ -10,16 +10,16 @@
 
 **Question:** Which terrestrial environments can help prepare and test robotic mobility and surface-operation concepts for a high-illumination lunar south-polar ridge, and which dimensions of the analogy are strong, weak, or unsupported?
 
-**MVP target:** one lunar target, four Earth candidate environments, one mission profile:
+**MVP target:** a two-target lunar comparison pair, three primary Earth candidate environments, and one mission profile:
 
-- Target: NASA PGDA LOLA Site01 — Connecting Ridge.
+- Lunar pilot pair: NASA PGDA LOLA Site01 — Connecting Ridge (primary illumination/SDEM evidence anchor) and Site04 — Shackleton rim (LOLA comparison target).
 - Mission: Rover Navigation / Terrain Traversal.
-- Earth candidates: Haughton Crater (impact/polar desert), Taylor Valley near Lake Hoare (cold polar dry valley), Yungay hyper-arid core (extreme aridity), and Askja caldera/lava terrain (volcanic landform). Mauna Kea remains a reserve candidate.
+- Primary Earth candidates: Haughton Crater (impact/polar desert), Askja caldera/lava terrain (volcanic landform), and Mauna Kea summit/flank terrain. Hold McMurdo/Taylor Valley and Yungay until their named landform and reference-coordinate issues are resolved.
 - MVP result: five-group terrain fingerprints, a transparent ranking with completeness/uncertainty caveats, an evidence-rich Analog Passport, and a map showing actual study AOIs.
 
 This is a focused contribution to the challenge, not a claim that one Earth site reproduces the Moon. Terrain matching answers the rover-mobility question only. Thermal, illumination, geology, resources, radiation, vacuum, gravity, and human habitability remain distinct evidence dimensions.
 
-## 2. Lunar target decision: Site01 Connecting Ridge
+## 2. Lunar pilot pair: Site01 Connecting Ridge and Site04 Shackleton rim
 
 ### Why Site01 is the lead target
 
@@ -43,6 +43,10 @@ The valid native Site01 features are 0–4; features 5 and 6 are invalid and rem
 
 The broader seven-ROI screen prevents over-interpreting these Site01 measurements: Site07 Feature 1 has the largest sample (612 centres), Site11 Feature 2 has the lowest median Z RMS (0.245 m) and slope RMS (1.533°), and Site04 Feature 3 has the lowest median slope RMS (1.473°) but only 101 centres and a steeper slope distribution. Site01 is therefore the working target because of the separate illumination/SDEM evidence, not because it wins every terrain or uncertainty metric. See the [multi-site ROI candidate screening report](reports/lunar_roi/MULTI_SITE_ROI_CANDIDATE_SCREENING_2026-11-15.md).
 
+### Site04 comparison role
+
+Site04 is retained as a LOLA-only comparison target, not as an interchangeable substitute for Site01. Its valid provider features are 2 and 3; features 0 and 1 remain invalid and must not be repaired or silently used. The Site04 full-raster positive LDEC support is approximately 9.1541%, a site-wide figure rather than direct-observation coverage for either candidate ROI. Use Site04 features 2 and 3 only as candidate geometries for the same scale/support feasibility test; no Site01 A306 SDEM coverage is assumed for Site04. See the [Site04 ROI quality audit](LOLA_ROI_QUALITY_AUDIT.md).
+
 These are separate evidence dimensions, not an automatic score. Do not turn the small provider polygons into the final study area without evaluating the surrounding SDEM landform and the intended rover-analysis footprint.
 
 ### Initial Site01 screening window
@@ -59,11 +63,13 @@ Use the five existing Copernicus GLO-30 DSM tiles as a consistent initial source
 
 | Priority | Candidate | Analogue dimension to investigate | Current anchor / caution |
 |---|---|---|---|
-| 1 | Taylor Valley near Lake Hoare, Antarctica | Cold, dry polar-valley operations; permafrost/glacial and hyper-arid processes | Lake Hoare is a named search anchor inside the existing McMurdo tile. It is not itself an approved AOI; a valley-floor/bench/valley-wall unit must be selected. |
-| 2 | Haughton Crater, Devon Island, Canada | Impact structure and polar-desert field operations | Use the authoritative crater reference, then distinguish rim, ejecta and floor. Do not merge those geomorphic units into one polygon. |
-| 3 | Yungay, Atacama, Chile | Hyper-arid desert surface, soil/dust and extreme aridity | Use the published hyper-arid-core field reference (-69.8805°, -24.0637778°) as a search anchor; the current manifest marker is about 5.81 km away. |
-| 4 | Askja, Iceland | Volcanic/caldera and lava-field landforms | Smithsonian reference coordinate is verified; select a specific caldera/lava geomorphic unit rather than the whole volcano. |
-| Reserve | Mauna Kea, Hawaiʻi | Volcanic summit/flank terrain | Keep GLO-30 for the common-source baseline. Do not mix the local 1 m USGS DTM into the baseline until surface type, coverage, CRS and vertical-reference policy are harmonized. |
+| Priority | Candidate | Analogue dimension to investigate | Current anchor / caution |
+|---|---|---|---|
+| 1 | Haughton Crater, Devon Island, Canada | Impact structure and polar-desert field operations | Use the authoritative crater reference, then distinguish rim, ejecta and floor. Do not merge those geomorphic units into one polygon. |
+| 2 | Askja, Iceland | Volcanic/caldera and lava-field landforms | Smithsonian reference coordinate is verified; select a specific caldera/lava geomorphic unit rather than the whole volcano. |
+| 3 | Mauna Kea, Hawaiʻi | Volcanic summit/flank terrain | Use Copernicus GLO-30 for the common-source baseline. Keep the local 1 m USGS DTM as an alternative until surface type, coverage, CRS and vertical-reference policy are harmonized. |
+| Hold | McMurdo / Taylor Valley, Antarctica | Cold, dry polar-valley operations | Lake Hoare is a search anchor, not an AOI; select a named valley/bench unit and confirm it lies within the usable source coverage. |
+| Hold | Yungay, Atacama, Chile | Hyper-arid desert surface, soil/dust and extreme aridity | The current marker differs from the published hyper-arid-core reference by about 5.81 km; resolve the intended field site before AOI creation. |
 
 Copernicus GLO-30 is a DSM with EGM2008 vertical reference and no per-pixel quality companions in the current local handoff. It is a consistent starting family, not proof of bare-earth equivalence or equal effective resolution. Keep ArcticDEM and REMA as possible higher-detail source alternatives for follow-up, not as silent replacements in the initial ranking. Any source-family change requires a documented comparability review.
 
@@ -120,7 +126,7 @@ No thermal, geology, volatile, biology or resource variable enters the terrain m
 | Owner | Workstream | Immediate deliverable |
 |---|---|---|
 | Mohammed Jabr | Team lead, system integration and app | Freeze target/profile, approve data contracts, integrate only validated real CSVs, demo and release evidence. |
-| Ghassan Al-Shoubi | Earth/Moon/Mars data acquisition and GIS | A306/Site01 + LOLA support/uncertainty package; Product 90 EFFRES bounded sample; final lunar AOI; 3–4 Earth polygons, footprints, manifests and preparation QA. |
+| Ghassan Al-Shoubi | Earth/Moon/Mars data acquisition and GIS | A306/Site01 + Site01/Site04 LOLA support/uncertainty comparison; Product 90 EFFRES bounded sample; lunar pilot AOI feasibility; three Earth pilot polygons, footprints, manifests and preparation QA. |
 | Hiba Sbouh | Terrain fingerprints and scientific validation | Real five-group fingerprints; synthetic and NoData tests; two-scale/window sensitivity; feature-correlation audit; uncertainty/clone sensitivity report. |
 | Omar Salous | Matching and mission planning | Real candidate rankings, rejection reasons, distance contributions, Slope-only baseline, weight/tolerance sensitivity; keep route planner optional. |
 | Team (unassigned) | Cross-dimension research/storytelling support | Source-backed analogue strengths/mismatches, experiment rationale, citations and demo narrative. Assign an owner before expanding beyond the terrain MVP. |
@@ -129,9 +135,9 @@ Every handoff must contain exact source/product/version, file paths, AOI ID and 
 
 ## 9. Release plan for the remaining hackathon window
 
-1. Freeze the MVP to Site01 + Rover Navigation / Terrain Traversal + 3–4 Earth AOIs.
+1. Freeze the MVP to the Site01/Site04 lunar pilot pair + Rover Navigation / Terrain Traversal + three primary Earth AOIs (Haughton, Askja, Mauna Kea).
 2. Finish the A306/Site01 and Product 90 effective-resolution/quality screen.
-3. Draw and approve one lunar study AOI and 3–4 Earth landform AOIs; do not use whole source tiles.
+3. Delineate and approve the lunar study AOI(s) for the Site01/Site04 comparison and three Earth landform AOIs; do not use whole source tiles.
 4. Prepare compatible metric DEMs with explicit horizontal/vertical reference handling and source masks.
 5. Run Hiba's real fingerprints on at least two supported scales; select the scale/window based on sensitivity, not habit.
 6. Run Omar's matching with explicit tolerances and the current baseline weights; include data completeness and ranking stability.
