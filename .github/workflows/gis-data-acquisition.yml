@@ -1,9 +1,6 @@
 name: AREA 67 GIS data acquisition and audit
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       dataset:
