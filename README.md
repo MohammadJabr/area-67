@@ -9,7 +9,7 @@ An analog is useful for selected characteristics; it is not a perfect reproducti
 
 ## Full challenge ambition
 
-AREA 67 is designed as a multi-dimensional planetary-analog discovery platform, not a rover-only terrain matcher. The long-term scope covers global Earth discovery and evidence dimensions including terrain, geology/materials, thermal extremes, illumination/shadow, water/ice/resources, dust and surface processes, biology/habitability context, caves/subsurface, and mission-specific operations. These dimensions remain separate evidence layers until compatible datasets and validated methods justify comparison. The current implemented MVP is narrower: one supplied Moon/Mars target, one Rover Navigation / Terrain Traversal profile, five terrain groups, and Earth candidate ranking. See [the full challenge roadmap](docs/FULL_CHALLENGE_ROADMAP.md) for current implementation status, workstreams, evidence requirements, and release gates.
+AREA 67 is designed as a multi-dimensional planetary-analog discovery platform, not a rover-only terrain matcher. The long-term scope covers global Earth discovery and evidence dimensions including terrain, geology/materials, thermal extremes, illumination/shadow, water/ice/resources, dust and surface processes, biology/habitability context, caves/subsurface, and mission-specific operations. These dimensions remain separate evidence layers until compatible datasets and validated methods justify comparison. The current implemented MVP is narrower: a two-target lunar comparison pilot (Site01 primary, Site04 comparator), one Rover Navigation / Terrain Traversal profile, five terrain groups, and ranking of three primary Earth candidates. See [the full challenge roadmap](docs/FULL_CHALLENGE_ROADMAP.md) for current implementation status, workstreams, evidence requirements, and release gates.
 
 ## Approved product architecture
 
@@ -32,7 +32,7 @@ See [Product Architecture](docs/PRODUCT_ARCHITECTURE.md) and [Application Integr
 
 ## Full challenge vision and lunar target library
 
-AREA 67 is intended to grow beyond a single lunar target and one rover-navigation profile. The working lunar MVP execution baseline is NASA PGDA Site01 (Connecting Ridge), selected for a rover surface-operations study because NASA reports favorable illumination metrics and a corresponding A306 shape-from-shading product suite is available. Site04 (Shackleton rim) remains a reviewed alternative. This is a working study direction only: neither provider ROI set is an approved AREA 67 study AOI, and no permanent-base ranking is claimed. See the [Science Execution Decision](docs/SCIENCE_EXECUTION_DECISION_2026-11-15.md), [Lunar Target Catalogue](docs/LUNAR_TARGET_CATALOG.md), [LOLA ROI / multi-site workflow](docs/LOLA_ROI_AND_MULTI_SITE_WORKFLOW.md), and [ROI-level LOLA support audit](docs/LOLA_ROI_QUALITY_AUDIT.md). The official PGDA catalogue also publishes additional south-pole sites and ROI archives for Site01, Site04, Site06, Site07, and Site11.
+AREA 67 is intended to grow beyond a single lunar target and one rover-navigation profile. The working lunar pilot pair is NASA PGDA Site01 (Connecting Ridge) and Site04 (Shackleton rim). Site01 is the primary illumination/A306 SDEM evidence anchor; Site04 is retained as a LOLA comparison target. This is a working study direction only: neither provider ROI set is an approved AREA 67 study AOI, and no permanent-base ranking is claimed. The primary Earth pilot shortlist is Haughton Crater, Askja and Mauna Kea; McMurdo/Taylor Valley and Yungay remain on hold pending named-landform/reference-coordinate clarification. See the [Science Execution Decision](docs/SCIENCE_EXECUTION_DECISION_2026-11-15.md), [Lunar Target Catalogue](docs/LUNAR_TARGET_CATALOG.md), [LOLA ROI / multi-site workflow](docs/LOLA_ROI_AND_MULTI_SITE_WORKFLOW.md), and [ROI-level LOLA support audit](docs/LOLA_ROI_QUALITY_AUDIT.md). The official PGDA catalogue also publishes additional south-pole sites and ROI archives for Site01, Site04, Site06, Site07, and Site11.
 
 The broader challenge roadmap covers global Earth discovery and separate evidence layers for terrain, geology/materials, thermal conditions, illumination, water/ice/resources, dust/processes, biological context, and subsurface environments. These dimensions must not be collapsed into one score before their datasets and methods are compatible.
 
@@ -58,7 +58,7 @@ Project data sources:
 - Earth: SRTM or an appropriate documented local DEM.
 - Thermal context in the project report: MODIS (Earth), Diviner (Moon), THEMIS (Mars). These are supporting context only and are not part of the MVP topographic score unless their compatibility and method are checked.
 
-The prototype should use one space target and 3–5 Earth candidates selected for real data availability and quality.
+The current science pilot uses a Site01/Site04 lunar comparison pair and three primary Earth candidates selected for source readiness and AOI feasibility; the app remains configurable for other target/candidate sets.
 
 ## Scientific integrity
 
@@ -142,8 +142,8 @@ Replace `SITE_ID_FROM_APPROVED_FINGERPRINT_CSV` with the exact target `site_id` 
 The following software and data-management components are merged into `main`:
 
 - Streamlit MVP, Analog Passport, application contracts, and paired synthetic demo fixtures.
-- NASA LOLA Site01 and Site04 acquisition and structural QA workflows. Site01 is the working MVP execution baseline and Site04 remains a reviewed alternative; both provider ROI sets remain provisional and are not approved AREA 67 study AOIs. See the [Science Execution Decision](docs/SCIENCE_EXECUTION_DECISION_2026-11-15.md) and [multi-site ROI candidate screening report](docs/reports/lunar_roi/MULTI_SITE_ROI_CANDIDATE_SCREENING_2026-11-15.md).
-- Earth DEM acquisition, raster inventory, structural QA, candidate screening, and local-raster audit tooling for five provisional Copernicus GLO-30 DSM source tiles: Haughton, McMurdo, Askja, Mauna Kea, and Yungay.
+- NASA LOLA Site01 and Site04 acquisition and structural QA workflows. Site01 is the primary illumination/A306 evidence anchor and Site04 is the LOLA comparison target; both provider ROI sets remain provisional and are not approved AREA 67 study AOIs. See the [Science Execution Decision](docs/SCIENCE_EXECUTION_DECISION_2026-11-15.md), [GIS pilot execution decision](docs/reports/gis_pilot_execution_decision_2026-11-15.md), and [multi-site ROI candidate screening report](docs/reports/lunar_roi/MULTI_SITE_ROI_CANDIDATE_SCREENING_2026-11-15.md).
+- Earth DEM acquisition, raster inventory, structural QA, candidate screening, and local-raster audit tooling for five provisional Copernicus GLO-30 DSM source tiles. The current pilot shortlist is Haughton, Askja and Mauna Kea; McMurdo and Yungay remain on hold pending AOI/reference-coordinate clarification.
 - Two adjacent Mauna Kea USGS 3DEP 1 m bare-earth tiles are recorded. The western tile has EPSG:26904 / NAVD88 / metres in its source record; the eastern tile is EPSG:26905, but its vertical reference and elevation units remain unverified. They must not be mosaicked or treated as a harmonized replacement for the Copernicus DSM.
 - Read-only remote COG inspection using HTTP byte-range preflight and bounded 500 × 500 pixel windows for ArcticDEM Haughton, REMA McMurdo, and ÍslandsDEM Askja catalog assets; no full high-resolution raster assets were downloaded.
 - Structural raster preflight checks and provisional Earth reference-point GeoJSON. The points are source/landmark checks, not approved candidate AOI polygons.
@@ -158,7 +158,7 @@ The following software and data-management components are merged into `main`:
 - Targeted remote COG probes show accessible ArcticDEM v4.1 Haughton and REMA v2 McMurdo DSM assets with MAD/count/date companions, plus an ÍslandsDEM Askja asset. These are limited 500 × 500 window reads and metadata checks, not full-tile validation or local downloads.
 - data/metadata/earth_candidate_reference_points.geojson records 13 provisional/alternative reference points. The Haughton, McMurdo and Yungay markers have documented discrepancies or unresolved location identity; none is an approved AOI.
 - Source manifests, checksums, QA JSON/Markdown, remote-access summaries and screening previews are tracked. Large raw DEM rasters remain gitignored and must be acquired locally using the documented tools.
-- No AOI boundaries, final Earth candidate set, common physical analysis scale, reprojection/resampling policy, or target sub-area have been approved.
+- The working Earth shortlist is Haughton, Askja and Mauna Kea, but no AOI boundaries, common physical analysis scale, reprojection/resampling policy, or target sub-area have been approved.
 - Hiba's five-group terrain extraction pipeline, scientific validation utilities, methodology, and synthetic/GeoTIFF tests are now merged into `main`. The real `data/processed/terrain_fingerprints.csv` is still pending approved AOIs, a shared physical scale, and analysis-ready rasters; no real terrain measurements are claimed. The canonical `candidate_rankings.csv` and robustness report are also absent.
 
 ### Running the matching workflow
