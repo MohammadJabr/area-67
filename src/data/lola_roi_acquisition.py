@@ -18,6 +18,8 @@ import urllib.request
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+from shapely.validation import explain_validity
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 BASE_URL = "https://pgda.gsfc.nasa.gov/data/LOLA_5mpp"
 AVAILABLE_ROI_SITES = {
@@ -33,6 +35,19 @@ REPORT_ROOT = REPO_ROOT / "data/metadata/lola_rois"
 GZIP_SIGNATURE = b"\x1f\x8b"
 DEFAULT_MAX_ARCHIVE_MB = 50.0
 MAX_MEMBERS = 5000
+
+
+def _json_safe_attribute(value: Any) -> Any:
+    """Convert common GIS attribute scalars into strict-JSON-compatible values."""
+    if value is None:
+        return None
+    if hasattr(value, "item"):
+        value = value.item()
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
+    if isinstance(value, (str, int, float, bool)):
+        return value
+    return str(value)
 
 
 def sha256_file(path: Path) -> str:
@@ -425,9 +440,23 @@ def inspect_extracted_rois(site_id: str, extracted_dir: str | Path) -> dict[str,
         geom_types = sorted(str(value) for value in geometries.geom_type.dropna().unique())
         null_count = int(geometries.isna().sum())
         empty_count = int(geometries.is_empty.sum())
-        invalid_count = int(
-            ((~geometries.is_valid) & (~geometries.is_empty) & geometries.notna()).sum()
-        )
+        invalid_mask = (~geometries.is_valid) & (~geometries.is_empty) & geometries.notna()
+        invalid_count = int(invalid_mask.sum())
+        invalid_geometry_details = []
+        if invalid_count:
+            for feature_index, row in frame.loc[invalid_mask].iterrows():
+                properties = {
+                    str(column): _json_safe_attribute(row[column])
+                    for column in frame.columns
+                    if column != frame.geometry.name
+                }
+                invalid_geometry_details.append(
+                    {
+                        "feature_index": int(feature_index),
+                        "properties": properties,
+                        "validity_reason": str(explain_validity(row.geometry)),
+                    }
+                )
         usable = geometries.notna() & ~geometries.is_empty
         bounds = None
         if usable.any():
@@ -451,6 +480,7 @@ def inspect_extracted_rois(site_id: str, extracted_dir: str | Path) -> dict[str,
             "null_geometry_count": null_count,
             "empty_geometry_count": empty_count,
             "invalid_geometry_count": invalid_count,
+            "invalid_geometry_details": invalid_geometry_details,
             "area_native_units2": area_native_units2,
             "fields": [str(column) for column in frame.columns if column != frame.geometry.name],
         }
