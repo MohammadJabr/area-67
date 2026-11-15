@@ -193,7 +193,11 @@ def raster_metadata(dataset: rasterio.io.DatasetReader) -> dict[str, Any]:
     }
 
 
-def _window_sample(dataset: rasterio.io.DatasetReader, bounds: tuple[float, float, float, float]) -> dict[str, Any]:
+def _window_sample(
+    dataset: rasterio.io.DatasetReader,
+    bounds: tuple[float, float, float, float],
+    max_pixels: int = 262_144,
+) -> dict[str, Any]:
     from rasterio.windows import Window, from_bounds
 
     requested = from_bounds(*bounds, transform=dataset.transform)
@@ -201,6 +205,11 @@ def _window_sample(dataset: rasterio.io.DatasetReader, bounds: tuple[float, floa
     clipped = requested.intersection(Window(0, 0, dataset.width, dataset.height))
     if clipped.width <= 0 or clipped.height <= 0:
         return {"status": "no_overlap", "metadata": raster_metadata(dataset)}
+    pixel_count = int(clipped.width) * int(clipped.height)
+    if pixel_count > max_pixels:
+        raise ValueError(
+            f"Requested local/remote sample contains {pixel_count} pixels; limit is {max_pixels}"
+        )
     data = dataset.read(1, window=clipped, masked=True)
     mask = np.ma.getmaskarray(data)
     values = np.asarray(data.data, dtype=np.float64)
@@ -457,25 +466,39 @@ def run_screen(
     if include_remote:
         for name, url in PRODUCT90_COGS.items():
             try:
-                from src.data.remote_cog_inspection import probe_http_range
-                probe = probe_http_range(url, probe_bytes=16_384, timeout=timeout)
-                with rasterio.Env(
-                    GDAL_DISABLE_READDIR_ON_OPEN="EMPTY_DIR",
-                    CPL_VSIL_CURL_USE_HEAD="YES",
-                    CPL_VSIL_CURL_ALLOWED_EXTENSIONS=".tif,.tiff,.TIF,.TIFF",
-                    VSI_CACHE="FALSE",
-                    GDAL_HTTP_TIMEOUT=str(max(1, timeout)),
-                ):
-                    with rasterio.open("/vsicurl/" + url) as ds:
-                        if ds.crs is None or not same_nominal_polar_math(site01_crs, ds.crs):
-                            raise ValueError("Product 90 native map projection does not match Site01 nominal projection math")
-                        sample = _window_sample(ds, screen_bounds)
-                        sample["layer"] = name
-                        sample["url"] = url
-                        sample["range_probe"] = probe
-                        if sample.get("status") == "sampled":
-                            sample["note"] = "Bounded native-grid sample only; the complete COG was not downloaded."
-                        report["product90_samples"].append(sample)
+                from src.data.remote_cog_inspection import read_remote_cog_window
+
+                remote = read_remote_cog_window(
+                    url,
+                    screen_bounds,
+                    site01_crs.to_wkt(),
+                    max_pixels=262_144,
+                    timeout=timeout,
+                )
+                remote_crs = remote.metadata.get("crs")
+                if remote_crs is None or not same_nominal_polar_math(site01_crs, remote_crs):
+                    raise ValueError("Product 90 native map projection does not match Site01 nominal projection math")
+                values = remote.values
+                mask = np.ma.getmaskarray(values)
+                transform = remote.metadata.get("transform") or ()
+                resolution = (
+                    [abs(float(transform[0])), abs(float(transform[4]))]
+                    if len(transform) >= 6 else None
+                )
+                sample = {
+                    "status": "sampled",
+                    "metadata": {**remote.metadata, "resolution_m": resolution},
+                    "window_pixels": [remote.window[2], remote.window[3]],
+                    "sample_bounds": list(screen_bounds),
+                    "statistics": summarize_values(
+                        np.asarray(values.data, dtype=np.float64)[~mask],
+                        int(mask.sum()),
+                    ),
+                    "layer": name,
+                    "url": url,
+                    "note": "Bounded native-grid sample only; HTTP Range preflight passed and the complete COG was not downloaded.",
+                }
+                report["product90_samples"].append(sample)
             except Exception as exc:
                 report["warnings"].append(f"Product 90 bounded COG sample failed for {name}: {type(exc).__name__}: {exc}")
                 report["product90_samples"].append({"layer": name, "status": "unavailable", "url": url, "error": f"{type(exc).__name__}: {exc}"})
