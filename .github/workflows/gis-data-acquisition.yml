@@ -12,6 +12,11 @@ on:
           - earth
           - moon
         default: both
+      include_rois:
+        description: Also acquire official PGDA ROI archives (optional)
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -57,7 +62,8 @@ jobs:
             --confirm-download --max-file-mb 500
 
       - name: Acquire and inspect official lunar ROI archives
-        if: inputs.dataset == 'moon' || inputs.dataset == 'both'
+        id: roi_acquire
+        if: inputs.include_rois == true && (inputs.dataset == 'moon' || inputs.dataset == 'both')
         continue-on-error: true
         run: |
           python -m src.data.lola_roi_acquisition download \
@@ -94,3 +100,19 @@ jobs:
             data/metadata/lola_rois/
           if-no-files-found: warn
           retention-days: 14
+
+      - name: Report acquisition failures after preserving the artifact
+        if: always()
+        shell: bash
+        run: |
+          failed=0
+          for step in earth_acquire moon_acquire roi_acquire; do
+            outcome="${{ steps[step].outcome }}"
+            if [[ "$outcome" == "failure" ]]; then
+              echo "::error::Acquisition step $step failed; inspect its logs and the uploaded partial artifact."
+              failed=1
+            fi
+          done
+          if [[ "$failed" -ne 0 ]]; then
+            exit 1
+          fi
