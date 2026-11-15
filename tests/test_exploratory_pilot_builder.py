@@ -114,3 +114,36 @@ def test_builder_module_help_is_available():
     assert completed.returncode == 0, completed.stderr
     assert "--raw-root" in completed.stdout
     assert "--config" in completed.stdout
+
+
+def test_native_window_uses_pixel_centres_when_bounds_are_half_cell_shifted(tmp_path: Path):
+    path = tmp_path / "half-cell.tif"
+    values = np.arange(36, dtype=np.float32).reshape(6, 6)
+    transform = from_origin(0.0, 30.0, 5.0, 5.0)
+    crs = rasterio.crs.CRS.from_epsg(32616)
+    with rasterio.open(
+        path,
+        "w",
+        driver="GTiff",
+        width=6,
+        height=6,
+        count=1,
+        dtype="float32",
+        crs=crs,
+        transform=transform,
+        nodata=None,
+    ) as dst:
+        dst.write(values, 1)
+
+    reference = {"width": 6, "height": 6, "transform": transform, "crs": crs}
+    # The requested bounds are shifted by half a 5m cell in Y. All selected
+    # pixel centres still lie inside the intended footprint, even though cell
+    # edge bounds are not numerically identical to the requested bounds.
+    sample = read_native_window(
+        path,
+        (0.0, -2.5, 30.0, 27.5),
+        reference_profile=reference,
+        expected_shape=(6, 6),
+    )
+    assert sample.shape == (6, 6)
+    assert np.isfinite(sample).all()
