@@ -7,7 +7,7 @@
 
 The audit used the official NASA PGDA Site01 and Site04 ROI archives together with the corresponding five native LOLA raster layers: surface elevation, LDEC spot counts, slope, total elevation RMS uncertainty, and slope RMS uncertainty. Statistics count native raster pixel centres inside each source polygon (`all_touched=false`). No geometry repair, reprojection, resampling, or vertical-reference transformation was applied.
 
-The five layers within each site have matching 3200 × 3200 dimensions, 5m nominal posting, and matching grid metadata. The local lunar WKT labels its datum as unknown. Matching projection parameters do not establish the physical Moon-fixed frame (ME/PA).
+The five layers within each site have matching 3200 × 3200 dimensions, 5m nominal posting, and matching grid metadata. Their embedded lunar WKT uses an unknown-datum placeholder, but NASA PGDA Product 78 states that the GeoTIFF products (excluding XYZI point clouds and ROI shapefiles) use south-polar stereographic X/Y coordinates in metres in the MOON_ME reference frame of ephemeris DE421. The raster frame is therefore source-documented at product level; the ROI shapefile frame remains unverified because PGDA explicitly excludes those shapefiles from its frame statement. No raw WKT was rewritten and no coordinate transformation was applied. See https://pgda.gsfc.nasa.gov/products/78.
 
 ## Site01 — Connecting Ridge
 
@@ -43,8 +43,8 @@ Features 0 and 1 are invalid and remain review-required. Of the two valid featur
 - **RMS fields are uncertainty descriptors**, not a per-pixel guarantee or a vehicle safety threshold.
 - Pixel-centre area proxies are counts × 25m² at 5m posting. They are not replacements for vector polygon area calculations.
 - Provider ROI polygons are not automatically AREA 67 study AOIs.
-- The shapefile/raster WKT labels use unknown datum placeholders. Do not infer the Moon-fixed frame or reproject/relabelling from matching polar-stereographic math alone.
+- The raster GeoTIFF frame is source-documented as MOON_ME/DE421 by PGDA Product 78 even though its embedded WKT uses a placeholder. The ROI shapefile frame remains unverified; do not assign the raster frame to the shapefile or reproject/relabelling from matching polar-stereographic math alone.
 
 ## Handoff
 
-Ghassan and Hiba should inspect Site01 Features 2, 3 and 4 as separate candidate regions, and Site04 Features 2 and 3 as separate comparator regions, against A306 illumination/SDEM coverage and source geology/landform context. Record the reason for the chosen polygon and keep rejected/invalid features explicit. Any selected polygon still requires a verified physical frame, scale/uncertainty policy, and documented approval before it is used for canonical terrain fingerprints.
+Ghassan and Hiba should inspect Site01 Features 2, 3 and 4 as separate candidate regions, and Site04 Features 2 and 3 as separate comparator regions, against A306 illumination/SDEM coverage and source geology/landform context. Record the reason for the chosen polygon and keep rejected/invalid features explicit. Any selected polygon still requires independent confirmation of the provider ROI shapefile frame, an approved scale/uncertainty policy, and documented AOI approval before it is used for canonical terrain fingerprints.
