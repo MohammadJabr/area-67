@@ -193,13 +193,21 @@ The coordinate-frame distinction must be handled with source-specific provenance
 Until the original ROI archive/source metadata resolves that point, retain the A306 projected-bounds comparison as a strong screening result under the apparent common map plane, not as a final survey-grade registration proof. Do not apply a frame rotation to make the geometries overlap; that would be an unsupported correction.
 
 
-### Candidate next regional products
+### Additional official region README screening: A305 and A308
 
-The Zenodo archive separately lists:
-- `A3CLR22_5_Connecting_Ridge_Extension.zip` (region A305);
-- `A3CLR22_8_Peak_Near_Shackleton.zip` (region A308).
+The team selectively extracted only the README from each additional Zenodo archive using HTTP Range requests; both files passed CRC32 verification. No raster companions were downloaded from these two archives.
 
-These are more reasonable candidates to screen next than repeatedly inspecting A306. Their READMEs should be extracted by HTTP range and their projected bounds checked before downloading their elevation/coverage rasters. No assumption is made that either one covers SP-4 until its own projected footprint is verified.
+| Product | Artemis region | Published projected bounds (Xmin, Ymin, Xmax, Ymax), m | SP-4 comparison in nominal polar plane |
+|---|---|---|---|
+| A305 | Connecting Ridge Extension | [-38,700, -16,100, -18,700, 3,900] | SP-4 is about 15.96 km east of the nearest rectangle edge |
+| A306 | Connecting Ridge | [-19,000, -20,000, -3,000, -4,000] | SP-4 is 257.91 m east of the elevation rectangle edge |
+| A308 | Peak Near Shackleton | [22,000, -28,000, 38,000, -12,000] | SP-4 is about 25.44 km from the nearest rectangle corner |
+
+A305 and A308 therefore do not provide plausible raster coverage for the local Site04/SP-4 point under the nominal shared polar-stereographic plane. A306 remains the only one of these three inspected products that is spatially close to the provider ROI cluster, but its published elevation footprint stops 257.91 m short of the SP-4 point and 157.5 m short of the eastern edge of the provider ROI bounding box.
+
+The README-defined ROI rectangles are strong screening evidence, but all cross-product comparisons remain conditional on confirmation that the legacy shapefile is expressed in the same lunar body-fixed reference frame as the SDEM products. Do not apply an assumed ME/PA frame shift or download more raster companions from A305/A308 for this Site04 task.
+
+The Zenodo record also lists A307 Nobile Rim 1, which has not yet been screened locally. Its README can be inspected selectively if a complete 13-region catalog screening is desired; the current A305/A306/A308 evidence already shows that the closest candidate among the three inspected is A306.
 
 The archive README in the local A306 package contains placeholder `doi:XYZ` citation fields. Use the completed official publication citation listed below rather than copying those placeholders. NASA PGDA Product 104 identifies the paper as Bertone et al. (2026), DOI 10.3847/PSJ/ae5b70.
 
