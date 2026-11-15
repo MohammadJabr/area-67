@@ -5,7 +5,6 @@ import geopandas as gpd
 import numpy as np
 import rasterio
 from affine import Affine
-from rasterio.transform import from_origin
 from shapely.geometry import Polygon, box
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src" / "data"))
@@ -22,7 +21,7 @@ def write_raster(path: Path, *, crs="EPSG:3031"):
         count=1,
         dtype="float32",
         crs=crs,
-        transform=from_origin(0, 10, 1, 1),
+        transform=Affine(1.0, 0.0, 0.0, 0.0, -1.0, 10.0),
     ) as dataset:
         dataset.write(np.zeros((10, 10), dtype="float32"), 1)
     return path
