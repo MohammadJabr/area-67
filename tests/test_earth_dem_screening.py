@@ -108,6 +108,8 @@ def test_repository_relative_qa_path_is_portable_across_checkouts(tmp_path, monk
         transform=from_origin(-1, 2, 1, 1), nodata=-9999,
     ) as dataset:
         dataset.write(values, 1)
+        # Model GDAL-derived metadata that embeds the source absolute path.
+        dataset.update_tags(DERIVED_SUBDATASET_1_NAME=f"LOGAMPLITUDE:{source_a}")
     # Copy the exact source bytes to model the same tracked source in another checkout.
     source_b.write_bytes(source_a.read_bytes())
 
