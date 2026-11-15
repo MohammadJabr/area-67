@@ -1,4 +1,4 @@
-"""Read-only structural preflight checks for elevation rasters.
+"""Read-only structural preflight checks for elevation and companion raster layers.
 
 This utility reports input readiness evidence only. It does not infer scientific
 quality, vertical datums, effective resolution, or approval.
