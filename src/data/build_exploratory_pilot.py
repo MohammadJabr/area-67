@@ -170,8 +170,11 @@ def resample_elevation(
     """Bilinearly prepare one source raster on the declared projected metre grid."""
     transform, pixel_width, pixel_height = analysis_transform(bounds, width, height)
     target_crs = CRS.from_user_input(target_crs)
-    if not target_crs.is_projected or "met" not in str(target_crs.linear_units or "").lower():
-        raise ValueError(f"Analysis CRS must be projected in metres: {target_crs}")
+    linear_unit_names = [str(axis.unit_name or "").lower() for axis in target_crs.axis_info]
+    if not target_crs.is_projected or not any("met" in name for name in linear_unit_names[:2]):
+        raise ValueError(
+            f"Analysis CRS must be projected in metres; declared axis units are {linear_unit_names!r}"
+        )
     destination = np.full((height, width), np.nan, dtype=np.float32)
     with rasterio.open(source_path) as source:
         if source.crs is None:
