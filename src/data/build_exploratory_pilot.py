@@ -122,10 +122,26 @@ def read_native_window(
             raise ValueError(f"Grid transform/CRS differs for support layer: {raster_path}")
         window = from_bounds(*bounds, transform=dataset.transform).round_offsets().round_lengths()
         actual_bounds = dataset.window_bounds(window)
-        if not np.allclose(actual_bounds, bounds, rtol=0.0, atol=1e-6):
+        pixel_width = abs(float(dataset.transform.a))
+        pixel_height = abs(float(dataset.transform.e))
+        center_bounds = (
+            actual_bounds[0] + pixel_width / 2.0,
+            actual_bounds[1] + pixel_height / 2.0,
+            actual_bounds[2] - pixel_width / 2.0,
+            actual_bounds[3] - pixel_height / 2.0,
+        )
+        # Match the application's all_touched=False convention: include native
+        # pixel centres inside the 990m footprint. The selected cell edges may
+        # extend half a native pixel beyond the requested window.
+        if (
+            center_bounds[0] < bounds[0] - 1e-6
+            or center_bounds[1] < bounds[1] - 1e-6
+            or center_bounds[2] > bounds[2] + 1e-6
+            or center_bounds[3] > bounds[3] + 1e-6
+        ):
             raise ValueError(
-                f"Support window is not aligned to the native grid: requested={bounds}, "
-                f"actual={actual_bounds}, raster={raster_path}"
+                f"Native pixel centres fall outside the requested footprint: "
+                f"requested={bounds}, centres={center_bounds}, raster={raster_path}"
             )
         data = dataset.read(1, window=window, masked=True)
         if data.shape != expected_shape:
@@ -380,7 +396,7 @@ def ranking_csv_rows(
     top_counts = sensitivity["top_k_counts"]
     top1 = top_counts.get(1, top_counts.get("1", {}))
     top2 = top_counts.get(2, top_counts.get("2", {}))
-    baseline = robustness["slope_only_baseline"]["ranking"]
+    baseline = robustness["slope_only_baseline"]["slope_only_ranking"]
     baseline_rank = {item["site_id"]: int(item["rank"]) for item in baseline}
     output = []
     for item in result["ranking"]:
@@ -625,6 +641,7 @@ def build_pilot(raw_root: Path, output_dir: Path, metadata_dir: Path, config_pat
         "native_quality_window_shape": [expected_native_side, expected_native_side],
         "native_quality_window_bounds_m": list(moon_bounds),
         "native_quality_window_area_km2": float(grid["width_m"]) * float(grid["height_m"]) / 1_000_000.0,
+        "native_quality_selection_rule": "5m native pixel centres inside the same 990m analysis footprint (all_touched=false semantics).",
     })
     moon["source_quality_note"] = (
         "LDEC direct support, zero-count/interpolated share, Z RMS and slope RMS are read from native 5m "
