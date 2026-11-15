@@ -502,7 +502,11 @@ def run_screen(
     if include_remote:
         for name, url in PRODUCT90_COGS.items():
             try:
-                from src.data.remote_cog_inspection import read_remote_cog_window
+                if __package__:
+                    from .remote_cog_inspection import read_remote_cog_window
+                else:
+                    # Direct file execution places src/data on sys.path, not the repository root.
+                    from remote_cog_inspection import read_remote_cog_window
 
                 remote = read_remote_cog_window(
                     url,
