@@ -187,3 +187,23 @@ def test_asset_contract_contains_only_five_measured_layers():
     assert set(ASSETS) == {
         "elevation", "counts", "slope", "z_uncertainty", "slope_uncertainty"
     }
+
+
+def test_cli_help_works_as_module_and_direct_script():
+    import subprocess
+
+    repo_root = Path(__file__).resolve().parents[1]
+    commands = [
+        [sys.executable, "-m", "src.data.lola_south_pole", "--help"],
+        [sys.executable, "src/data/lola_south_pole.py", "--help"],
+    ]
+    for command in commands:
+        result = subprocess.run(
+            command,
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        assert "usage:" in result.stdout.lower()
