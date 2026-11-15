@@ -1,0 +1,141 @@
+{
+  "status": "EXPLORATORY_NOT_APPROVED",
+  "access_date": "2026-11-15",
+  "target": {
+    "site_id": "MOON_SITE01_PILOT990",
+    "site_name": "NASA PGDA Site01 / Connecting Ridge context window",
+    "planet": "Moon",
+    "source_elevation": "moon/site01/Site01_final_adj_5mpp_surf.tif",
+    "source_ldec": "moon/site01/Site01_final_adj_5mpp_ldec.tif",
+    "source_total_error": "moon/site01/Site01_final_adj_5mpp_toterr.tif",
+    "source_slope_error": "moon/site01/Site01_final_adj_5mpp_slperr.tif",
+    "source_id": "NASA_PGDA_LOLA_Site01_final_adj_5mpp_surf",
+    "source_name": "NASA PGDA LOLA Site01 surface elevation",
+    "source_url": "https://pgda.gsfc.nasa.gov/products/78",
+    "product_version": "Site01_final_adj_5mpp",
+    "license": "NASA PGDA data terms",
+    "coordinate_frame": "MOON_ME / JPL DE421 is the documented GeoTIFF product frame for PGDA Product 78; preserve the source WKT as delivered and do not infer the ROI shapefile frame from it.",
+    "vertical_reference": "Unresolved from local raster metadata; absolute elevations are not compared.",
+    "elevation_unit": "m",
+    "context_bounds_native_m": [
+      -11830,
+      -12747.5,
+      -10830,
+      -11747.5
+    ],
+    "context_bounds_note": "Earlier 1 km read-only Site01 screening square; its centre defines the 990 m exploratory context window.",
+    "aoi_status": "PROVISIONAL_CONTEXT_WINDOW_NOT_APPROVED_AOI",
+    "aoi_note": "990 m context window centered inside the earlier 1 km screen. It overlaps only 3.8657% of the valid provider Site01 ROI union in the recorded coordinate-plane check; it is not the PGDA ROI or an approved Connecting Ridge geomorphic AOI.",
+    "provider_roi_union_overlap_pct": 3.8657,
+    "provider_roi_overlap_note": "Coordinate-plane overlap diagnostic against the union of five valid provider polygons; provider-shapefile physical frame is still not independently proven."
+  },
+  "grid": {
+    "analysis_scale_m": 30,
+    "width_pixels": 33,
+    "height_pixels": 33,
+    "width_m": 990,
+    "height_m": 990,
+    "resampling": "Bilinear elevation resampling using GDAL/Rasterio; no absolute vertical offset or Moon frame relabelling."
+  },
+  "terrain": {
+    "analysis_scale_m": 30,
+    "relief_window_m": 150,
+    "local_relief_min_valid_fraction": 0.8,
+    "slope_low_max_deg": 10,
+    "slope_mid_max_deg": 25,
+    "steep_threshold_deg": 25,
+    "connectivity": 8
+  },
+  "matching": {
+    "mission_profile": "Rover Navigation / Terrain Traversal",
+    "weights": {
+      "slope": 0.3,
+      "tri": 0.25,
+      "local_relief": 0.2,
+      "spatial_pattern": 0.2,
+      "terrain_distribution": 0.05
+    },
+    "tolerances": {
+      "slope_deg": 5,
+      "tri_m": 10,
+      "local_relief_m": 15,
+      "terrain_distribution_pp": 20,
+      "spatial_pattern_pct": 15
+    },
+    "min_feature_group_completeness": 1,
+    "min_data_completeness": 0.95,
+    "scale_relative_tolerance": 0.01,
+    "distribution_sum_tolerance_pp": 0.5,
+    "weight_sensitivity_relative_change": 0.2,
+    "relief_window_sensitivity_m": [
+      90,
+      150,
+      210
+    ]
+  },
+  "earth_candidates": [
+    {
+      "site_id": "EARTH_HAUGHTON_REF990",
+      "site_name": "Haughton central-basin reference window",
+      "planet": "Earth",
+      "source_elevation": "earth/copdem_glo30/haughton/Copernicus_DSM_COG_10_N75_00_W090_00_DEM.tif",
+      "source_id": "Copernicus_GLO30_Haughton_N75_W090",
+      "source_name": "Copernicus DEM GLO-30 DSM",
+      "source_url": "https://copernicus-dem-30m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_10_N75_00_W090_00_DEM/Copernicus_DSM_COG_10_N75_00_W090_00_DEM.tif",
+      "product_version": "GLO-30; exact mirrored package release not identified in local filename",
+      "license": "Copernicus DEM terms",
+      "latitude": 75.3772222,
+      "longitude": -89.68,
+      "analysis_crs": "EPSG:32616",
+      "anchor_source": "Patterson & Ernst (2020), crater-centre reference recorded in project source review",
+      "vertical_reference": "EGM2008 per Copernicus DEM Product Handbook v5.0 (product-family metadata; exact tile package release not identified)",
+      "elevation_unit": "m",
+      "aoi_status": "PROVISIONAL_REFERENCE_WINDOW_NOT_APPROVED_AOI",
+      "aoi_note": "990 m square centered on a crater-centre reference; not a digitized Haughton central-basin geomorphic AOI."
+    },
+    {
+      "site_id": "EARTH_YUNGAY_HYPERARID_REF990",
+      "site_name": "Yungay hyper-arid-core reference window",
+      "planet": "Earth",
+      "source_elevation": "earth/copdem_glo30/yungay/Copernicus_DSM_COG_10_S25_00_W070_00_DEM.tif",
+      "source_id": "Copernicus_GLO30_Yungay_S25_W070",
+      "source_name": "Copernicus DEM GLO-30 DSM",
+      "source_url": "https://copernicus-dem-30m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_10_S25_00_W070_00_DEM/Copernicus_DSM_COG_10_S25_00_W070_00_DEM.tif",
+      "product_version": "GLO-30; exact mirrored package release not identified in local filename",
+      "license": "Copernicus DEM terms",
+      "latitude": -24.0637778,
+      "longitude": -69.8805,
+      "analysis_crs": "EPSG:32719",
+      "anchor_source": "Published hyper-arid-core study reference cited in project AOI landmark review",
+      "vertical_reference": "EGM2008 per Copernicus DEM Product Handbook v5.0 (product-family metadata; exact tile package release not identified)",
+      "elevation_unit": "m",
+      "aoi_status": "PROVISIONAL_REFERENCE_WINDOW_NOT_APPROVED_AOI",
+      "aoi_note": "990 m square centered on a published hyper-arid-core reference; not confirmed as the team's exact field plot or an approved geomorphic AOI."
+    },
+    {
+      "site_id": "EARTH_MAUNAKEA_REF990",
+      "site_name": "Mauna Kea reference window",
+      "planet": "Earth",
+      "source_elevation": "earth/copdem_glo30/mauna_kea/Copernicus_DSM_COG_10_N19_00_W156_00_DEM.tif",
+      "source_id": "Copernicus_GLO30_MaunaKea_N19_W156",
+      "source_name": "Copernicus DEM GLO-30 DSM",
+      "source_url": "https://copernicus-dem-30m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_10_N19_00_W156_00_DEM/Copernicus_DSM_COG_10_N19_00_W156_00_DEM.tif",
+      "product_version": "GLO-30; exact mirrored package release not identified in local filename",
+      "license": "Copernicus DEM terms",
+      "latitude": 19.82,
+      "longitude": -155.47,
+      "analysis_crs": "EPSG:32605",
+      "anchor_source": "USGS Hawaiian Volcano Observatory Mauna Kea reference",
+      "vertical_reference": "EGM2008 per Copernicus DEM Product Handbook v5.0 (product-family metadata; exact tile package release not identified)",
+      "elevation_unit": "m",
+      "aoi_status": "PROVISIONAL_REFERENCE_WINDOW_NOT_APPROVED_AOI",
+      "aoi_note": "990 m reference-centred square; no specific summit/flank geomorphic unit is selected."
+    }
+  ],
+  "held_out_candidates": [
+    {
+      "site_id": "EARTH_ASKJA_REF990",
+      "reason": "The current 990 m Smithsonian reference-centred diagnostic window is dominated by near-flat/equal-elevation values. This is not a conclusion about all Askja terrain. Select a caldera, lava-field, or lake-margin geomorphic AOI before reconsideration."
+    }
+  ]
+}
