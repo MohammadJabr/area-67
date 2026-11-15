@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -17,6 +18,17 @@ from src.data.raster_preflight import preflight_raster
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_RAW = ROOT / "data" / "raw"
 DEFAULT_OUTPUT = ROOT / "data" / "metadata" / "ci_gis_audit"
+
+
+def _json_safe(value: Any) -> Any:
+    """Convert non-finite numeric values to JSON null without losing audit rows."""
+    if isinstance(value, dict):
+        return {key: _json_safe(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(item) for item in value]
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
+    return value
 
 
 def _markdown(report: dict[str, Any]) -> str:
@@ -97,7 +109,7 @@ def main() -> int:
     report = build_report(args.raw_root)
     args.output_dir.mkdir(parents=True, exist_ok=True)
     (args.output_dir / "gis_acquisition_audit.json").write_text(
-        json.dumps(report, indent=2, allow_nan=False) + "\n", encoding="utf-8"
+        json.dumps(_json_safe(report), indent=2, allow_nan=False) + "\n", encoding="utf-8"
     )
     (args.output_dir / "gis_acquisition_audit.md").write_text(_markdown(report), encoding="utf-8")
     print(_markdown(report))
