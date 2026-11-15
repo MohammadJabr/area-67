@@ -82,7 +82,8 @@ def _polar_stereographic_signature(value: Any) -> tuple[Any, ...] | None:
         return None
 
     latitude = params.get("lat_0", params.get("lat_ts"))
-    if latitude is None:
+    standard_parallel = params.get("lat_ts", latitude)
+    if latitude is None or standard_parallel is None:
         return None
 
     radius = params.get("R")
@@ -100,6 +101,7 @@ def _polar_stereographic_signature(value: Any) -> tuple[Any, ...] | None:
     return (
         "stere",
         round(float(latitude), 10),
+        round(float(standard_parallel), 10),
         round(float(params.get("lon_0", 0.0)), 10),
         round(float(params.get("x_0", 0.0)), 6),
         round(float(params.get("y_0", 0.0)), 6),
