@@ -37,8 +37,9 @@ def build_passport(
     compare = {str(key): _clean(value) for key, value in (comparison or {}).items()}
     standard = {
         "site_id", "planet", "site_name", "latitude", "longitude", "area_km2",
-        "source_id", "source_name", "product_version", "access_date", "crs",
-        "vertical_reference", "analysis_scale_m", "nodata_pct", "license",
+        "source_id", "source_name", "source_url", "product_version", "access_date", "crs",
+        "analysis_crs", "coordinate_frame", "vertical_reference",
+        "analysis_scale_m", "nodata_pct", "license",
     }
     feature_keys = {metric for metrics in FEATURE_GROUPS.values() for metric in metrics}
     return {
@@ -50,8 +51,9 @@ def build_passport(
         "provenance": {
             key: row[key]
             for key in (
-                "source_id", "source_name", "product_version", "access_date",
-                "crs", "vertical_reference", "analysis_scale_m", "nodata_pct", "license",
+                "source_id", "source_name", "source_url", "product_version", "access_date",
+                "crs", "analysis_crs", "coordinate_frame", "vertical_reference",
+                "analysis_scale_m", "nodata_pct", "license",
             )
             if row.get(key) is not None
         },
@@ -104,8 +106,10 @@ def passport_to_markdown(passport: Mapping[str, Any], demo_mode: bool = False) -
     lines += ["", "## Data provenance and quality"]
     for key, label in (
         ("source_id", "Source/product ID"), ("source_name", "Source"),
-        ("product_version", "Product version"), ("access_date", "Access date"),
-        ("crs", "Horizontal CRS"), ("vertical_reference", "Vertical reference"),
+        ("source_url", "Source URL"), ("product_version", "Product version"),
+        ("access_date", "Access date"), ("crs", "Source CRS"),
+        ("analysis_crs", "Analysis CRS"), ("coordinate_frame", "Coordinate frame"),
+        ("vertical_reference", "Vertical reference"),
         ("analysis_scale_m", "Analysis scale (m)"), ("nodata_pct", "NoData (%)"),
         ("license", "License/usage terms"),
     ):
@@ -120,10 +124,29 @@ def passport_to_markdown(passport: Mapping[str, Any], demo_mode: bool = False) -
         ("relief_window_cells", "Local-relief window cells"),
         ("relief_window_span_m", "Local-relief centre-to-centre span (m)"),
         ("direct_observation_coverage_pct", "Direct LOLA shot support (%)"),
+        ("ldec_positive_cells", "Native LDEC positive-shot cells"),
+        ("ldec_zero_cells", "Native LDEC zero-count/interpolated cells"),
+        ("ldec_valid_coverage_pct", "Native LDEC valid coverage (%)"),
+        ("ldec_zero_count_pct", "Native LDEC zero-count share (%)"),
+        ("ldec_nodata_pct", "Native LDEC NoData (%)"),
         ("z_rms_median_m", "Median LOLA Z RMS (m)"),
+        ("z_rms_p90_m", "90th-percentile LOLA Z RMS (m)"),
+        ("slope_rms_median_deg", "Median LOLA slope RMS (°)"),
+        ("slope_rms_p90_deg", "90th-percentile LOLA slope RMS (°)"),
+        ("native_quality_pixel_size_m", "Native quality-layer posting (m)"),
+        ("native_quality_window_shape", "Native quality window shape"),
+        ("native_quality_window_area_km2", "Native quality window area (km²)"),
+        ("native_quality_selection_rule", "Native quality selection rule"),
+        ("provider_roi_union_overlap_pct", "Overlap with valid provider ROI union (%)"),
+        ("provider_roi_overlap_note", "Provider ROI overlap caveat"),
+        ("source_raster_path", "Source raster path"),
+        ("processing_method", "Processing method"),
         ("effective_resolution_note", "Effective-resolution note"),
         ("source_quality_note", "Source quality note"),
-        ("source_checksum_sha256", "Source raster SHA-256"),
+        ("source_checksum_sha256", "Elevation raster SHA-256"),
+        ("ldec_source_checksum_sha256", "LDEC source SHA-256"),
+        ("z_rms_source_checksum_sha256", "Z RMS source SHA-256"),
+        ("slope_rms_source_checksum_sha256", "Slope RMS source SHA-256"),
     )
     supplied_quality = [(label, other.get(key)) for key, label in quality_fields if other.get(key) is not None]
     if supplied_quality:
