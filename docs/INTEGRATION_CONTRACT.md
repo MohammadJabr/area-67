@@ -39,6 +39,10 @@ One row per analyzed site. Required common columns:
 
 Hiba's preferred MVP output includes `slope_p95`, `tri_p90`, `relief_window_m`, `tri_definition`, `tri_window_cells`, `slope_unit`, and `terrain_class_thresholds` as additional method/statistic fields.
 
+#### Local Relief statistic semantics
+
+In the current `src/features/terrain_fingerprint.py` implementation, `local_relief_p95_p5` is the **median across valid AOI cells of the per-cell moving-window (P95 − P5) elevation range**. It is not the P95 − P5 percentile range of the entire AOI elevation distribution. `local_relief_p90` is the 90th percentile across those per-cell local-relief values. Both depend on the declared `relief_window_m`, actual `relief_window_span_m`, and `local_relief_min_valid_fraction`; retain these fields with every fingerprint. This wording clarifies the existing calculation without changing the CSV field name or numeric outputs. Any future change to the statistic must be versioned and reviewed with the feature owner before rankings are regenerated.
+
 ### Terrain Distribution naming variants
 
 Hiba's playbook specifies these three required percentage columns:
