@@ -105,18 +105,22 @@ Keep both records in the manifest with their exact source labels and longitude c
 
 ### Original provider ROI archive and `.prj` evidence
 
-The team-local acquisition record for the official `Site04_ROIs.tgz` archive records:
+The team-local acquisition record and the user's archive-extraction manifest identify the official `Site04_ROIs.tgz` archive:
 
 - Source: `https://pgda.gsfc.nasa.gov/data/LOLA_5mpp/Site04/Site04_ROIs.tgz`
 - Downloaded size: **1,712 bytes**
 - SHA-256: `8e8b788f9fdf6400f23fd36dad02138102bd1a905b4b71a5739a9a4fd8a0e07a`
-- Archive member count: **5**
+- Archive entries: **5 total** — four regular files plus one symbolic link
 
-The preserved acquisition record contains the member count but not the member-name listing. The extracted `Site04_ROIs.prj` WKT recorded in the local CRS inspection declares a spherical ellipsoid with radius **1,737,400 m**, a datum named **`unknown`**, a prime meridian named **`Reference meridian`** at 0°, and a south-polar stereographic projection with latitude of origin -90°, central meridian 0°, false offsets 0 m, and metre units.
+The four regular files are `Site04_ROIs.shp`, `Site04_ROIs.shx`, `Site04_ROIs.dbf`, and `Site04_ROIs.prj`. The fifth entry is a symbolic link named `Site04_ROIs.gmt` whose target is `Site04_final_adj_5mpp_01_regionProps_avgillGT070.gmt`. The extraction manifest records `target_member_listed: false` and `action: skipped_not_created_or_followed`; the target file is not included in this archive. The extractor correctly did not follow or create the symbolic link.
+
+The link target's `regionProps_avgillGT070` name is a provenance clue only. The `avgillGT070` suffix may suggest a region-properties product associated with an average-illumination threshold, but the target contents and naming convention have not been independently verified. **Do not claim that the four ROI polygons were selected by an average-illumination-greater-than-70% criterion** on the basis of this filename alone.
+
+The extracted `Site04_ROIs.prj` WKT recorded in the local CRS inspection declares a spherical ellipsoid with radius **1,737,400 m**, a datum named **`unknown`**, a prime meridian named **`Reference meridian`** at 0°, and a south-polar stereographic projection with latitude of origin -90°, central meridian 0°, false offsets 0 m, and metre units.
 
 The Site04 GeoTIFF WKT has the same nominal sphere and polar-stereographic parameters and also labels its datum `unknown`; it labels the zero-degree prime meridian `Greenwich`. This supports a comparison in the same *nominal projection plane* for the local shapefile and local raster. It does **not** identify the body-fixed frame as ME or PA.
 
-This distinction is explicit in NASA PGDA Product 78: its MOON_ME / DE421 CRS statement applies to the GeoTIFF products, **excluding the ROI shapefiles**. Therefore, the catalog's GeoTIFF frame description cannot be inherited by the shapefile. The archive checksum and member count establish which archive was acquired, but they do not supply a frame definition. No source-authoritative ME/PA assignment for the legacy ROI shapefile has been found in the evidence reviewed here.
+This distinction is explicit in NASA PGDA Product 78: its MOON_ME / DE421 CRS statement applies to the GeoTIFF products, **excluding the ROI shapefiles**. The product-level README also documents the raster products' GMT pixel-registered convention (X/Y coordinates at pixel centres), but it does not supply the absent linked region-properties file or explicitly assign a body-fixed frame to the ROI shapefile. Therefore, neither the GeoTIFF frame description nor the link target's filename can be inherited as a shapefile frame/selection rule. The archive checksum and explicit four-file/one-link inventory establish what was acquired, but they do not supply a frame definition. No source-authoritative ME/PA assignment for the legacy ROI shapefile has been found in the evidence reviewed here.
 
 **Disposition:** keep the Site04 shapefile frame as unknown. Do not relabel it MOON_ME, MOON_PA, or Moon (2015), and do not apply a frame shift to force alignment. The local shapefile-to-local-Site04-raster ROI statistics remain useful as a nominal same-product coordinate comparison; comparisons against external lunar products remain conditional until the shapefile's frame provenance is confirmed.
 
@@ -242,6 +246,7 @@ This review used header metadata only. No SDEM pixel arrays were read, and no ra
 ## 6. Sources
 
 - NASA GSFC PGDA Product 78, High-Resolution LOLA Topography for Lunar South Pole Sites: https://pgda.gsfc.nasa.gov/products/78
+- NASA GSFC PGDA Product 78 source README (raster product units, reference frame, and GMT pixel-registration convention): https://core2.gsfc.nasa.gov/PGDA/LOLA_5mpp/README
 - NASA GSFC, Lunar Surface Data Book, ACD-50044 Rev A (2023), Appendix A, Table A2-2: https://ntrs.nasa.gov/api/citations/20230007818/downloads/ACD-50044%20Lunar%20Surface%20Data%20Book%20Rev%20A.pdf
 - Patterson et al. (2024), “Lithologies and Chronologic Opportunities of Materials to Be Returned From the Artemis Exploration Zone,” section 1.2.2: https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2023JE008275
 - NASA GSFC, “Lunar Reference Frames,” 2024 Moon to Mars Architecture Concept Review: https://www.nasa.gov/wp-content/uploads/2024/12/acr24-lunar-reference-frames.pdf
