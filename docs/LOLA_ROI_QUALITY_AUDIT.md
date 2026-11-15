@@ -58,6 +58,20 @@ Direct-observation support is calculated as positive LDEC cells divided by valid
 - No raster data are altered, resampled, clipped to disk, or exported.
 - All statistics are descriptive summaries in the source product's declared units. They are not accuracy thresholds or approval cutoffs.
 
+## Pixel-registration diagnostic
+
+The ROI polygons can be checked against the native raster's affine pixel lattice without changing either source. The diagnostic reports whether every polygon-ring vertex lies on the pixel-centre lattice, the pixel-corner lattice, or neither. It measures residuals in map units and also records the raster's `AREA_OR_POINT` tag.
+
+A preliminary **bounding-box-only** check is already possible from the recorded Site04 metadata. With affine transform `[5, 0, -9000, 0, -5, 1000]`, the ROI-cluster extrema `X=[-2842.5, -2627.5] m` and `Y=[-6802.5, -5902.5] m` map to pixel-centre indices `column=[1231, 1274]` and `row=[1560, 1380]` respectively. Thus all four bounding-box extrema lie on the pixel-centre lattice. This is not yet a full vertex audit: the remaining ring vertices must still be checked by the diagnostic below. No half-pixel shift is indicated by these extrema.
+
+Run from the repository root:
+
+```bash
+python src/data/audit_roi_pixel_registration.py --shapefile data/raw/moon/roi_shapes/Site04/Site04_ROIs.shp --raster data/raw/moon/site04/Site04_final_adj_5mpp_surf.tif --output data/metadata/site04_roi_registration.json
+```
+
+The command refuses to overwrite an existing report and does not reproject, shift, repair, rasterize, or modify the shapefile or raster. A pixel-centre alignment result demonstrates geometric agreement with the affine lattice only; it does not establish the missing lunar datum/frame or prove the scientific rule used to create the ROIs. The default 1e-6 m tolerance is numerical, not a scientific threshold.
+
 ## Interpretation
 
 This audit helps compare the observation support and uncertainty context of provider ROIs within a single LOLA site. It can identify ROIs where the interpolated fraction or RMS uncertainty differs from the site-wide average. It does not answer whether one ROI is more suitable for a lunar base: that also requires terrain hazards, illumination, temperature, resources, communications, mission requirements, and engineering constraints.
