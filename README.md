@@ -7,6 +7,10 @@ AREA 67 is a NASA Space Apps Challenge project: a mission-specific decision-supp
 
 An analog is useful for selected characteristics; it is not a perfect reproduction of another world. Similarity rankings guide investigation. They are not site certifications or probabilities of mission success.
 
+## Full challenge ambition
+
+AREA 67 is designed as a multi-dimensional planetary-analog discovery platform, not a rover-only terrain matcher. The long-term scope covers global Earth discovery and evidence dimensions including terrain, geology/materials, thermal extremes, illumination/shadow, water/ice/resources, dust and surface processes, biology/habitability context, caves/subsurface, and mission-specific operations. These dimensions remain separate evidence layers until compatible datasets and validated methods justify comparison. The current implemented MVP is narrower: one supplied Moon/Mars target, one Rover Navigation / Terrain Traversal profile, five terrain groups, and Earth candidate ranking. See [the full challenge roadmap](docs/FULL_CHALLENGE_ROADMAP.md) for current implementation status, workstreams, evidence requirements, and release gates.
+
 ## Approved product architecture
 
 The project supports two search directions:
