@@ -116,6 +116,7 @@ jobs:
             data/metadata/ci_gis_audit/
             data/metadata/lola_south_pole/
             data/metadata/lola_rois/
+            data/metadata/lola_roi_quality/
           if-no-files-found: warn
           retention-days: 14
 
