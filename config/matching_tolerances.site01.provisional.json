@@ -1,0 +1,7 @@
+{
+  "slope_deg": 5,
+  "tri_m": 10,
+  "local_relief_m": 15,
+  "terrain_distribution_pp": 20,
+  "spatial_pattern_pct": 15
+}

@@ -65,3 +65,18 @@ A final ranking requires:
 6. Mohammed's application integration check against the exact target/candidate IDs and paired output files.
 
 Until those gates pass, keep the app's exploratory warning visible and do not describe this ranking as final.
+
+
+## 2026-11-15 tolerance-sensitivity refresh
+
+The app-facing pilot outputs were refreshed with a matching-only sensitivity calculation over the currently tracked exploratory fingerprint rows. The baseline calculation was independently checked against the committed weighted distances (maximum absolute difference below (5\times10^{-16})). One tolerance at a time was changed to 0.5× and 1.5× for all five groups, giving 11 scenarios including baseline.
+
+| Candidate window | Baseline rank | Top-1 across tolerance scenarios | Rank across all 11 scenarios |
+|---|---:|---:|---|
+| Haughton | 1 | 11/11 | 1 in all scenarios |
+| Yungay | 2 | 0/11 | 2 in all scenarios |
+| Mauna Kea | 3 | 0/11 | 3 in all scenarios |
+
+This is a deterministic sensitivity check on the existing exploratory feature measurements. It is not a confidence interval, probability, tolerance validation, AOI approval, or scientific certification. The ranking remains Haughton/Yungay/Mauna Kea reference-window pilot data; it does not replace the frozen Haughton/Askja/Mauna Kea canonical shortlist. No DEM extraction or raster processing was rerun by this matching-only refresh.
+
+The refreshed `ranking_robustness.json` records the tolerance scenarios, candidate/ranked IDs, the fingerprint/config Git blob identifiers, and source-raster checksum inventory. The builder code in PR #106 has also been updated so future raw-raster rebuilds emit the same sensitivity section automatically.

@@ -25,6 +25,7 @@ from rasterio.windows import from_bounds
 from src.features.terrain_fingerprint import TerrainConfig, calculate_terrain_fingerprint
 from src.matching.pipeline import rank_terrain_fingerprints
 from src.matching.sensitivity import run_matching_robustness
+from src.matching.tolerance_sensitivity import run_tolerance_sensitivity
 
 
 def sha256_file(path: Path) -> str:
@@ -338,8 +339,11 @@ def earth_window_feature(site: Mapping[str, Any], bounds: tuple[float, float, fl
 
 
 def matching(
-    records: Mapping[str, Mapping[str, Any]], config: Mapping[str, Any]
-) -> tuple[dict[str, Any], dict[str, Any]]:
+    records: Mapping[str, Mapping[str, Any]],
+    config: Mapping[str, Any],
+    *,
+    include_tolerance_sensitivity: bool = True,
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     m = config["matching"]
     target_id = str(config["target"]["site_id"])
     candidates = {str(site["site_id"]): dict(records[str(site["site_id"])]) for site in config["earth_candidates"]}
@@ -363,7 +367,21 @@ def matching(
         top_k=(1, 2),
         min_completeness=float(m["min_feature_group_completeness"]),
     )
-    return result, robustness
+    tolerance_sensitivity = {}
+    if include_tolerance_sensitivity:
+        tolerance_sensitivity = run_tolerance_sensitivity(
+            target_fingerprint=dict(records[target_id]),
+            candidate_fingerprints=candidates,
+            weights=m["weights"],
+            tolerances=m["tolerances"],
+            mission_profile=m["mission_profile"],
+            min_feature_group_completeness=float(m["min_feature_group_completeness"]),
+            min_data_completeness=float(m["min_data_completeness"]),
+            scale_relative_tolerance=float(m["scale_relative_tolerance"]),
+            distribution_sum_tolerance_pp=float(m["distribution_sum_tolerance_pp"]),
+            top_k=(1, 2),
+        )
+    return result, robustness, tolerance_sensitivity
 
 
 def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
@@ -392,6 +410,7 @@ def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
 def ranking_csv_rows(
     result: Mapping[str, Any],
     robustness: Mapping[str, Any],
+    tolerance_sensitivity: Mapping[str, Any],
     records: Mapping[str, Mapping[str, Any]],
     config: Mapping[str, Any],
 ) -> list[dict[str, Any]]:
@@ -400,6 +419,9 @@ def ranking_csv_rows(
     top_counts = sensitivity["top_k_counts"]
     top1 = top_counts.get(1, top_counts.get("1", {}))
     top2 = top_counts.get(2, top_counts.get("2", {}))
+    tolerance_top_counts = tolerance_sensitivity["top_k_counts"]
+    tolerance_top1 = tolerance_top_counts.get(1, tolerance_top_counts.get("1", {}))
+    tolerance_scenarios = int(tolerance_sensitivity["scenario_count"])
     baseline = robustness["slope_only_baseline"]["slope_only_ranking"]
     baseline_rank = {item["site_id"]: int(item["rank"]) for item in baseline}
     output = []
@@ -409,7 +431,9 @@ def ranking_csv_rows(
         stability = (
             f"Top-1 in {top1[site_id]}/{sensitivity['scenario_count']}; "
             f"Top-2 in {top2[site_id]}/{sensitivity['scenario_count']} "
-            "one-at-a-time weight perturbation scenarios (descriptive, not probability)"
+            "one-at-a-time weight perturbation scenarios; "
+            f"tolerance Top-1 in {tolerance_top1[site_id]}/{tolerance_scenarios} "
+            "one-at-a-time tolerance scenarios (descriptive, not probability)"
         )
         row = {
             "target_site_id": result["target_site_id"],
@@ -435,6 +459,8 @@ def ranking_csv_rows(
             "mission_weights": json.dumps(m["weights"], sort_keys=True),
             "feature_tolerances": json.dumps(m["tolerances"], sort_keys=True),
             "ranking_stability_note": stability,
+            "tolerance_top1_scenarios": int(tolerance_top1[site_id]),
+            "tolerance_sensitivity_scenario_count": tolerance_scenarios,
             "ranking_note": (
                 "EXPLORATORY ONLY: canonical feature/matching functions on real rasters in provisional "
                 "reference-centred windows; not approved AOIs, site certification, or rover-safety evidence."
@@ -479,7 +505,9 @@ def relief_window_sensitivity(
             scenario_records[site_id] = {**dict(records[site_id]), **metrics}
             actual_cells = int(metrics["relief_window_cells"])
             actual_span = float(metrics["relief_window_span_m"])
-        result, _ = matching(scenario_records, config)
+        result, _, _ = matching(
+            scenario_records, config, include_tolerance_sensitivity=False
+        )
         scenarios.append({
             "requested_window_m": float(requested),
             "cells": actual_cells,
@@ -742,8 +770,8 @@ def build_pilot(raw_root: Path, output_dir: Path, metadata_dir: Path, config_pat
             "aoi_note": site["aoi_note"],
         })
 
-    result, robustness = matching(records, config)
-    ranking_rows = ranking_csv_rows(result, robustness, records, config)
+    result, robustness, tolerance_sensitivity = matching(records, config)
+    ranking_rows = ranking_csv_rows(result, robustness, tolerance_sensitivity, records, config)
     relief_sensitivity = relief_window_sensitivity(arrays, records, config, terrain_config)
 
     write_csv(output_dir / "terrain_fingerprints.csv", rows)
@@ -762,10 +790,27 @@ def build_pilot(raw_root: Path, output_dir: Path, metadata_dir: Path, config_pat
         "canonical_matching_result": result,
         "slope_only_baseline": robustness["slope_only_baseline"],
         "weight_sensitivity": robustness["weight_sensitivity"],
+        "tolerance_sensitivity": tolerance_sensitivity,
         "relief_window_sensitivity": relief_sensitivity,
+        "candidate_site_ids": sorted(str(site["site_id"]) for site in config["earth_candidates"]),
+        "ranked_candidate_ids": [item["site_id"] for item in result["ranking"]],
         "rejected_candidates": result["rejected_candidates"],
         "held_out_candidates": config.get("held_out_candidates", []),
         "source_checksums": input_hashes,
+        "run_provenance": {
+            "config_sha256": sha256_file(config_path),
+            "source_input_sha256": dict(sorted(input_hashes.items())),
+            "matching_configuration": {
+                "mission_profile": config["matching"]["mission_profile"],
+                "weights": config["matching"]["weights"],
+                "tolerances": config["matching"]["tolerances"],
+                "min_feature_group_completeness": config["matching"]["min_feature_group_completeness"],
+                "min_data_completeness": config["matching"]["min_data_completeness"],
+                "scale_relative_tolerance": config["matching"]["scale_relative_tolerance"],
+                "distribution_sum_tolerance_pp": config["matching"]["distribution_sum_tolerance_pp"],
+                "weight_sensitivity_relative_change": config["matching"]["weight_sensitivity_relative_change"],
+            },
+        },
         "source_grid_processing": grid_manifest,
         "limitations": [
             "All footprints are exploratory reference-centred windows, not approved geomorphic AOIs.",

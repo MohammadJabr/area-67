@@ -14,11 +14,14 @@ The target row, `MOON_SITE01_PILOT990`, is a 990 m square context window. Its pr
 
 The reduced tracked comparison contains three 990 m reference-centered Copernicus GLO-30 windows: Haughton, Yungay, and Mauna Kea. The common source family and existing complete fingerprints make them usable for this engineering demo. They are provisional sample windows, not approved geomorphic AOIs. Askja is held out because its current reference-centered diagnostic window is dominated by near-flat/equal-elevation samples; that is not a finding about all Askja terrain. McMurdo is not in this ranked set. Yungay's reference marker differs from a published field reference by about 5.81 km, so its identity remains a material caveat.
 
-The reduced demo ranking uses the existing canonical matcher **Slope-only baseline**, based on Slope P50 and P90. This is the smallest already-computed feature subset and introduces no new feature or matching algorithm. The curated fingerprint CSV retains the full supplied five-group rows for provenance/context, but non-Slope groups do not contribute to these rankings. The full five-group result remains unchanged in its original files as a separate exploratory comparison. The source run's provisional 30 m grid, requested 150 m relief window (five cells; 120 m center-to-center span), class thresholds, multi-feature weights, tolerances, and completeness settings remain experiment assumptions, not team-approved scientific policies. No sensitivity scenarios were run for the Slope-only baseline.
+The reduced demo ranking uses the existing canonical matcher **Slope-only baseline**, based on Slope P50 and P90. This is the smallest already-computed feature subset and introduces no new feature or matching algorithm. The curated fingerprint CSV retains the full supplied five-group rows for provenance/context, but non-Slope groups do not contribute to these rankings. The full five-group result remains unchanged in its original files as a separate exploratory comparison.
 
+A separate one-at-a-time feature-tolerance sensitivity check was run for the existing five-group ranking (baseline plus 0.5x and 1.5x for each of its five tolerances): Haughton remained rank 1 in 11/11 scenarios, Yungay rank 2 in 11/11, and Mauna Kea rank 3 in 11/11. This is not sensitivity analysis for the active Slope-only package and does not validate the provisional tolerance values or candidate identities.
+
+The source run's provisional 30 m grid, requested 150 m relief window (five cells; 120 m center-to-center span), class thresholds, multi-feature weights, tolerances, and completeness settings remain experiment assumptions, not team-approved scientific policies. No sensitivity scenarios were run for the Slope-only baseline.
 ## Existing app-facing results
 
-These values are from the separately packaged `data/processed/exploratory_mvp_2026-11-15/candidate_rankings.csv`, sourced directly from the canonical matcher's existing Slope-only baseline. The original five-group scores remain unchanged in `data/processed/candidate_rankings.csv`.
+These values are from `data/processed/exploratory_mvp_2026-11-15_v2/candidate_rankings.csv`, packaged from the current canonical matcher's Slope-only baseline. The original five-group scores remain unchanged in `data/processed/candidate_rankings.csv`. The earlier `exploratory_mvp_2026-11-15/` package is retained as a snapshot of the prior source sidecar; the app defaults to v2.
 
 | Rank | Earth reference window | Slope-only relative index | Slope-group distance | Prior five-group rank |
 |---:|---|---:|---:|---:|
@@ -38,7 +41,7 @@ The prior five-group ordering is the same, but this is a descriptive result for 
 
 ## Implementation and reproduction
 
-The integrated builder in `src/data/build_exploratory_pilot.py` calls the canonical `calculate_terrain_fingerprint`, `rank_terrain_fingerprints`, and `run_matching_robustness` implementations. `src/data/package_reduced_mvp.py` then selects the existing Slope-only baseline and the one-target/three-candidate rows into `data/processed/exploratory_mvp_2026-11-15/`; it does not calculate fingerprints or rankings. Its manifest records source and package checksums. The original full five-group outputs remain unchanged at the top level of `data/processed/`.
+The integrated builder in `src/data/build_exploratory_pilot.py` calls the canonical `calculate_terrain_fingerprint`, `rank_terrain_fingerprints`, and `run_matching_robustness` implementations. `src/data/package_reduced_mvp.py` then selects the existing Slope-only baseline and the one-target/three-candidate rows into `data/processed/exploratory_mvp_2026-11-15_v2/`; it does not calculate fingerprints or rankings. Its manifest records source and package checksums. The original full five-group outputs remain unchanged at the top level of `data/processed/`.
 
 Install the repository dependencies and launch the app from the repository root:
 

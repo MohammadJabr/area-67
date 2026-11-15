@@ -142,8 +142,8 @@ export_rankings_csv(
 - Actual import, join, and provenance validation for Hiba's delivered fingerprint table.
 - Team-approved tolerance values and a documented scientific basis for each tolerance.
 - Propagation or explicit weighting of RMS uncertainty and direct-observation support.
-- Correlation/double-counting analysis for Slope, TRI, and Terrain Distribution using real site features.
-- Real Earth candidate DEMs and a measured Moon/Earth or Mars/Earth ranking.
+- Correlation/double-counting analysis for Slope, TRI, and Terrain Distribution on the canonical approved AOI fingerprints. The current three provisional Earth windows are too few and not approved study AOIs for a defensible feature-correlation conclusion.
+- A canonical approved-AOI Moon/Earth ranking. The repository contains a real-raster exploratory pilot, but that is not the final measured study result.
 - End-to-end app import and display using the produced CSV.
 - External validation of mission weights against an engineering requirement.
 - A* route planning over an agreed, analysis-ready candidate DEM.

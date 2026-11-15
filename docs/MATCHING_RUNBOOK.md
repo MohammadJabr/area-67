@@ -109,3 +109,22 @@ Every CSV-driven CLI run requires `--candidate-site-ids`. This is an allowlist: 
 ## Reproducibility hashes and exclusions
 
 The robustness JSON records the exact fingerprint CSV SHA-256, the exact tolerance JSON file SHA-256 when invoked through the CLI, and a canonical semantic configuration SHA-256 covering target, candidate allowlist, mission profile, weights, tolerances, completeness cutoffs, scale/distribution safeguards, and weight perturbation. It also lists the requested candidate IDs, ranked IDs, and baseline rejection reasons. Preserve the input CSV and tolerance JSON alongside the sidecar; a hash identifies bytes/configuration but does not itself establish scientific validity.
+
+
+## Canonical Site01 run template — gated, not yet executable
+
+Use this only after Ghassan supplies approved AOI geometry/common-grid metadata and Hiba supplies the canonical fingerprint CSV with the final stable IDs. Replace every identifier below with the exact value in that handoff; do not infer IDs from display names.
+
+```powershell
+python -m src.matching.cli `
+  --fingerprints data/processed/terrain_fingerprints_canonical.csv `
+  --target-site-id SITE01_APPROVED_AOI_ID `
+  --candidate-site-ids HAUGHTON_APPROVED_AOI_ID ASKJA_APPROVED_AOI_ID MAUNAKEA_APPROVED_AOI_ID `
+  --tolerances-json config/matching_tolerances.site01.provisional.json `
+  --min-feature-group-completeness 1.0 `
+  --min-data-completeness 0.95 `
+  --output data/processed/candidate_rankings.site01.canonical.csv `
+  --robustness-output data/processed/ranking_robustness.site01.canonical.json
+```
+
+The file `config/matching_tolerances.site01.provisional.json` copies the frozen prototype tolerances (5°, 10 m, 15 m, 20 pp, 15 pp). The two completeness values are also frozen operational assumptions (1.00 and 0.95). These settings are **not** NASA/rover standards and still require explicit team sign-off for the final study. Keep the canonical outputs separate from the exploratory app-facing files until the data and science release gates pass. The command's `--candidate-site-ids` allowlist is mandatory and excludes every unlisted Earth row.
