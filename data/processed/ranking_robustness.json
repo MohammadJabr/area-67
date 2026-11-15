@@ -157,7 +157,7 @@
   "limitations": [
     "All study footprints are provisional reference-centred windows, not approved geomorphic AOIs.",
     "Site01's embedded LOLA GeoTIFF WKT has a placeholder datum, but official PGDA Product 78 documentation identifies the GeoTIFF layers as MOON_ME/DE421; no raw WKT rewrite or coordinate transformation was performed. The provider ROI shapefile frame remains unverified.",
-    "Positive LDEC support in the Site01 window is 9.235%, distinct from 100% raster-valid mask coverage.",
+    "Positive LDEC support in the Site01 window is 9.235%, distinct from 100% raster-valid mask coverage. PGDA Product 78 notes that roughly 90% of 5 m polar LDEM pixels are interpolated by design because of LOLA shot spacing.",
     "Copernicus DSM effective terrain resolution and per-pixel quality were not independently established for these windows; quality companion rasters were not retrieved.",
     "Earth vertical reference is product-level EGM2008 documentation. Absolute cross-body elevations were not compared.",
     "The 30 m scale, 150 m relief window, valid-neighbour fraction, weights, and tolerances are provisional pilot assumptions, not NASA or rover-manufacturer standards.",
