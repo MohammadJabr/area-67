@@ -43,7 +43,7 @@ The Site01 QA command reported:
 
 A 100% valid raster mask is not 100% direct LOLA observation. The 9.4942% figure is site-wide and must not be substituted for a polygon-specific support percentage. Five-metre posting is not proof of five-metre effective terrain resolution or accuracy.
 
-The embedded custom south-polar stereographic CRS uses a lunar sphere with an unknown datum label. The provider catalog's frame description is useful provenance, but the local WKT does not independently resolve the physical Moon-fixed frame. Do not invent an ME/PA shift or infer a vertical datum from the horizontal CRS.
+Both the local raster and provider ROI WKT use placeholder unknown datum labels, but their roles differ: NASA PGDA Product 78 documents the GeoTIFF raster layers as MOON_ME/DE421 and explicitly excludes ROI shapefiles. Thus the raster frame is source-documented at product level; the provider ROI shapefile frame remains unverified. Do not assign the raster frame to ROI shapes, rewrite raw WKT, invent an ME/PA shift, or infer a vertical datum from the horizontal CRS.
 
 ## 3. Native-geometry ROI audit
 
