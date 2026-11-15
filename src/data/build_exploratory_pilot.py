@@ -419,9 +419,20 @@ def ranking_csv_rows(
     top_counts = sensitivity["top_k_counts"]
     top1 = top_counts.get(1, top_counts.get("1", {}))
     top2 = top_counts.get(2, top_counts.get("2", {}))
-    tolerance_top_counts = tolerance_sensitivity["top_k_counts"]
-    tolerance_top1 = tolerance_top_counts.get(1, tolerance_top_counts.get("1", {}))
+    tolerance_rank_by_scenario = tolerance_sensitivity.get("rank_by_scenario")
+    if not isinstance(tolerance_rank_by_scenario, Mapping) or not tolerance_rank_by_scenario:
+        raise ValueError("Tolerance sensitivity must include per-scenario candidate ranks.")
     tolerance_scenarios = int(tolerance_sensitivity["scenario_count"])
+    if len(tolerance_rank_by_scenario) != tolerance_scenarios:
+        raise ValueError("Tolerance sensitivity scenario count does not match its rank records.")
+    tolerance_top1 = {
+        str(candidate["site_id"]): sum(
+            1
+            for scenario_ranks in tolerance_rank_by_scenario.values()
+            if int(scenario_ranks.get(str(candidate["site_id"]), 0)) == 1
+        )
+        for candidate in result["ranking"]
+    }
     baseline = robustness["slope_only_baseline"]["slope_only_ranking"]
     baseline_rank = {item["site_id"]: int(item["rank"]) for item in baseline}
     output = []
