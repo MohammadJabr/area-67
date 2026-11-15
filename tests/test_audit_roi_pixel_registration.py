@@ -6,7 +6,7 @@ import numpy as np
 import rasterio
 from affine import Affine
 from rasterio.transform import from_origin
-from shapely.geometry import box
+from shapely.geometry import Polygon, box
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src" / "data"))
 from audit_roi_pixel_registration import audit_shapefile_registration  # noqa: E402
@@ -71,15 +71,15 @@ def test_handles_rotated_and_sheared_affine_pixel_centres(tmp_path):
         dataset.write(np.zeros((10, 10), dtype="float32"), 1)
 
     ring = [
-        transform * (0.5, 0.5),
-        transform * (4.5, 0.5),
-        transform * (4.5, 4.5),
-        transform * (0.5, 4.5),
+        transform @ (0.5, 0.5),
+        transform @ (4.5, 0.5),
+        transform @ (4.5, 4.5),
+        transform @ (0.5, 4.5),
         transform * (0.5, 0.5),
     ]
     shapefile = write_shapefile(
         tmp_path / "sheared_roi.shp",
-        __import__("shapely.geometry", fromlist=["Polygon"]).Polygon(ring),
+        Polygon(ring),
     )
 
     report = audit_shapefile_registration(shapefile, raster_path)
