@@ -3,7 +3,8 @@
 Example:
 python -m src.matching.cli \
   --fingerprints data/processed/terrain_fingerprints.csv \
-  --target-site-id MOON_SITE04 \
+  --target-site-id MOON_SITE01 \
+  --candidate-site-ids EARTH_HAUGHTON EARTH_ASKJA EARTH_MAUNAKEA \
   --tolerances-json config/matching_tolerances.json
 """
 
