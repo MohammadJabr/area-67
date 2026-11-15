@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -59,6 +60,19 @@ def _markdown(report: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def _json_safe(value: Any) -> Any:
+    """Convert non-finite numeric metadata to JSON null without losing its meaning."""
+    if isinstance(value, dict):
+        return {key: _json_safe(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_json_safe(item) for item in value]
+    if isinstance(value, tuple):
+        return [_json_safe(item) for item in value]
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
+    return value
+
+
 def build_report(raw_root: Path) -> dict[str, Any]:
     raster_paths = sorted(
         path for path in raw_root.rglob("*")
@@ -78,7 +92,7 @@ def build_report(raw_root: Path) -> dict[str, Any]:
         except Exception as exc:  # keep auditing other files if one raster is corrupt
             errors.append({"path": path.relative_to(ROOT).as_posix(), "error": f"{type(exc).__name__}: {exc}"})
             counts["FAIL"] += 1
-    return {
+    return _json_safe({
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "raw_root": raw_root.relative_to(ROOT).as_posix() if raw_root.is_relative_to(ROOT) else str(raw_root),
         "raster_count": len(entries),
@@ -86,7 +100,7 @@ def build_report(raw_root: Path) -> dict[str, Any]:
         "rasters": entries,
         "errors": errors,
         "scientific_approval": False,
-    }
+    })
 
 
 def main() -> int:
