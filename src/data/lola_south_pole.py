@@ -98,7 +98,7 @@ def download_site_asset(
                         prefix += chunk[:4 - len(prefix)]
                     digest.update(chunk)
                     output.write(chunk)
-        if prefix not in (b"II*\x00", b"MM\x00*", b"II+\x00", b"MM+\x00"):
+        if prefix not in (b"II*\x00", b"MM\x00*", b"II+\x00", b"MM\x00+"):
             raise RuntimeError(f"Response is not a TIFF/BigTIFF file: {url}")
         if declared_length is not None and received != int(declared_length):
             raise RuntimeError(
