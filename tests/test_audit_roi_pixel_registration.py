@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 
 import geopandas as gpd
+import numpy as np
 import rasterio
 from rasterio.transform import from_origin
 from shapely.geometry import box
@@ -22,7 +23,7 @@ def write_raster(path: Path, *, crs="EPSG:3031"):
         crs=crs,
         transform=from_origin(0, 10, 1, 1),
     ) as dataset:
-        dataset.write([[0.0] * 10 for _ in range(10)], 1)
+        dataset.write(np.zeros((10, 10), dtype="float32"), 1)
     return path
 
 
