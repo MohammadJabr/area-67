@@ -64,3 +64,10 @@ def test_site01_exploratory_pilot_matching_is_reproducible(tmp_path: Path) -> No
     assert robustness["tolerance_sensitivity"]["factors"] == [0.5, 1.0, 1.5]
     assert len(robustness["tolerance_sensitivity"]["scenario_rankings"]) == 11
     assert "rejected_candidates_by_scenario" in robustness["tolerance_sensitivity"]
+    assert robustness["candidate_site_ids"] == [
+        "EARTH_HAUGHTON_REF990",
+        "EARTH_MAUNAKEA_REF990",
+        "EARTH_YUNGAY_HYPERARID_REF990",
+    ]
+    assert robustness["run_provenance"]["fingerprint_input"]["sha256"]
+    assert robustness["run_provenance"]["matching_configuration"]["sha256"]
