@@ -312,6 +312,29 @@ def build_repair_preview_report(
                         item["status"] = "repair_preview_unavailable"
                     else:
                         item["status"] = "repair_preview_only"
+                        component_previews = []
+                        for component_index, component in enumerate(_polygon_parts(candidate)):
+                            component_stats = inspect_feature(
+                                component,
+                                properties,
+                                int(feature_index),
+                                relative_name,
+                                datasets,
+                            )
+                            component_stats["preview_only"] = True
+                            component_stats["component_index"] = component_index
+                            component_stats["warning"] = (
+                                "These statistics describe one polygon component of the "
+                                "in-memory make_valid candidate, not the original invalid provider polygon."
+                            )
+                            component_previews.append(
+                                {
+                                    "component_index": component_index,
+                                    "geometry": _geometry_metadata(component),
+                                    "statistics": component_stats,
+                                }
+                            )
+                        item["repair_preview_component_statistics"] = component_previews
                         item["repair_preview_statistics"] = inspect_feature(
                             candidate,
                             properties,
@@ -321,8 +344,8 @@ def build_repair_preview_report(
                         )
                         item["repair_preview_statistics"]["preview_only"] = True
                         item["repair_preview_statistics"]["warning"] = (
-                            "These statistics describe the in-memory make_valid candidate, "
-                            "not the original invalid provider polygon."
+                            "These statistics describe the union of polygonal components "
+                            "from the in-memory make_valid candidate, not the original invalid provider polygon."
                         )
                 feature_rows.append(item)
 
