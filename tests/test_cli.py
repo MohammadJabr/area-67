@@ -1,4 +1,5 @@
 import csv
+import hashlib
 import json
 
 import pytest
@@ -47,6 +48,14 @@ def test_cli_runs_csv_to_matching_outputs(
     assert "Ranked Earth candidates: 1" in captured.out
     assert ranking_path.is_file()
     assert robustness_path.is_file()
+    summary = json.loads(robustness_path.read_text(encoding="utf-8"))
+    assert summary["candidate_site_ids"] == ["EARTH_A"]
+    assert summary["run_provenance"]["fingerprint_input"]["sha256"] == hashlib.sha256(
+        fingerprints_path.read_bytes()
+    ).hexdigest()
+    assert summary["run_provenance"]["tolerance_config_file"]["sha256"] == hashlib.sha256(
+        tolerances_path.read_bytes()
+    ).hexdigest()
 
 
 def test_cli_returns_error_for_unfilled_tolerance_template(
