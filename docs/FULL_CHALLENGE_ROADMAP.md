@@ -85,7 +85,7 @@ Do not populate selectable profiles with empty or misleading results. A profile 
 
 ### Partially implemented / not scientifically complete
 - The five provider-defined lunar ROI archives and five-layer audit tools are implemented. Local Site01 and Site04 provider ROI archives and all five native raster layers have now been inspected with polygon-level support/uncertainty QA, read-only invalid-geometry previews, and pixel-registration audits. Site01 has seven features (five valid, two invalid); all 607 source vertices align with its raster pixel-centre lattice. Site04 has four features (two valid, two invalid); all 325 source vertices align with its raster pixel-centre lattice. The invalid features remain excluded from official native-geometry ROI statistics. Equivalent site-level review remains for Site06, Site07 and Site11. Provider polygons are not approved AREA 67 study AOIs; see the [Site01 review](reports/lunar_roi/SITE01_COORDINATE_AND_SDEM_REVIEW.md) and [Site04 review](reports/lunar_roi/SITE04_COORDINATE_AND_SDEM_REVIEW.md).
-- No lunar target sub-AOI, Earth candidate AOIs, common analysis grid, or source harmonization policy has been approved. Earth source tiles and remote catalog probes are not analysis-ready AOI rasters.
+- The working pilot pair is Site01 (primary illumination/A306 evidence anchor) and Site04 (LOLA comparator); the primary Earth shortlist is Haughton, Askja and Mauna Kea, with McMurdo and Yungay held. No lunar/Earth AOI boundaries, common analysis grid, or source harmonization policy has been approved. Earth source tiles and remote catalog probes are not analysis-ready AOI rasters.
 - The reference-point GeoJSON contains points only. Haughton has a ~1.47 km marker/reference difference; McMurdo's provisional point is not a named valley and alternatives may fall outside the local Copernicus tile; Yungay's marker differs by ~5.81 km from a published field reference. Askja and Mauna Kea reference points align at recorded precision but do not define the target landform.
 - Remote COG 500 × 500 windows prove only that selected assets can be queried and return values in those windows; they do not establish full-tile coverage, effective resolution, or candidate suitability.
 - Real `terrain_fingerprints.csv` and `candidate_rankings.csv` are still absent; polygon-level tooling does not itself create terrain fingerprints.
@@ -120,7 +120,7 @@ The local Site01 (Connecting Ridge) review now includes the provider ROI shapefi
 The source rasters and machine-readable QA/preview outputs remain local and gitignored. The detailed measurements, paths and reproduction commands are recorded in [the Site01 review](reports/lunar_roi/SITE01_COORDINATE_AND_SDEM_REVIEW.md).
 
 
-Detailed measurements and provenance are recorded in `docs/LOLA_ROI_QUALITY_AUDIT.md` and `docs/reports/lunar_roi/SITE04_COORDINATE_AND_SDEM_REVIEW.md`. The immediate scientific decisions are to delineate and approve the Site01 working study AOI using A306/illumination context, retain Site04 as a reviewed alternative, resolve the intended topology/provenance of invalid provider features where relevant, and agree a common physical analysis scale and neighborhood/window policy before real fingerprint extraction.
+Detailed measurements and provenance are recorded in `docs/LOLA_ROI_QUALITY_AUDIT.md` and `docs/reports/lunar_roi/SITE04_COORDINATE_AND_SDEM_REVIEW.md`. The immediate scientific decisions are to test a Site01/Site04 two-target pilot pair (Site01 as primary illumination/A306 anchor; Site04 as LOLA comparator), select candidate polygons only after neighbourhood-support analysis, resolve the intended topology/provenance of invalid provider features where relevant, and agree a common physical analysis scale and neighborhood/window policy before real fingerprint extraction. The working Earth pilot shortlist is Haughton, Askja and Mauna Kea; McMurdo and Yungay remain held pending location clarification.
 
 ### Important review note
 The application currently exposes the only supplied target and profile from the loaded ranking CSV. Seeing only MOON_DEMO_01 and Rover Navigation / Terrain Traversal is therefore a property of the synthetic fixture, not proof that the product is scientifically limited to one target/profile. Do not add fake selectable entries. Real target/profile options should be driven by validated datasets and implemented profile contracts.
@@ -147,7 +147,7 @@ Every handoff should include the exact commit, input manifest, output paths, com
 - Keep all unresolved decisions explicit; no invented values.
 
 ### R1 — Real terrain baseline
-- Obtain analysis-ready target and 3–5 Earth candidates with manifest, footprints, QA and checksums.
+- Obtain analysis-ready Site01/Site04 lunar comparison inputs and three primary Earth candidates with manifest, footprints, QA and checksums.
 - Produce one real five-group fingerprint row per site.
 - Run independent validation, coverage review, real correlation audit and at least one supported scale/window sensitivity study.
 - Do not release a ranking until comparability and missingness are reviewed.
@@ -179,9 +179,9 @@ Prioritize one vertical at a time, with separate data contracts and tests:
 - A stable demo fallback clearly marked as synthetic if real data is unavailable.
 
 ## 8. Immediate next actions (not silently assigned as approvals)
-1. Site01 and Site04 local ROI/raster review is now recorded. Complete the equivalent archive, five-layer support/uncertainty, topology and registration review for Site06, Site07 and Site11 where the local assets are available.
-2. Execute the Site01 / Connecting Ridge working baseline in `docs/SCIENCE_EXECUTION_DECISION_2026-11-15.md`; delineate and approve the final study AOI using A306, illumination and terrain evidence. Keep Site04 as a reviewed alternative, not a permanent-base ranking.
-3. Finalize 3–5 Earth candidate landform AOIs, stable IDs, and authoritative boundary evidence; the whole 1° DEM tiles are not study ROIs.
+1. Site01 and Site04 local ROI/raster reviews are recorded; seven-candidate screening also covers selected Site07 and Site11 features. Complete the full archive, five-layer support/uncertainty, topology and registration review for Site06, and full Site07/Site11 review only if those sites remain in scope.
+2. Execute the Site01/Site04 comparison pilot in `docs/SCIENCE_EXECUTION_DECISION_2026-11-15.md`; use Site01 for the A306/illumination evidence anchor and Site04 as the LOLA comparator. Delineate and approve AOI(s) only after source, frame and neighbourhood-support checks.
+3. Finalize three primary Earth candidate landform AOIs (Haughton, Askja, Mauna Kea), stable IDs and authoritative boundary evidence; keep McMurdo and Yungay held until named-landform/reference-coordinate issues are resolved. Whole 1° DEM tiles are not study ROIs.
 4. Approve a common physical analysis scale, projection, resampling/reprojection policy, vertical-reference treatment, windows, and quality/uncertainty policy.
 5. Have Ghassan hand over analysis-ready target/candidate rasters and manifests; have Hiba produce and validate the real fingerprint CSV.
 6. Agree and document feature tolerances and completeness thresholds; run real matching, inspect correlations/sensitivity, then connect outputs to the app.
