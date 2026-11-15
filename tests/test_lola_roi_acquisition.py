@@ -131,6 +131,88 @@ def test_extract_rejects_unsafe_member_paths(tmp_path, unsafe_name):
     assert not destination.with_name(destination.name + ".staging").exists()
 
 
+def test_extract_skips_symbolic_links_and_records_them_in_manifest(tmp_path):
+    archive_path = tmp_path / "site01.tgz"
+    buffer = io.BytesIO()
+    with tarfile.open(fileobj=buffer, mode="w:gz") as archive:
+        payload = b"shape-index-placeholder"
+        regular = tarfile.TarInfo("Site01_ROIs.shp")
+        regular.size = len(payload)
+        archive.addfile(regular, io.BytesIO(payload))
+
+        link = tarfile.TarInfo("Site01_ROIs.gmt")
+        link.type = tarfile.SYMTYPE
+        link.linkname = "Site01_final_adj_5mpp_01_regionProps_avgillGT070.gmt"
+        archive.addfile(link)
+
+    archive_path.write_bytes(buffer.getvalue())
+    destination = tmp_path / "extracted"
+    written = extract_roi_archive(archive_path, destination)
+
+    assert (destination / "Site01_ROIs.shp").read_bytes() == b"shape-index-placeholder"
+    assert not (destination / "Site01_ROIs.gmt").exists()
+    assert len(written) == 1
+
+    manifest = __import__("json").loads(
+        (destination / "archive_extraction_manifest.json").read_text(encoding="utf-8")
+    )
+    assert manifest["source_archive"] == "site01.tgz"
+    assert manifest["skipped_symbolic_links"] == [
+        {
+            "member_name": "Site01_ROIs.gmt",
+            "link_target": "Site01_final_adj_5mpp_01_regionProps_avgillGT070.gmt",
+            "target_member_listed": False,
+            "action": "skipped_not_created_or_followed",
+        }
+    ]
+
+
+def test_inspection_reports_skipped_symbolic_links(tmp_path):
+    folder = tmp_path / "extracted"
+    folder.mkdir()
+    (folder / "archive_extraction_manifest.json").write_text(
+        __import__("json").dumps(
+            {
+                "schema_version": 1,
+                "source_archive": "Site01_ROIs.tgz",
+                "extracted_regular_files": [],
+                "skipped_symbolic_links": [
+                    {
+                        "member_name": "Site01_ROIs.gmt",
+                        "link_target": "Site01_final_adj_5mpp_01_regionProps_avgillGT070.gmt",
+                        "target_member_listed": False,
+                        "action": "skipped_not_created_or_followed",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    report = inspect_extracted_rois("Site01", folder)
+    assert report["status"] == "review_required"
+    assert len(report["skipped_symbolic_links"]) == 1
+    assert any("Site01_ROIs.gmt" in warning for warning in report["warnings"])
+
+
+def test_extract_rejects_symbolic_link_targets_that_escape_root(tmp_path):
+    archive_path = tmp_path / "unsafe-link.tgz"
+    buffer = io.BytesIO()
+    with tarfile.open(fileobj=buffer, mode="w:gz") as archive:
+        link = tarfile.TarInfo("nested/unsafe.gmt")
+        link.type = tarfile.SYMTYPE
+        link.linkname = "../../outside.gmt"
+        archive.addfile(link)
+
+    archive_path.write_bytes(buffer.getvalue())
+    destination = tmp_path / "out"
+    with pytest.raises(ValueError, match="Symbolic-link target escapes"):
+        extract_roi_archive(archive_path, destination)
+
+    assert not destination.exists()
+    assert not destination.with_name(destination.name + ".staging").exists()
+
+
 def test_extract_enforces_uncompressed_size_limit(tmp_path):
     archive_path = tmp_path / "large.tgz"
     archive_path.write_bytes(make_tar_gz([("large.bin", b"x" * 100)]))
