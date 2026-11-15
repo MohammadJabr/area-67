@@ -6,6 +6,7 @@ from rasterio.transform import from_origin
 
 from src.data.earth_dem_qa import build_qa_report, markdown_report
 from src.data.raster_inventory import inventory_many, inventory_raster
+from scripts.audit_local_rasters import _lola_support
 
 
 def write_raster(path, data, *, transform=None, crs="EPSG:32610", nodata=-9999):
@@ -35,6 +36,10 @@ def test_inventory_reports_grid_mask_statistics_and_checksum(tmp_path):
     assert report["pixel_size_x"] == report["pixel_size_y"] == 10
     assert report["bands"][0]["statistics"]["valid_pixel_count"] == 3
     assert report["bands"][0]["statistics"]["valid_coverage_pct"] == 75
+    assert report["bounds_wgs84_wsen"] is not None
+    assert report["pixel_spacing_units"] == "metre"
+    assert report["is_north_up_non_rotated"] is True
+    assert "nodata" in report["bands"][0]["mask_flags"]
     assert report["sha256"] == hashlib.sha256(path.read_bytes()).hexdigest()
 
 
@@ -45,7 +50,21 @@ def test_inventory_counts_nonfinite_values_even_without_nodata_mask(tmp_path):
 
     assert report["sha256"] is None
     assert report["bands"][0]["nonfinite_pixel_count"] == 1
+    assert report["bands"][0]["nan_pixel_count"] == 1
+    assert report["bands"][0]["positive_infinity_pixel_count"] == 0
     assert report["bands"][0]["statistics"]["valid_pixel_count"] == 3
+
+
+def test_inventory_counts_nan_and_infinities_separately(tmp_path):
+    path = tmp_path / "nonfinite_dem.tif"
+    write_raster(path, [[1, np.nan], [np.inf, -np.inf]])
+    report = inventory_raster(path, checksum=False)
+    band = report["bands"][0]
+
+    assert band["nan_pixel_count"] == 1
+    assert band["positive_infinity_pixel_count"] == 1
+    assert band["negative_infinity_pixel_count"] == 1
+    assert band["nonfinite_pixel_count"] == 3
 
 
 def test_optional_quality_grid_alignment_and_configured_range_screen(tmp_path):
@@ -84,3 +103,18 @@ def test_inventory_many_reports_grid_mismatch(tmp_path):
     assert report["raster_count"] == 2
     assert report["rasters"][0]["grid_matches_first_raster"] is True
     assert report["rasters"][1]["grid_matches_first_raster"] is False
+
+
+def test_lola_support_distinguishes_zero_and_positive_spot_counts(tmp_path):
+    dem = tmp_path / "elevation.tif"
+    counts = tmp_path / "counts.tif"
+    write_raster(dem, [[1, 2], [3, 4]])
+    write_raster(counts, [[0, 1], [2, 0]])
+
+    report = _lola_support(dem, counts)
+
+    assert report["valid_elevation_count_pairs"] == 4
+    assert report["positive_count_pixels"] == 2
+    assert report["positive_count_pct_of_valid_pairs"] == 50
+    assert report["zero_count_pixels"] == 2
+    assert report["spot_count_histogram"] == {"0": 2, "1": 1, "2": 1}

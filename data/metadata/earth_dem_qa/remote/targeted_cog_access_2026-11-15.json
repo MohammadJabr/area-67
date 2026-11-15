@@ -1,0 +1,640 @@
+{
+  "audit_date": "2026-11-15",
+  "method": "HTTP HEAD + 16 KiB HTTP Range preflight, followed by rasterio/GDAL /vsicurl window reads; no raster files downloaded",
+  "results": [
+    {
+      "label": "Haughton",
+      "item": "29_29_2_2_2m_v4.1",
+      "asset": "dem",
+      "crs": "EPSG:3413",
+      "size_px": [
+        25100,
+        25100
+      ],
+      "nodata": -9999.0,
+      "block_shapes": [
+        [
+          512,
+          512
+        ]
+      ],
+      "overviews": [
+        2,
+        4,
+        8,
+        16,
+        32,
+        64
+      ],
+      "asset_size_bytes": 1049149331,
+      "range_probe_bytes": 16384,
+      "window": [
+        14529,
+        16297,
+        500,
+        500
+      ],
+      "window_valid_cells": 250000,
+      "window_min": 133.03125,
+      "window_max": 183.7109375
+    },
+    {
+      "label": "Haughton",
+      "item": "29_29_2_2_2m_v4.1",
+      "asset": "mad",
+      "crs": "EPSG:3413",
+      "size_px": [
+        25100,
+        25100
+      ],
+      "nodata": -9999.0,
+      "block_shapes": [
+        [
+          512,
+          512
+        ]
+      ],
+      "overviews": [
+        2,
+        4,
+        8,
+        16,
+        32,
+        64
+      ],
+      "asset_size_bytes": 989859686,
+      "range_probe_bytes": 16384,
+      "window": [
+        14529,
+        16297,
+        500,
+        500
+      ],
+      "window_valid_cells": 250000,
+      "window_min": 0.015625,
+      "window_max": 0.8359375
+    },
+    {
+      "label": "Haughton",
+      "item": "29_29_2_2_2m_v4.1",
+      "asset": "count",
+      "crs": "EPSG:3413",
+      "size_px": [
+        25100,
+        25100
+      ],
+      "nodata": 0.0,
+      "block_shapes": [
+        [
+          512,
+          512
+        ]
+      ],
+      "overviews": [
+        2,
+        4,
+        8,
+        16,
+        32,
+        64
+      ],
+      "asset_size_bytes": 12414028,
+      "range_probe_bytes": 16384,
+      "window": [
+        14529,
+        16297,
+        500,
+        500
+      ],
+      "window_valid_cells": 250000,
+      "window_min": 13.0,
+      "window_max": 15.0
+    },
+    {
+      "label": "Haughton",
+      "item": "29_29_2_2_2m_v4.1",
+      "asset": "mindate",
+      "crs": "EPSG:3413",
+      "size_px": [
+        25100,
+        25100
+      ],
+      "nodata": 0.0,
+      "block_shapes": [
+        [
+          512,
+          512
+        ]
+      ],
+      "overviews": [
+        2,
+        4,
+        8,
+        16,
+        32,
+        64
+      ],
+      "asset_size_bytes": 8939759,
+      "range_probe_bytes": 16384,
+      "window": [
+        14529,
+        16297,
+        500,
+        500
+      ],
+      "window_valid_cells": 250000,
+      "window_min": 3523.0,
+      "window_max": 3523.0
+    },
+    {
+      "label": "Haughton",
+      "item": "29_29_2_2_2m_v4.1",
+      "asset": "maxdate",
+      "crs": "EPSG:3413",
+      "size_px": [
+        25100,
+        25100
+      ],
+      "nodata": 0.0,
+      "block_shapes": [
+        [
+          512,
+          512
+        ]
+      ],
+      "overviews": [
+        2,
+        4,
+        8,
+        16,
+        32,
+        64
+      ],
+      "asset_size_bytes": 9056485,
+      "range_probe_bytes": 16384,
+      "window": [
+        14529,
+        16297,
+        500,
+        500
+      ],
+      "window_valid_cells": 250000,
+      "window_min": 7550.0,
+      "window_max": 7781.0
+    },
+    {
+      "label": "Haughton",
+      "item": "29_29_2_2_2m_v4.1",
+      "asset": "datamask",
+      "crs": "EPSG:3413",
+      "size_px": [
+        25100,
+        25100
+      ],
+      "nodata": 0.0,
+      "block_shapes": [
+        [
+          512,
+          512
+        ]
+      ],
+      "overviews": [
+        2,
+        4,
+        8,
+        16,
+        32,
+        64
+      ],
+      "asset_size_bytes": 3680678,
+      "range_probe_bytes": 16384,
+      "window": [
+        14529,
+        16297,
+        500,
+        500
+      ],
+      "window_valid_cells": 250000,
+      "window_min": 1.0,
+      "window_max": 1.0
+    },
+    {
+      "label": "18_35_1_1_2m_v2.0",
+      "item": "18_35_1_1_2m_v2.0",
+      "asset": "dem",
+      "crs": "EPSG:3031",
+      "size_px": [
+        25100,
+        25100
+      ],
+      "nodata": -9999.0,
+      "block_shapes": [
+        [
+          512,
+          512
+        ]
+      ],
+      "overviews": [
+        2,
+        4,
+        8,
+        16,
+        32,
+        64
+      ],
+      "asset_size_bytes": 1137564703,
+      "range_probe_bytes": 16384,
+      "window": [
+        12048,
+        21626,
+        500,
+        500
+      ],
+      "window_valid_cells": 250000,
+      "window_min": 84.953125,
+      "window_max": 268.75
+    },
+    {
+      "label": "18_35_1_1_2m_v2.0",
+      "item": "18_35_1_1_2m_v2.0",
+      "asset": "mad",
+      "crs": "EPSG:3031",
+      "size_px": [
+        25100,
+        25100
+      ],
+      "nodata": -9999.0,
+      "block_shapes": [
+        [
+          512,
+          512
+        ]
+      ],
+      "overviews": [
+        2,
+        4,
+        8,
+        16,
+        32,
+        64
+      ],
+      "asset_size_bytes": 1018598266,
+      "range_probe_bytes": 16384,
+      "window": [
+        12048,
+        21626,
+        500,
+        500
+      ],
+      "window_valid_cells": 250000,
+      "window_min": 0.078125,
+      "window_max": 0.6640625
+    },
+    {
+      "label": "18_35_1_1_2m_v2.0",
+      "item": "18_35_1_1_2m_v2.0",
+      "asset": "count",
+      "crs": "EPSG:3031",
+      "size_px": [
+        25100,
+        25100
+      ],
+      "nodata": 0.0,
+      "block_shapes": [
+        [
+          512,
+          512
+        ]
+      ],
+      "overviews": [
+        2,
+        4,
+        8,
+        16,
+        32,
+        64
+      ],
+      "asset_size_bytes": 30770894,
+      "range_probe_bytes": 16384,
+      "window": [
+        12048,
+        21626,
+        500,
+        500
+      ],
+      "window_valid_cells": 250000,
+      "window_min": 46.0,
+      "window_max": 64.0
+    },
+    {
+      "label": "18_35_1_1_2m_v2.0",
+      "item": "18_35_1_1_2m_v2.0",
+      "asset": "mindate",
+      "crs": "EPSG:3031",
+      "size_px": [
+        25100,
+        25100
+      ],
+      "nodata": 0.0,
+      "block_shapes": [
+        [
+          512,
+          512
+        ]
+      ],
+      "overviews": [
+        2,
+        4,
+        8,
+        16,
+        32,
+        64
+      ],
+      "asset_size_bytes": 12231675,
+      "range_probe_bytes": 16384,
+      "window": [
+        12048,
+        21626,
+        500,
+        500
+      ],
+      "window_valid_cells": 250000,
+      "window_min": 3592.0,
+      "window_max": 3620.0
+    },
+    {
+      "label": "18_35_1_1_2m_v2.0",
+      "item": "18_35_1_1_2m_v2.0",
+      "asset": "maxdate",
+      "crs": "EPSG:3031",
+      "size_px": [
+        25100,
+        25100
+      ],
+      "nodata": 0.0,
+      "block_shapes": [
+        [
+          512,
+          512
+        ]
+      ],
+      "overviews": [
+        2,
+        4,
+        8,
+        16,
+        32,
+        64
+      ],
+      "asset_size_bytes": 10998272,
+      "range_probe_bytes": 16384,
+      "window": [
+        12048,
+        21626,
+        500,
+        500
+      ],
+      "window_valid_cells": 250000,
+      "window_min": 6647.0,
+      "window_max": 6647.0
+    },
+    {
+      "label": "17_35_2_1_2m_v2.0",
+      "item": "17_35_2_1_2m_v2.0",
+      "asset": "dem",
+      "crs": "EPSG:3031",
+      "size_px": [
+        25100,
+        25100
+      ],
+      "nodata": -9999.0,
+      "block_shapes": [
+        [
+          512,
+          512
+        ]
+      ],
+      "overviews": [
+        2,
+        4,
+        8,
+        16,
+        32,
+        64
+      ],
+      "asset_size_bytes": 1027207459,
+      "range_probe_bytes": 16384,
+      "window": [
+        12430,
+        4209,
+        500,
+        500
+      ],
+      "window_valid_cells": 250000,
+      "window_min": 296.1796875,
+      "window_max": 368.8671875
+    },
+    {
+      "label": "17_35_2_1_2m_v2.0",
+      "item": "17_35_2_1_2m_v2.0",
+      "asset": "mad",
+      "crs": "EPSG:3031",
+      "size_px": [
+        25100,
+        25100
+      ],
+      "nodata": -9999.0,
+      "block_shapes": [
+        [
+          512,
+          512
+        ]
+      ],
+      "overviews": [
+        2,
+        4,
+        8,
+        16,
+        32,
+        64
+      ],
+      "asset_size_bytes": 959051493,
+      "range_probe_bytes": 16384,
+      "window": [
+        12430,
+        4209,
+        500,
+        500
+      ],
+      "window_valid_cells": 250000,
+      "window_min": 0.078125,
+      "window_max": 1.9609375
+    },
+    {
+      "label": "17_35_2_1_2m_v2.0",
+      "item": "17_35_2_1_2m_v2.0",
+      "asset": "count",
+      "crs": "EPSG:3031",
+      "size_px": [
+        25100,
+        25100
+      ],
+      "nodata": 0.0,
+      "block_shapes": [
+        [
+          512,
+          512
+        ]
+      ],
+      "overviews": [
+        2,
+        4,
+        8,
+        16,
+        32,
+        64
+      ],
+      "asset_size_bytes": 22909154,
+      "range_probe_bytes": 16384,
+      "window": [
+        12430,
+        4209,
+        500,
+        500
+      ],
+      "window_valid_cells": 250000,
+      "window_min": 49.0,
+      "window_max": 57.0
+    },
+    {
+      "label": "17_35_2_1_2m_v2.0",
+      "item": "17_35_2_1_2m_v2.0",
+      "asset": "mindate",
+      "crs": "EPSG:3031",
+      "size_px": [
+        25100,
+        25100
+      ],
+      "nodata": 0.0,
+      "block_shapes": [
+        [
+          512,
+          512
+        ]
+      ],
+      "overviews": [
+        2,
+        4,
+        8,
+        16,
+        32,
+        64
+      ],
+      "asset_size_bytes": 12224278,
+      "range_probe_bytes": 16384,
+      "window": [
+        12430,
+        4209,
+        500,
+        500
+      ],
+      "window_valid_cells": 250000,
+      "window_min": 3225.0,
+      "window_max": 3626.0
+    },
+    {
+      "label": "17_35_2_1_2m_v2.0",
+      "item": "17_35_2_1_2m_v2.0",
+      "asset": "maxdate",
+      "crs": "EPSG:3031",
+      "size_px": [
+        25100,
+        25100
+      ],
+      "nodata": 0.0,
+      "block_shapes": [
+        [
+          512,
+          512
+        ]
+      ],
+      "overviews": [
+        2,
+        4,
+        8,
+        16,
+        32,
+        64
+      ],
+      "asset_size_bytes": 11068523,
+      "range_probe_bytes": 16384,
+      "window": [
+        12430,
+        4209,
+        500,
+        500
+      ],
+      "window_valid_cells": 250000,
+      "window_min": 6839.0,
+      "window_max": 6839.0
+    },
+    {
+      "label": "Askja",
+      "product_file": "IslandsDEMv1.0_10x10m_isn2016_zmasl.tif",
+      "crs": "EPSG:8088",
+      "size_px": [
+        52000,
+        37000
+      ],
+      "nodata": -3.4028234663852886e+38,
+      "block_shapes": [
+        [
+          512,
+          512
+        ]
+      ],
+      "overviews": [],
+      "asset_size_bytes": 2712559351,
+      "range_probe_bytes": 16384,
+      "window": [
+        36192,
+        17199,
+        500,
+        500
+      ],
+      "window_valid_cells": 250000,
+      "window_min": 1058.0621337890625,
+      "window_max": 1517.9093017578125
+    },
+    {
+      "label": "Askja lidar date companion",
+      "product_file": "IslandsDEMv1_lidar_dates_yyyymmdd_10x10m_isn2016.tif",
+      "asset_size_bytes": 85881084,
+      "http_range": "verified; 16384-byte range probe and remote window succeeded",
+      "crs_epsg": null,
+      "crs_wkt_name": "Islands_Net_1993 (file name says isn2016; CRS-name discrepancy needs provider clarification)",
+      "dimensions_px": [
+        52001,
+        37001
+      ],
+      "pixel_size_m": [
+        10,
+        10
+      ],
+      "nodata": -9999,
+      "block_shapes": [
+        [
+          256,
+          256
+        ]
+      ],
+      "overviews": [],
+      "window_valid_cells": 0,
+      "window_size_px": [
+        500,
+        500
+      ],
+      "interpretation": "No valid lidar-date values in the Askja sample. This does not provide an Askja acquisition date; companion metadata CRS/name differs from its filename and from the EPSG:8088 DEM."
+    }
+  ]
+}
