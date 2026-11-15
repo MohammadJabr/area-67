@@ -87,6 +87,28 @@ Feature 0 therefore produced two polygon components with a combined area of **5,
 The small 225 m² and 37.5 m² components from source feature 1 deserve special scrutiny. The 37.5 m² component has only two pixel centres, so its apparently high 50% positive LDEC percentage is based on just two cells and should not be compared directly with the larger components as if the support were equally stable.
 
 
+### Reproduced CLI topology inventory (2026-11-15)
+
+The read-only `preview_invalid_roi_repairs.py` run reproduced the component measurements above and recorded the exact source validity reasons and Shapely output types:
+
+| Source feature | Source validity reason | `make_valid` output | Polygon components | Non-polygon components excluded |
+|---:|---|---|---:|---|
+| 0 | Ring Self-intersection at (-2807.5, -6662.5) m | MultiPolygon | 2 | None |
+| 1 | Ring Self-intersection at (-2742.5, -6387.5) m | GeometryCollection | 3 | 3 LineStrings |
+
+For feature 0, the polygonal candidate has a reported area of 5,450 m² and bounds X=[-2842.5, -2782.5] m, Y=[-6802.5, -6522.5] m. For feature 1, the polygonal components have a combined reported area of 2,750 m² and bounds X=[-2792.5, -2712.5] m, Y=[-6432.5, -6262.5] m. The three LineString remnants in feature 1 are listed in the JSON report but are not included in polygon raster statistics. These area and bounds values describe the in-memory candidate only; their agreement with the source-reported area does not establish that the candidate recovers the provider's intended topology.
+
+The candidate polygon components were also unioned for one combined raster preview per source feature. Under the pixel-centre inclusion rule (all_touched=false), the run reported:
+
+| Source feature | Union pixel centres | Positive LDEC support | Zero-count/interpolated LDEC | Median Z RMS (m) | Median slope (°) | Median slope RMS (°) |
+|---:|---:|---:|---:|---:|---:|---:|
+| 0 | 221 | 9.95% | 90.05% | 0.4254 | 2.9768 | 1.6875 |
+| 1 | 114 | 14.04% | 85.96% | 0.2596 | 2.5698 | 1.4870 |
+
+All five raster layers had valid coverage for the pixel centres counted in these candidates. That does not mean the elevation cells are all direct LOLA observations: zero-count LDEC cells represent interpolated LDEM support, not NoData. The union summaries are still repair-preview-only and must not be treated as official ROI QA or evidence that either feature is an approved AREA 67 AOI. Retain the component-level table above because union statistics can conceal the very small fragments and differences between components.
+
+
+
 ## Pixel-registration diagnostic
 
 The ROI polygons can be checked against the native raster's affine pixel lattice without changing either source. The diagnostic reports whether every polygon-ring vertex lies on the pixel-centre lattice, the pixel-corner lattice, or neither. It measures residuals in map units and also records the raster's `AREA_OR_POINT` tag.
