@@ -95,8 +95,16 @@ def _numeric_errors(
         if column not in frame.columns:
             continue
         original = frame[column]
-        numeric = pd.to_numeric(original, errors="coerce")
-        invalid = original.notna() & numeric.isna()
+        boolean_values = original.map(
+            lambda value: isinstance(value, (bool, np.bool_))
+        ).fillna(False)
+        if boolean_values.any():
+            errors.append(
+                f"{column} contains {int(boolean_values.sum())} boolean value(s); "
+                "expected numeric measurements"
+            )
+        numeric = pd.to_numeric(original.mask(boolean_values), errors="coerce")
+        invalid = original.notna() & ~boolean_values & numeric.isna()
         if invalid.any():
             errors.append(f"{column} contains {int(invalid.sum())} non-numeric value(s)")
         if not numeric.dropna().map(np.isfinite).all():
