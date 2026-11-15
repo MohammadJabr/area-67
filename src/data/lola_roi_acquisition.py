@@ -177,9 +177,8 @@ def download_requested_sites(
     return failures
 
 
-def _safe_member_parts(member: tarfile.TarInfo) -> tuple[str, ...]:
-    """Reject path traversal, links, and special files before extraction."""
-    name = member.name
+def _safe_archive_path(name: str) -> tuple[str, ...]:
+    """Validate an archive member path without touching the filesystem."""
     if not name or "\\" in name:
         raise ValueError(f"Unsafe archive member path: {name!r}")
     path = PurePosixPath(name)
@@ -188,10 +187,50 @@ def _safe_member_parts(member: tarfile.TarInfo) -> tuple[str, ...]:
     parts = tuple(part for part in path.parts if part not in ("", "."))
     if not parts or any(part == ".." for part in parts):
         raise ValueError(f"Path traversal is not allowed: {name!r}")
+    return parts
+
+
+def _safe_symlink_target_parts(member: tarfile.TarInfo) -> tuple[str, ...]:
+    """Resolve a relative symlink target lexically; never access its target."""
+    linkname = member.linkname
+    if (
+        not linkname
+        or "\\" in linkname
+        or PurePosixPath(linkname).is_absolute()
+        or re.match(r"^[A-Za-z]:", linkname)
+    ):
+        raise ValueError(
+            f"Unsafe symbolic-link target for {member.name!r}: {linkname!r}"
+        )
+
+    resolved_parts = list(_safe_archive_path(member.name)[:-1])
+    for part in PurePosixPath(linkname).parts:
+        if part in ("", "."):
+            continue
+        if part == "..":
+            if not resolved_parts:
+                raise ValueError(
+                    f"Symbolic-link target escapes extraction root: "
+                    f"{member.name!r} -> {linkname!r}"
+                )
+            resolved_parts.pop()
+        else:
+            resolved_parts.append(part)
+
+    if not resolved_parts:
+        raise ValueError(
+            f"Invalid symbolic-link target for {member.name!r}: {linkname!r}"
+        )
+    return tuple(resolved_parts)
+
+
+def _safe_member_parts(member: tarfile.TarInfo) -> tuple[str, ...]:
+    """Reject hard links and special files; symbolic links use a skip policy."""
+    parts = _safe_archive_path(member.name)
     if member.issym() or member.islnk() or member.isdev() or member.isfifo():
-        raise ValueError(f"Links and special files are not allowed: {name!r}")
+        raise ValueError(f"Links and special files are not allowed: {member.name!r}")
     if not (member.isdir() or member.isfile()):
-        raise ValueError(f"Unsupported archive member type: {name!r}")
+        raise ValueError(f"Unsupported archive member type: {member.name!r}")
     return parts
 
 
@@ -229,7 +268,40 @@ def extract_roi_archive(
                     f"Archive has {len(members)} members; limit is {MAX_MEMBERS}"
                 )
             validated: list[tuple[tarfile.TarInfo, tuple[str, ...]]] = []
+            skipped_symbolic_links: list[dict[str, Any]] = []
+            seen_paths: set[str] = set()
+            archive_member_paths = {
+                "/".join(_safe_archive_path(member.name)).casefold()
+                for member in members
+            }
+
             for member in members:
+                parts = _safe_archive_path(member.name)
+                normalized_path = "/".join(parts).casefold()
+                if normalized_path in seen_paths:
+                    raise ValueError(
+                        f"Duplicate archive member path (case-insensitive): {member.name!r}"
+                    )
+                seen_paths.add(normalized_path)
+                if normalized_path == "archive_extraction_manifest.json":
+                    raise ValueError(
+                        "Archive member uses the reserved extraction-manifest path"
+                    )
+
+                if member.issym():
+                    target_parts = _safe_symlink_target_parts(member)
+                    target_path = "/".join(target_parts)
+                    skipped_symbolic_links.append(
+                        {
+                            "member_name": member.name,
+                            "link_target": member.linkname,
+                            "target_member_listed": target_path.casefold()
+                            in archive_member_paths,
+                            "action": "skipped_not_created_or_followed",
+                        }
+                    )
+                    continue
+
                 parts = _safe_member_parts(member)
                 if member.isfile():
                     total_size += member.size
@@ -255,6 +327,23 @@ def extract_roi_archive(
                     shutil.copyfileobj(source, output)
                 written.append(destination.joinpath(*parts))
 
+        manifest = {
+            "schema_version": 1,
+            "source_archive": archive_path.name,
+            "extracted_regular_files": [
+                member.name for member, _parts in validated if member.isfile()
+            ],
+            "skipped_symbolic_links": skipped_symbolic_links,
+            "policy": (
+                "Symbolic links are recorded but never created or followed. "
+                "Hard links and special files are rejected."
+            ),
+        }
+        (staging / "archive_extraction_manifest.json").write_text(
+            json.dumps(manifest, indent=2),
+            encoding="utf-8",
+        )
+
         staging.replace(destination)
         return written
     except Exception:
@@ -278,6 +367,7 @@ def inspect_extracted_rois(site_id: str, extracted_dir: str | Path) -> dict[str,
         "extracted_directory": str(extracted_dir),
         "shapefile_count": len(shp_files),
         "shapefiles": [],
+        "skipped_symbolic_links": [],
         "warnings": [],
         "limitations": [
             "The provider's ROI polygons are source-defined regions of interest, not automatic AREA 67 study-area approvals.",
@@ -285,6 +375,34 @@ def inspect_extracted_rois(site_id: str, extracted_dir: str | Path) -> dict[str,
             "Area values are only reported in native CRS units squared when a projected CRS exists.",
         ],
     }
+
+    manifest_path = extracted_dir / "archive_extraction_manifest.json"
+    if manifest_path.is_file():
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            skipped_links = manifest.get("skipped_symbolic_links", [])
+            if not isinstance(skipped_links, list):
+                raise ValueError("skipped_symbolic_links must be a list")
+            result["skipped_symbolic_links"] = skipped_links
+            for link in skipped_links:
+                if not isinstance(link, dict):
+                    continue
+                member_name = link.get("member_name", "<unknown>")
+                link_target = link.get("link_target", "<unknown>")
+                target_note = (
+                    "target entry is listed in the archive"
+                    if link.get("target_member_listed")
+                    else "target entry is not included in the archive"
+                )
+                result["warnings"].append(
+                    f"Skipped symbolic link {member_name!r} -> {link_target!r}; "
+                    f"{target_note}; the link was not created or followed."
+                )
+        except (OSError, json.JSONDecodeError, ValueError, TypeError) as exc:
+            result["warnings"].append(
+                f"Could not read extraction manifest: {type(exc).__name__}: {exc}"
+            )
+
     if not shp_files:
         result["warnings"].append("No .shp files were found in the extracted archive.")
         return result
