@@ -20,13 +20,13 @@ The current feature set reuses the existing canonical five groups: Slope, Riley 
 
 These values are read from `data/processed/candidate_rankings.csv`; this documentation change does not regenerate or overwrite them.
 
-| Rank | Earth reference window | Relative similarity index | Weighted distance | Rank across 11 weight scenarios |
-|---:|---|---:|---:|---|
-| 1 | Haughton | 73.7870 | 0.3552523 | Top-1 in 11/11 |
-| 2 | Yungay | 66.1325 | 0.5121164 | Top-1 in 0/11; Top-2 in 11/11 |
-| 3 | Mauna Kea | 27.3897 | 2.6510027 | Top-1 in 0/11; Top-2 in 0/11 |
+| Rank | Earth reference window | Relative similarity index | Weighted distance | Weight Top-1 / Top-2 scenarios | Tolerance Top-1 scenarios |
+|---:|---|---:|---:|---|---|
+| 1 | Haughton | 73.7870 | 0.3552523 | Top-1 11/11; Top-2 11/11 | 11/11 |
+| 2 | Yungay | 66.1325 | 0.5121164 | Top-1 0/11; Top-2 11/11 | 0/11 |
+| 3 | Mauna Kea | 27.3897 | 2.6510027 | Top-1 0/11; Top-2 0/11 | 0/11 |
 
-The Slope-only baseline ranks the same three windows in the same order (scores 64.9452, 56.7559, and 22.0970). This small pilot does not show that using the additional groups improves predictive validity. Feature contributions are available in the ranking CSV and appear in the Results & Comparison view. Scores and sensitivity counts are relative method outputs, not probabilities, physical-equivalence percentages, mission-success estimates, safety assessments, or suitability certification.
+The tolerance Top-1 counts above are computed from the 11 per-scenario rank records in the robustness sidecar. They indicate that the order is stable under the tested numerical perturbations, not that the candidates or tolerances are scientifically validated. The Slope-only baseline ranks the same three windows in the same order (scores 64.9452, 56.7559, and 22.0970). This small pilot does not show that using the additional groups improves predictive validity. Feature contributions are available in the ranking CSV and appear in the Results & Comparison view. Scores and sensitivity counts are relative method outputs, not probabilities, physical-equivalence percentages, mission-success estimates, safety assessments, or suitability certification.
 
 ## Data and limitations
 
