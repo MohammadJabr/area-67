@@ -121,7 +121,7 @@ No thermal, geology, volatile, biology or resource variable enters the terrain m
 | Ghassan Al-Shoubi | Earth/Moon/Mars data acquisition and GIS | A306/Site01 + LOLA support/uncertainty package; Product 90 EFFRES bounded sample; final lunar AOI; 3–4 Earth polygons, footprints, manifests and preparation QA. |
 | Hiba Sbouh | Terrain fingerprints and scientific validation | Real five-group fingerprints; synthetic and NoData tests; two-scale/window sensitivity; feature-correlation audit; uncertainty/clone sensitivity report. |
 | Omar Salous | Matching and mission planning | Real candidate rankings, rejection reasons, distance contributions, Slope-only baseline, weight/tolerance sensitivity; keep route planner optional. |
-| Sara Marmash | Cross-dimension research/storytelling support (provisional) | Source-backed analogue strengths/mismatches, experiment rationale, citations and demo narrative. Confirm this allocation with the team if her availability or assigned role differs. |
+| Team (unassigned) | Cross-dimension research/storytelling support | Source-backed analogue strengths/mismatches, experiment rationale, citations and demo narrative. Assign an owner before expanding beyond the terrain MVP. |
 
 Every handoff must contain exact source/product/version, file paths, AOI ID and geometry, CRS/units/vertical reference, commands, output files, QA, checksums, caveats, and tests. A screenshot alone is not a handoff.
 
