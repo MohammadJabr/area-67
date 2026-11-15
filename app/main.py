@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 import pandas as pd
 import plotly.express as px
+import pydeck as pdk
 import streamlit as st
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -332,7 +333,10 @@ def main() -> None:
             unsafe_allow_html=True,
         )
         st.markdown('<div class="a67-sidebar-caption">Evidence workspace</div>', unsafe_allow_html=True)
-        st.markdown("- Analog Radar\n- Terrain Lab\n- Analog Passport")
+        st.markdown(
+            '<div class="a67-sidebar-nav-hint">Navigate with the workspace tabs: Mission Control · Analog Radar · Terrain Lab · Analog Passport.</div>',
+            unsafe_allow_html=True,
+        )
         st.caption("Earth-to-Space discovery, Rover Gauntlet and ShadowTwin remain outside this MVP.")
 
     target_rows = fingerprints[fingerprints["site_id"] == target_id]
@@ -349,7 +353,7 @@ def main() -> None:
     )
     render_hero(status_label, len(fingerprints), rankings["candidate_site_id"].nunique())
 
-    tab_setup, tab_results, tab_passport = st.tabs(["01 · Mission Control", "02 · Analog Radar", "03 · Analog Passport"])
+    tab_setup, tab_results, tab_terrain, tab_passport = st.tabs(["01 · Mission Control", "02 · Analog Radar", "03 · Terrain Lab", "04 · Analog Passport"])
 
     with tab_setup:
         st.markdown(
@@ -401,6 +405,7 @@ def main() -> None:
         selected_rankings["rank"] = pd.to_numeric(selected_rankings["rank"], errors="coerce")
         selected_rankings["similarity_score"] = pd.to_numeric(selected_rankings["similarity_score"], errors="coerce")
         selected_rankings = selected_rankings.sort_values("rank")
+        total_candidate_count = selected_rankings["candidate_site_id"].nunique()
         all_candidate_ids = selected_rankings["candidate_site_id"].tolist()
         candidate_name_map = fingerprints.set_index("site_id")["site_name"].to_dict()
         st.markdown("#### Refine the radar view")
@@ -417,10 +422,12 @@ def main() -> None:
         ].copy()
         candidate_count = selected_rankings["candidate_site_id"].nunique()
         metric_a, metric_b = st.columns(2)
-        metric_a.metric("Earth candidates ranked", candidate_count)
+        metric_a.metric("Candidates shown", f"{candidate_count} / {total_candidate_count}")
         metric_b.metric("Mission profile", mission_profile)
-        if candidate_count < 3:
-            st.warning(f"Only {candidate_count} candidate(s) are present for this target/profile. The prototype target is at least three.")
+        if total_candidate_count < 3:
+            st.warning(f"The supplied matcher output contains {total_candidate_count} candidate(s) for this target/profile; the current prototype goal is at least three.")
+        elif candidate_count < total_candidate_count:
+            st.caption(f"Filtered view: showing {candidate_count} of {total_candidate_count} available Earth candidates. Clear the candidate filter to restore the full comparison.")
 
         merged = selected_rankings.merge(
             fingerprints,
@@ -478,21 +485,41 @@ def main() -> None:
             st.info("Select at least one candidate to populate the radar, map, and terrain comparison.")
 
         if selected_rankings["similarity_score"].notna().any():
+            chart_data = selected_rankings.merge(
+                fingerprints[["site_id", "site_name"]],
+                left_on="candidate_site_id", right_on="site_id", how="left",
+            )
+            chart_data["rank_label"] = chart_data["rank"].apply(
+                lambda value: f"Rank {int(value)}" if pd.notna(value) else "Unranked"
+            )
             ranking_figure = px.bar(
-                selected_rankings.sort_values("rank", ascending=True),
+                chart_data.sort_values("rank", ascending=True),
                 x="similarity_score",
-                y="candidate_site_id",
-                color="rank",
+                y="site_name",
+                color="rank_label",
                 orientation="h",
-                title="Relative match index · reported by the matcher",
+                title="Candidate comparison · relative match index",
                 template="plotly_dark",
-                hover_data={"weighted_distance":":.4f","rank":True},
+                color_discrete_map={
+                    "Rank 1": "#c7f36b", "Rank 2": "#67d7e9",
+                    "Rank 3": "#9c8cff", "Unranked": "#ffad66",
+                },
+                hover_data={
+                    "candidate_site_id": True, "rank": True,
+                    "weighted_distance": ":.4f", "site_name": False,
+                    "rank_label": False,
+                },
+            )
+            ranking_figure.update_traces(
+                texttemplate="%{x:.2f}", textposition="outside",
+                cliponaxis=False, marker_line_width=0,
             )
             ranking_figure.update_layout(
                 paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(8,18,31,.35)",
-                font_color="#dce9f8", margin=dict(l=16, r=22, t=56, b=22),
-                xaxis_title="Relative match index", yaxis_title="Earth reference window",
-                legend_title_text="Rank", height=330, bargap=0.42,
+                font_color="#dce9f8", margin=dict(l=16, r=70, t=56, b=22),
+                xaxis_title="Relative match index", yaxis_title="Earth candidate",
+                legend_title_text="Candidate rank", height=max(300, 105 * len(chart_data)),
+                bargap=0.42, showlegend=True,
             )
             ranking_figure.update_yaxes(autorange="reversed")
             st.plotly_chart(
@@ -502,14 +529,11 @@ def main() -> None:
 
         candidate_ids = selected_rankings["candidate_site_id"].tolist()
         comparison_ids = [sid for sid in [target_id, *candidate_ids] if sid in known_ids]
-        st.markdown("#### Five-feature Terrain Fingerprint")
-        show_feature_groups(fingerprints, comparison_ids)
-        st.markdown("#### Single-Parameter Explorer")
-        show_single_parameter_explorer(fingerprints, comparison_ids)
-
+        st.markdown("#### Geographic discovery map")
+        st.caption("Explore the selected Earth reference anchors. Drag to pan, scroll to zoom, and hover over a marker for its evidence summary.")
         if {"latitude", "longitude"}.issubset(fingerprints.columns):
-            # Planetary latitude/longitude must not be plotted on an Earth basemap.
-            # This view intentionally displays Earth candidate locations only.
+            # Only Earth candidate anchors belong on this basemap; lunar coordinates
+            # are intentionally kept out of the Earth geographic view.
             mapped = fingerprints[
                 fingerprints["site_id"].isin(candidate_ids)
                 & fingerprints["planet"].astype(str).str.casefold().eq("earth")
@@ -518,45 +542,148 @@ def main() -> None:
             mapped["longitude"] = pd.to_numeric(mapped["longitude"], errors="coerce")
             mapped = mapped.dropna(subset=["latitude", "longitude"])
             if not mapped.empty:
-                st.plotly_chart(
-                    px.scatter_geo(
-                        mapped, lat="latitude", lon="longitude", color="planet",
-                        hover_name="site_name", hover_data=["site_id"],
-                        title="Earth candidate reference locations",
-                        template="plotly_dark",
-                    ).update_layout(
-                        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(8,18,31,.35)",
-                        font_color="#dce9f8", margin=dict(l=10, r=10, t=56, b=10),
-                        geo=dict(
-                            bgcolor="rgba(0,0,0,0)", showocean=True, oceancolor="#081525",
-                            showland=True, landcolor="#1a2a3d", coastlinecolor="#38516a",
-                        ),
-                    ),
-                    width="stretch",
+                map_rank_cols = ["candidate_site_id", "rank", "similarity_score"]
+                if "weighted_distance" in selected_rankings.columns:
+                    map_rank_cols.append("weighted_distance")
+                map_ranks = selected_rankings[map_rank_cols].drop_duplicates("candidate_site_id")
+                mapped = mapped.merge(
+                    map_ranks, left_on="site_id", right_on="candidate_site_id", how="left",
                 )
-                st.caption("Map markers are reference-window anchors only; they are not approved AOI polygons.")
+                mapped["rank"] = pd.to_numeric(mapped["rank"], errors="coerce")
+                mapped["similarity_score"] = pd.to_numeric(mapped["similarity_score"], errors="coerce")
+                rank_colors = {
+                    1: [199, 243, 107, 230], 2: [103, 215, 233, 230],
+                    3: [156, 140, 255, 230],
+                }
+                mapped["marker_color"] = mapped["rank"].apply(
+                    lambda value: rank_colors.get(int(value), [255, 173, 102, 225])
+                    if pd.notna(value) else [255, 173, 102, 225]
+                )
+                mapped["rank_label"] = mapped["rank"].apply(
+                    lambda value: f"#{int(value)}" if pd.notna(value) else "Not ranked"
+                )
+                mapped["score_label"] = mapped["similarity_score"].apply(
+                    lambda value: f"{value:.2f}" if pd.notna(value) else "Not supplied"
+                )
+                if "weighted_distance" in mapped.columns:
+                    mapped["distance_label"] = pd.to_numeric(mapped["weighted_distance"], errors="coerce").apply(
+                        lambda value: f"{value:.4f}" if pd.notna(value) else "Not supplied"
+                    )
+                else:
+                    mapped["distance_label"] = "Not supplied"
+                lat_span = float(mapped["latitude"].max() - mapped["latitude"].min())
+                lon_span = float(mapped["longitude"].max() - mapped["longitude"].min())
+                map_zoom = 1.25 if len(mapped) > 1 else 4.0
+                if len(mapped) > 1 and max(lat_span, lon_span) < 18:
+                    map_zoom = 3.0
+                view_state = pdk.ViewState(
+                    latitude=float(mapped["latitude"].mean()),
+                    longitude=float(mapped["longitude"].mean()),
+                    zoom=map_zoom, pitch=0, bearing=0,
+                )
+                points_layer = pdk.Layer(
+                    "ScatterplotLayer",
+                    data=mapped,
+                    get_position="[longitude, latitude]",
+                    get_radius=24000,
+                    get_fill_color="marker_color",
+                    get_line_color=[242, 247, 252, 235],
+                    line_width_min_pixels=1,
+                    stroked=True, filled=True,
+                    pickable=True, auto_highlight=True,
+                    radius_min_pixels=7, radius_max_pixels=20,
+                )
+                deck = pdk.Deck(
+                    layers=[points_layer],
+                    initial_view_state=view_state,
+                    map_style="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+                    tooltip={
+                        "html": (
+                            "<b>{site_name}</b><br/>Rank: {rank_label}<br/>"
+                            "Relative match index: {score_label}<br/>"
+                            "Weighted distance: {distance_label}<br/>"
+                            "Reference: {latitude}, {longitude}"
+                        ),
+                        "style": {
+                            "backgroundColor": "rgba(7,16,29,0.96)",
+                            "color": "#ecf4ff",
+                            "border": "1px solid rgba(103,215,233,.35)",
+                        },
+                    },
+                )
+                st.pydeck_chart(deck, width="stretch", height=470, key="area67_candidate_map")
+                st.caption("Map pins are reference-window anchors only, not approved AOI polygons. Lunar target coordinates are deliberately not plotted on this Earth map.")
+                st.markdown(
+                    '<div class="a67-map-legend"><span><i class="rank-one"></i> Rank 1</span><span><i class="rank-two"></i> Rank 2</span><span><i class="rank-three"></i> Rank 3</span></div>',
+                    unsafe_allow_html=True,
+                )
             else:
-                st.info("No valid coordinates are available for this target/profile.")
+                st.info("No valid Earth reference coordinates are available for the selected candidates.")
         else:
-            st.info("Map view is unavailable because latitude/longitude were not supplied. The candidate table remains available.")
-
-        explanation_cols = [col for col in selected_rankings.columns if col.endswith("_contribution") or col.endswith("_difference")]
-        if explanation_cols:
-            with st.expander("Matcher explanation · feature contributions and differences", expanded=False):
-                st.dataframe(selected_rankings[["candidate_site_id", *explanation_cols]], width="stretch", hide_index=True)
-        else:
-            st.info("Per-feature differences/contributions have not been supplied by the matcher. The app does not estimate them.")
-
-        quality_cols = [col for col in (
-            "site_id", "site_name", "source_id", "analysis_scale_m",
-            "valid_coverage_pct", "nodata_pct", "direct_observation_coverage_pct",
-            "aoi_status", "aoi_approval", "source_checksum_sha256",
-        ) if col in fingerprints.columns]
-        if quality_cols:
-            with st.expander("Data quality & provenance audit", expanded=False):
-                st.dataframe(fingerprints[fingerprints["site_id"].isin(comparison_ids)][quality_cols], width="stretch", hide_index=True)
+            st.info("Map view is unavailable because candidate latitude/longitude were not supplied. The candidate table remains available.")
 
         st.caption("Similarity is a relative ranking under supplied features, scaling, and mission weights. It is not a probability of mission success or certification of site suitability.")
+
+    with tab_terrain:
+        st.markdown(
+            '<div class="a67-section"><div class="a67-section-kicker">Analysis workspace</div>'
+            '<div class="a67-section-title">Terrain Lab</div>'
+            '<div class="a67-section-subtitle">Inspect the supplied terrain measurements side by side. The lab visualizes the current matcher inputs; it does not recalculate or fill missing scientific measurements.</div></div>',
+            unsafe_allow_html=True,
+        )
+        terrain_sites = fingerprints[fingerprints["site_id"].isin(comparison_ids)].copy()
+        terrain_site_labels = {
+            row.site_id: f"{row.site_name} · {row.planet}"
+            for row in terrain_sites[["site_id", "site_name", "planet"]].drop_duplicates().itertuples()
+        }
+        if terrain_sites.empty:
+            st.info("No target or candidate fingerprint records are available for this terrain comparison.")
+        else:
+            focus_site = st.selectbox(
+                "Focus site",
+                options=comparison_ids,
+                format_func=lambda site_id: terrain_site_labels.get(site_id, site_id),
+                key="area67_terrain_focus",
+                help="Choose a site to focus its measurements in the Terrain Lab. The comparison tables retain the selected target and candidate set.",
+            )
+            focus_row = terrain_sites[terrain_sites["site_id"] == focus_site]
+            if not focus_row.empty:
+                focus = focus_row.iloc[0]
+                f1, f2, f3 = st.columns(3)
+                f1.metric("Focus site", str(focus.get("site_name", focus_site)))
+                f2.metric("Planetary body", str(focus.get("planet", "Not supplied")))
+                scale_value = value_or_none(focus.get("analysis_scale_m"))
+                f3.metric("Analysis scale", f"{float(scale_value):g} m" if scale_value is not None else "Not supplied")
+            st.markdown("#### Five-group terrain fingerprint")
+            show_feature_groups(fingerprints, comparison_ids)
+            st.markdown("#### Single-parameter explorer")
+            st.caption("Select a measurement to compare its supplied value across the target and currently selected Earth candidates.")
+            show_single_parameter_explorer(fingerprints, comparison_ids)
+
+            explanation_cols = [
+                col for col in selected_rankings.columns
+                if col.endswith("_contribution") or col.endswith("_difference")
+            ]
+            with st.expander("Matcher explanation · supplied feature contributions and differences", expanded=False):
+                if explanation_cols:
+                    explanation = selected_rankings[["candidate_site_id", *explanation_cols]].copy()
+                    explanation = explanation.rename(columns={"candidate_site_id": "Earth candidate"})
+                    st.dataframe(explanation, width="stretch", hide_index=True)
+                else:
+                    st.info("Per-feature differences/contributions have not been supplied by the matcher. AREA 67 does not estimate them.")
+
+            quality_cols = [col for col in (
+                "site_id", "site_name", "source_id", "analysis_scale_m",
+                "valid_coverage_pct", "nodata_pct", "direct_observation_coverage_pct",
+                "aoi_status", "aoi_approval", "source_checksum_sha256",
+            ) if col in fingerprints.columns]
+            with st.expander("Data quality & provenance comparison", expanded=False):
+                if quality_cols:
+                    quality = fingerprints[fingerprints["site_id"].isin(comparison_ids)][quality_cols].copy()
+                    quality = quality.rename(columns={"site_id": "Site ID", "site_name": "Site", "source_id": "Source"})
+                    st.dataframe(quality, width="stretch", hide_index=True)
+                else:
+                    st.info("No quality/provenance fields were supplied for this comparison.")
 
     with tab_passport:
         st.markdown(
@@ -617,9 +744,17 @@ def main() -> None:
             present_metrics = [metric for metric in metrics if metric in fingerprints.columns]
             absent = [metric for metric in present_metrics if metric not in values]
             missing_features.extend(absent)
-            with st.expander(group, expanded=True):
+            with st.expander(group, expanded=(group == "Slope")):
                 if values:
-                    st.json(values)
+                    feature_rows = [
+                        {
+                            "Measurement": metric.replace("_", " ").title(),
+                            "Value": value,
+                            "Unit": value_or_none(site_row.get(f"{metric}_unit")) or "Not supplied",
+                        }
+                        for metric, value in values.items()
+                    ]
+                    st.dataframe(pd.DataFrame(feature_rows), width="stretch", hide_index=True)
                 else:
                     st.write("No measurements supplied for this feature group.")
                 if absent:
@@ -630,7 +765,12 @@ def main() -> None:
             st.success("All five feature groups have at least one supplied value. This does not by itself establish full scientific validation.")
 
         st.markdown("#### Source provenance and quality")
-        st.json(provenance)
+        provenance_rows = [
+            {"Field": key.replace("_", " ").title(), "Value": value}
+            for key, value in provenance.items()
+        ]
+        if provenance_rows:
+            st.dataframe(pd.DataFrame(provenance_rows), width="stretch", hide_index=True)
         extra_quality = {
             key: site_row.get(key)
             for key in (
@@ -642,7 +782,11 @@ def main() -> None:
             if key in site_row.index and pd.notna(site_row.get(key))
         }
         if extra_quality:
-            st.json(extra_quality)
+            quality_rows = [
+                {"Field": key.replace("_", " ").title(), "Value": value}
+                for key, value in extra_quality.items()
+            ]
+            st.dataframe(pd.DataFrame(quality_rows), width="stretch", hide_index=True)
         if comparison:
             st.markdown("#### Target-to-candidate comparison")
             st.write(f"Target: {target_id} · Mission: {mission_profile}")
@@ -658,13 +802,23 @@ def main() -> None:
             st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
             if comparison["reported_differences"]:
                 st.write("Differences reported by the matching module")
-                st.json(comparison["reported_differences"])
+                difference_rows = [
+                    {"Measurement": key.replace("_", " ").title(), "Difference": value}
+                    for key, value in comparison["reported_differences"].items()
+                    if value is not None
+                ]
+                st.dataframe(pd.DataFrame(difference_rows), width="stretch", hide_index=True)
             else:
                 st.caption("The matcher has not supplied per-feature differences. The app shows original values and does not invent differences.")
 
         st.markdown("#### Matching, assumptions, and limitations")
         if passport["ranking"]:
-            st.json(passport["ranking"])
+            ranking_rows = [
+                {"Field": key.replace("_", " ").title(), "Value": value}
+                for key, value in passport["ranking"].items()
+                if value is not None and not (isinstance(value, float) and pd.isna(value))
+            ]
+            st.dataframe(pd.DataFrame(ranking_rows), width="stretch", hide_index=True)
         else:
             st.info("No candidate-ranking row applies to the selected target/site.")
         suggested_test = passport["other_metadata"].get("suggested_test")
