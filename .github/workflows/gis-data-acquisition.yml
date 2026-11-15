@@ -49,7 +49,7 @@ jobs:
 
       - name: Acquire Earth candidate DEM source tiles
         id: earth_acquire
-        if: github.event_name == 'push' || inputs.dataset == 'earth' || inputs.dataset == 'both'
+        if: github.event_name == 'workflow_dispatch' && (inputs.dataset == 'earth' || inputs.dataset == 'both')
         continue-on-error: true
         run: |
           python -m src.data.earth_dem_acquisition \
@@ -58,7 +58,7 @@ jobs:
 
       - name: Acquire lunar LOLA layers for Site01 and Site04
         id: moon_acquire
-        if: github.event_name == 'push' || inputs.dataset == 'moon' || inputs.dataset == 'both'
+        if: github.event_name == 'workflow_dispatch' && (inputs.dataset == 'moon' || inputs.dataset == 'both')
         continue-on-error: true
         run: |
           python -m src.data.lola_south_pole download \
@@ -92,14 +92,23 @@ jobs:
             tests/test_lola_roi_acquisition.py \
             tests/test_lola_roi_quality.py
 
-      - name: Upload acquisition data and audit reports
-        if: always()
+      - name: Upload raw acquisition data
+        if: always() && github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
         with:
-          name: area67-gis-${{ github.event_name == 'push' && 'both' || inputs.dataset }}-${{ github.run_id }}
+          name: area67-gis-raw-${{ inputs.dataset }}-${{ github.run_id }}
           path: |
             data/raw/earth/
             data/raw/moon/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload compact GIS audit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: area67-gis-reports-${{ github.run_id }}
+          path: |
             data/metadata/ci_gis_audit/
             data/metadata/lola_south_pole/
             data/metadata/lola_rois/
