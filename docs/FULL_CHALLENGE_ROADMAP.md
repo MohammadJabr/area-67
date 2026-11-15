@@ -81,7 +81,7 @@ Do not populate selectable profiles with empty or misleading results. A profile 
 - Five-group DEM terrain fingerprint extraction and synthetic/GeoTIFF tests.
 - CSV-driven target-aware matching, candidate ranking, feature contributions, Slope-only baseline and weight sensitivity utilities.
 - Integration contracts, data provenance and judging-readiness gates.
-- Latest full main CI at commit `cb40a09` (2026-11-15, workflow run #257): **175 passed, 112 warnings in 4.89s**. The warnings are not test failures; inspect the run logs if their details matter for a release.
+- Latest full main code-change CI at commit `48aaf33` (2026-11-15, workflow run #260): **178 passed, 112 warnings in 4.69s**. The warnings are not test failures; compilation and the geospatial artifact ignore-policy check also passed.
 
 ### Partially implemented / not scientifically complete
 - The five provider-defined lunar ROI archives and five-layer audit tools are implemented. Local Site01 and Site04 provider ROI archives and all five native raster layers have now been inspected with polygon-level support/uncertainty QA, read-only invalid-geometry previews, and pixel-registration audits. Site01 has seven features (five valid, two invalid); all 607 source vertices align with its raster pixel-centre lattice. Site04 has four features (two valid, two invalid); all 325 source vertices align with its raster pixel-centre lattice. The invalid features remain excluded from official native-geometry ROI statistics. Equivalent site-level review remains for Site06, Site07 and Site11. Provider polygons are not approved AREA 67 study AOIs; see the [Site01 review](reports/lunar_roi/SITE01_COORDINATE_AND_SDEM_REVIEW.md) and [Site04 review](reports/lunar_roi/SITE04_COORDINATE_AND_SDEM_REVIEW.md).
