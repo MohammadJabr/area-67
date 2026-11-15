@@ -124,8 +124,8 @@ def _markdown(report: dict[str, Any]) -> str:
             source_link = f"[product documentation]({source_url})" if source_url else "—"
             lines.append(
                 f"| {Path(item['path']).name} | {doc.get('data_kind') or '—'} | "
-                f"{doc.get('value_unit') or '—'} | {doc.get('coordinate_reference_frame') or '—'} | "
-                f"{vertical} | {source_link} |"
+                f"{doc.get('value_unit') or '—'} | {doc.get('horizontal_crs') or '—'} | "
+                f"{doc.get('coordinate_reference_frame') or '—'} | {vertical} | {source_link} |"
             )
     lines.extend(["", "## Interpretation", "", "- Earth source rasters in EPSG:4326 are inventory inputs, not analysis-ready metric grids.",
                   "- Product-level metadata is shown separately from embedded raster tags; it is not inferred from the horizontal CRS.",
