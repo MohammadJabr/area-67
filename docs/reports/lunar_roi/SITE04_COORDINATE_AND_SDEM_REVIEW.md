@@ -103,6 +103,23 @@ The NASA Lunar Surface Data Book nevertheless labels (-89.7668°, -171.87°) as 
 
 Keep both records in the manifest with their exact source labels and longitude conventions. For work specifically using the locally inspected Site04 ROI cluster, identify the target provisionally as the Mazarico Site 4 / Artemis Site 004 (SP-4) vicinity, pending team/GIS-owner approval of the study AOI.
 
+### Original provider ROI archive and `.prj` evidence
+
+The team-local acquisition record for the official `Site04_ROIs.tgz` archive records:
+
+- Source: `https://pgda.gsfc.nasa.gov/data/LOLA_5mpp/Site04/Site04_ROIs.tgz`
+- Downloaded size: **1,712 bytes**
+- SHA-256: `8e8b788f9fdf6400f23fd36dad02138102bd1a905b4b71a5739a9a4fd8a0e07a`
+- Archive member count: **5**
+
+The preserved acquisition record contains the member count but not the member-name listing. The extracted `Site04_ROIs.prj` WKT recorded in the local CRS inspection declares a spherical ellipsoid with radius **1,737,400 m**, a datum named **`unknown`**, a prime meridian named **`Reference meridian`** at 0°, and a south-polar stereographic projection with latitude of origin -90°, central meridian 0°, false offsets 0 m, and metre units.
+
+The Site04 GeoTIFF WKT has the same nominal sphere and polar-stereographic parameters and also labels its datum `unknown`; it labels the zero-degree prime meridian `Greenwich`. This supports a comparison in the same *nominal projection plane* for the local shapefile and local raster. It does **not** identify the body-fixed frame as ME or PA.
+
+This distinction is explicit in NASA PGDA Product 78: its MOON_ME / DE421 CRS statement applies to the GeoTIFF products, **excluding the ROI shapefiles**. Therefore, the catalog's GeoTIFF frame description cannot be inherited by the shapefile. The archive checksum and member count establish which archive was acquired, but they do not supply a frame definition. No source-authoritative ME/PA assignment for the legacy ROI shapefile has been found in the evidence reviewed here.
+
+**Disposition:** keep the Site04 shapefile frame as unknown. Do not relabel it MOON_ME, MOON_PA, or Moon (2015), and do not apply a frame shift to force alignment. The local shapefile-to-local-Site04-raster ROI statistics remain useful as a nominal same-product coordinate comparison; comparisons against external lunar products remain conditional until the shapefile's frame provenance is confirmed.
+
 ## 3. Exploratory window result remains scoped to the ROI cluster
 
 The previously tested 1.2 km, 1.5 km and 2.0 km windows were centered on the combined provider-ROI bounds at (-2735.0, -6352.5) m.
@@ -218,8 +235,8 @@ This review used header metadata only. No SDEM pixel arrays were read, and no ra
 1. Retain the existing four provider ROI polygons and their feature attributes as source evidence. Do not alter them or write repaired alternatives over the source.
 2. Preserve the published coordinate definitions with their labels and citations. For the local ROI cluster, the Mazarico Site 4 / Artemis Site 004 (SP-4) vicinity is the stronger provisional identity.
 3. Keep the 1.2 km, 1.5 km and 2.0 km windows labelled as exploratory ROI-cluster/SP-4 vicinity sensitivity windows, not approved study AOIs.
-4. Screen A305 Connecting Ridge Extension and A308 Peak Near Shackleton by extracting only their README files with the HTTP range ZIP tool. Compare their declared projected ROI polygons/footprints with the local Site04 ROI and SP-4 coordinates before extracting any raster.
-5. Confirm the legacy Site04 shapefile's geodetic reference frame from the original provider archive/metadata before making a definitive cross-product co-registration statement.
+4. The A305 Connecting Ridge Extension and A308 Peak Near Shackleton README-only screenings are complete. Neither footprint is a plausible Site04/SP-4 raster source in the nominal shared projection plane; do not download their raster companions for this task. A307 is optional only if the team later requests a complete Artemis-region catalogue screen.
+5. Keep the Site04 ROI shapefile frame explicitly unknown. Request an authoritative frame/provenance statement from the PGDA product author or obtain the original shapefile-generation metadata before making a definitive cross-product co-registration claim. If additional archive inspection is performed, preserve the full member-name listing alongside the archive checksum.
 6. Do not launch real terrain fingerprint extraction until the lunar target AOI, Earth candidate AOIs, common physical analysis scale, relief window, local-relief neighborhood support and vertical-reference policy are reviewed.
 
 ## 6. Sources
