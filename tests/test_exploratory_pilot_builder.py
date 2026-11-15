@@ -11,6 +11,7 @@ from src.data.build_exploratory_pilot import (
     read_native_window,
     resample_elevation,
     summarize_count_layer,
+    matching,
 )
 
 
@@ -147,3 +148,43 @@ def test_native_window_uses_pixel_centres_when_bounds_are_half_cell_shifted(tmp_
     )
     assert sample.shape == (6, 6)
     assert np.isfinite(sample).all()
+
+
+def test_pilot_matching_includes_tolerance_sensitivity(
+    target_fingerprint, earth_candidate, matching_tolerances
+):
+    from src.matching.mission_profiles import (
+        ROVER_NAVIGATION_PROFILE,
+        get_mission_weights,
+    )
+
+    candidate = dict(earth_candidate)
+    candidate["site_id"] = "EARTH_A"
+    candidate["source_id"] = "DEM_A"
+    config = {
+        "target": {"site_id": target_fingerprint["site_id"]},
+        "earth_candidates": [{"site_id": "EARTH_A"}],
+        "matching": {
+            "mission_profile": ROVER_NAVIGATION_PROFILE["name"],
+            "weights": get_mission_weights(),
+            "tolerances": matching_tolerances,
+            "min_feature_group_completeness": 1.0,
+            "min_data_completeness": 0.95,
+            "scale_relative_tolerance": 0.01,
+            "distribution_sum_tolerance_pp": 0.5,
+            "weight_sensitivity_relative_change": 0.20,
+        },
+    }
+
+    result, weight_sensitivity, tolerance_sensitivity = matching(
+        {
+            target_fingerprint["site_id"]: target_fingerprint,
+            "EARTH_A": candidate,
+        },
+        config,
+    )
+
+    assert result["ranking"][0]["site_id"] == "EARTH_A"
+    assert weight_sensitivity["weight_sensitivity"]["scenario_count"] == 11
+    assert tolerance_sensitivity["scenario_count"] == 11
+    assert tolerance_sensitivity["factors"] == [0.5, 1.0, 1.5]
