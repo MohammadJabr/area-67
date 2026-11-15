@@ -1,5 +1,6 @@
 """AREA 67 Streamlit MVP: streamlit run app/main.py."""
 from __future__ import annotations
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -22,8 +23,11 @@ from src.data.contracts import (
 from src.reporting.passport import build_passport, passport_to_markdown
 
 st.set_page_config(page_title="AREA 67 | Planetary Analog Discovery", page_icon="🪐", layout="wide")
-FP = ROOT / "data/processed/terrain_fingerprints.csv"
-RANK = ROOT / "data/processed/candidate_rankings.csv"
+MVP_DATA = Path(os.environ.get("AREA67_MVP_DATA_DIR", "data/processed/exploratory_mvp_2026-11-15"))
+if not MVP_DATA.is_absolute():
+    MVP_DATA = ROOT / MVP_DATA
+FP = MVP_DATA / "terrain_fingerprints.csv"
+RANK = MVP_DATA / "candidate_rankings.csv"
 DEMO_FP = ROOT / "data/sample/demo_terrain_fingerprints.csv"
 DEMO_RANK = ROOT / "data/sample/demo_candidate_rankings.csv"
 
@@ -238,6 +242,15 @@ def main() -> None:
         selected_rankings["similarity_score"] = pd.to_numeric(selected_rankings["similarity_score"], errors="coerce")
         selected_rankings = selected_rankings.sort_values("rank")
         candidate_count = selected_rankings["candidate_site_id"].nunique()
+        ranking_bases = (
+            selected_rankings["ranking_basis"].dropna().astype(str).unique().tolist()
+            if "ranking_basis" in selected_rankings.columns else []
+        )
+        if ranking_bases:
+            st.info(
+                "Reduced MVP ranking basis: " + "; ".join(ranking_bases)
+                + ". Other stored fingerprint groups are context and do not contribute to this score."
+            )
         metric_a, metric_b = st.columns(2)
         metric_a.metric("Earth candidates ranked", candidate_count)
         metric_b.metric("Mission profile", mission_profile)
@@ -256,6 +269,7 @@ def main() -> None:
                 "rank", "candidate_site_id", "site_name", "planet",
                 "similarity_score", "relative_similarity",
                 "weighted_distance", "similarity_distance",
+                "slope_group_distance", "ranking_basis",
                 "data_completeness", "ranking_stability_note", "ranking_note",
                 "source_id", "analysis_scale_m", "valid_coverage_pct",
                 "nodata_pct",
@@ -271,7 +285,7 @@ def main() -> None:
 
         candidate_ids = selected_rankings["candidate_site_id"].tolist()
         comparison_ids = [sid for sid in [target_id, *candidate_ids] if sid in known_ids]
-        st.markdown("#### Five-feature Terrain Fingerprint")
+        st.markdown("#### Fingerprint measurements and provenance")
         show_feature_groups(fingerprints, comparison_ids)
         st.markdown("#### Single-Parameter Explorer")
         show_single_parameter_explorer(fingerprints, comparison_ids)
@@ -297,7 +311,10 @@ def main() -> None:
         else:
             st.info("Map view is unavailable because latitude/longitude were not supplied. The candidate table remains available.")
 
-        explanation_cols = [col for col in selected_rankings.columns if col.endswith("_contribution") or col.endswith("_difference")]
+        explanation_cols = [
+            col for col in selected_rankings.columns
+            if col.endswith("_contribution") or col.endswith("_difference") or col.endswith("_group_distance")
+        ]
         if explanation_cols:
             st.markdown("#### Matcher-supplied explanation")
             st.dataframe(selected_rankings[["candidate_site_id", *explanation_cols]], width="stretch", hide_index=True)

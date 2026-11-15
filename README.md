@@ -159,7 +159,7 @@ The following software and data-management components are merged into `main`:
 - data/metadata/earth_candidate_reference_points.geojson records 13 provisional/alternative reference points. The Haughton, McMurdo and Yungay markers have documented discrepancies or unresolved location identity; none is an approved AOI.
 - Source manifests, checksums, QA JSON/Markdown, remote-access summaries and screening previews are tracked. Large raw DEM rasters remain gitignored and must be acquired locally using the documented tools.
 - The project shortlist for future geomorphic AOIs is Haughton, Askja, and Mauna Kea. The currently tracked exploratory ranking instead contains Haughton, Yungay, and Mauna Kea reference-centred windows; Yungay's location discrepancy is disclosed in the pilot report. No AOI boundaries, common physical analysis scale, reprojection/resampling policy, or target sub-area have been approved.
-- The canonical Site01 exploratory builder, app-facing `data/processed/terrain_fingerprints.csv` and `candidate_rankings.csv`, and `ranking_robustness.json` are present in `main`. These contain real-raster-derived exploratory measurements, not approved study results. The raw Site01 inputs are not committed.
+- The canonical Site01 exploratory builder and original five-group outputs are present in `main`. The app uses the separate `data/processed/exploratory_mvp_2026-11-15/` package: one target, three Earth windows, and the existing Slope P50/P90-only baseline. Raw Site01 inputs are not committed.
 
 ### Running the matching workflow
 
@@ -167,9 +167,9 @@ The matching CLI refuses to run unless the operator explicitly supplies both `--
 
 ### Application and optional route status
 
-- The application loads the tracked Site01 exploratory result pair and labels it **EXPLORATORY REAL-DATA PILOT**. If the complete real pair is unavailable, it uses a clearly labelled synthetic demo pair; it refuses to mix one real file with one synthetic file.
+- The application loads the reduced Site01 exploratory package and labels it **EXPLORATORY REAL-DATA PILOT**. If the complete curated pair is unavailable, it uses a clearly labelled synthetic demo pair; it refuses to mix one real file with one synthetic file. `AREA67_MVP_DATA_DIR` can point to a newly rebuilt package directory.
 - The five-group terrain-fingerprint extraction pipeline is merged into `main` and includes 16 focused synthetic/GeoTIFF tests. These verify the implementation against constructed surfaces, not actual lunar or Earth reference terrain.
-- The matching workflow has produced an exploratory real-raster Site01-to-Earth ranking through the canonical matching functions. It is not a scientifically approved result.
+- The reduced app ranking is the canonical matcher's existing Slope-only baseline. It is not a scientifically approved result. Original five-group ranking outputs remain preserved separately.
 - The optional A* Rover Gauntlet work remains in [Draft PR #9](https://github.com/MohammadJabr/area-67/pull/9), not in `main`. Its updated branch rejects sheared affine grids, enforces a 250,000-cell default software resource guard, and writes a route provenance JSON sidecar. Its latest CI passed 76 synthetic tests; no real route is claimed.
 - The latest full main CI at `3325399` (2026-11-15, workflow run #267) passed **181 tests** (112 warnings in 4.05s); compilation and the geospatial artifact ignore-policy check also passed.
 

@@ -1,0 +1,21 @@
+{
+  "status": "EXPLORATORY_NOT_APPROVED",
+  "target_site_id": "MOON_SITE01_PILOT990",
+  "candidate_site_ids": [
+    "EARTH_HAUGHTON_REF990",
+    "EARTH_YUNGAY_HYPERARID_REF990",
+    "EARTH_MAUNAKEA_REF990"
+  ],
+  "ranking_basis": "Existing canonical Slope-only baseline; no matching algorithm implemented here.",
+  "source_files": {
+    "data\\processed\\terrain_fingerprints.csv": "2d0a1fa4de2835cb4ac4f1f92586d6ed12360a0e82bd5dc4ba7508acf7972f51",
+    "data\\processed\\candidate_rankings.csv": "35ba2adeeded017240f53ce1e5253177f24be1c9c3cd86e682effac33459751c",
+    "data\\processed\\ranking_robustness.json": "3788d3d9bf7d1a255ed28017172ec03187e0716d70f466e700be2be97db83fd6"
+  },
+  "outputs": {
+    "terrain_fingerprints.csv": "2d0a1fa4de2835cb4ac4f1f92586d6ed12360a0e82bd5dc4ba7508acf7972f51",
+    "candidate_rankings.csv": "e171d1878648765ee4b747a3ddf9a4bc431e69a6de2a891e37ab300c24802a3c",
+    "ranking_robustness.json": "08cb307befa80eb8faf928e3c8f9aadcb350d52cb6e10270c6efce8a5f83fb54",
+    "README.md": "a15e2c03bc6eee56dbf4e71a7d198f762fd5d6a92352b4157caba10a4e66474c"
+  }
+}

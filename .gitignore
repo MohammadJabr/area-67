@@ -63,3 +63,10 @@ Thumbs.db
 !data/processed/*.json
 !data/processed/*.geojson
 !data/processed/*.md
+!data/processed/exploratory_mvp_2026-11-15/
+data/processed/exploratory_mvp_2026-11-15/*
+!data/processed/exploratory_mvp_2026-11-15/terrain_fingerprints.csv
+!data/processed/exploratory_mvp_2026-11-15/candidate_rankings.csv
+!data/processed/exploratory_mvp_2026-11-15/ranking_robustness.json
+!data/processed/exploratory_mvp_2026-11-15/README.md
+!data/processed/exploratory_mvp_2026-11-15/package_manifest.json

@@ -15,3 +15,5 @@ def test_real_pilot_data_are_explicitly_labelled_exploratory():
     warning_text = [element.value for element in app.warning]
     assert any("EXPLORATORY REAL-DATA PILOT" in value for value in warning_text)
     assert any("not an approved geomorphic AOI" in value for value in warning_text)
+    info_text = [element.value for element in app.info]
+    assert any("Slope P50 and P90 only" in value for value in info_text)

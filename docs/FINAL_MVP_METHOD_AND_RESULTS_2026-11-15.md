@@ -14,19 +14,19 @@ The target row, `MOON_SITE01_PILOT990`, is a 990 m square context window. Its pr
 
 The reduced tracked comparison contains three 990 m reference-centered Copernicus GLO-30 windows: Haughton, Yungay, and Mauna Kea. The common source family and existing complete fingerprints make them usable for this engineering demo. They are provisional sample windows, not approved geomorphic AOIs. Askja is held out because its current reference-centered diagnostic window is dominated by near-flat/equal-elevation samples; that is not a finding about all Askja terrain. McMurdo is not in this ranked set. Yungay's reference marker differs from a published field reference by about 5.81 km, so its identity remains a material caveat.
 
-The current feature set reuses the existing canonical five groups: Slope, Riley 8-neighbor TRI, moving-window Local Relief, Terrain Distribution, and Spatial Pattern. No feature algorithm is added here. The method's provisional 30 m grid, requested 150 m relief window (five cells; 120 m center-to-center span), class thresholds, weights, tolerances, and completeness settings remain experiment assumptions, not team-approved scientific policies. The existing Slope-only result is retained as a diagnostic baseline.
+The reduced demo ranking uses the existing canonical matcher **Slope-only baseline**, based on Slope P50 and P90. This is the smallest already-computed feature subset and introduces no new feature or matching algorithm. The curated fingerprint CSV retains the full supplied five-group rows for provenance/context, but non-Slope groups do not contribute to these rankings. The full five-group result remains unchanged in its original files as a separate exploratory comparison. The source run's provisional 30 m grid, requested 150 m relief window (five cells; 120 m center-to-center span), class thresholds, multi-feature weights, tolerances, and completeness settings remain experiment assumptions, not team-approved scientific policies. No sensitivity scenarios were run for the Slope-only baseline.
 
 ## Existing app-facing results
 
-These values are read from `data/processed/candidate_rankings.csv`; this documentation change does not regenerate or overwrite them.
+These values are from the separately packaged `data/processed/exploratory_mvp_2026-11-15/candidate_rankings.csv`, sourced directly from the canonical matcher's existing Slope-only baseline. The original five-group scores remain unchanged in `data/processed/candidate_rankings.csv`.
 
-| Rank | Earth reference window | Relative similarity index | Weighted distance | Rank across 11 weight scenarios |
-|---:|---|---:|---:|---|
-| 1 | Haughton | 73.7870 | 0.3552523 | Top-1 in 11/11 |
-| 2 | Yungay | 66.1325 | 0.5121164 | Top-1 in 0/11; Top-2 in 11/11 |
-| 3 | Mauna Kea | 27.3897 | 2.6510027 | Top-1 in 0/11; Top-2 in 0/11 |
+| Rank | Earth reference window | Slope-only relative index | Slope-group distance | Prior five-group rank |
+|---:|---|---:|---:|---:|
+| 1 | Haughton | 64.9452 | 0.5397594 | 1 |
+| 2 | Yungay | 56.7559 | 0.7619318 | 2 |
+| 3 | Mauna Kea | 22.0970 | 3.5255036 | 3 |
 
-The Slope-only baseline ranks the same three windows in the same order (scores 64.9452, 56.7559, and 22.0970). This small pilot does not show that using the additional groups improves predictive validity. Feature contributions are available in the ranking CSV and appear in the Results & Comparison view. Scores and sensitivity counts are relative method outputs, not probabilities, physical-equivalence percentages, mission-success estimates, safety assessments, or suitability certification.
+The prior five-group ordering is the same, but this is a descriptive result for these windows, not evidence that either feature set predicts analog usefulness. The app displays the supplied Slope-group distance and the target/candidate Slope values; it does not create new feature contributions. Scores are relative method outputs, not probabilities, physical-equivalence percentages, mission-success estimates, safety assessments, or suitability certification.
 
 ## Data and limitations
 
@@ -38,7 +38,7 @@ The Slope-only baseline ranks the same three windows in the same order (scores 6
 
 ## Implementation and reproduction
 
-The integrated builder in `src/data/build_exploratory_pilot.py` calls the canonical `calculate_terrain_fingerprint`, `rank_terrain_fingerprints`, and `run_matching_robustness` implementations. It records source/output checksums, processing grids, windows, and the run configuration. The normal output pair used by the app is already committed at `data/processed/terrain_fingerprints.csv` and `data/processed/candidate_rankings.csv`.
+The integrated builder in `src/data/build_exploratory_pilot.py` calls the canonical `calculate_terrain_fingerprint`, `rank_terrain_fingerprints`, and `run_matching_robustness` implementations. `src/data/package_reduced_mvp.py` then selects the existing Slope-only baseline and the one-target/three-candidate rows into `data/processed/exploratory_mvp_2026-11-15/`; it does not calculate fingerprints or rankings. Its manifest records source and package checksums. The original full five-group outputs remain unchanged at the top level of `data/processed/`.
 
 Install the repository dependencies and launch the app from the repository root:
 
@@ -59,7 +59,21 @@ python -m src.data.build_exploratory_pilot `
   --config config/exploratory_pilot_2026-11-15.json
 ```
 
-The builder fails if any configured raster or required Site01 quality layer is missing. This workstation checkout does not currently contain `data/raw/moon/site01/`; therefore the raw-raster rebuild was not run here. The documented manual acquisition workflow is `.github/workflows/gis-data-acquisition.yml` (`workflow_dispatch`, dataset `both`), and acquisition artifacts must be kept outside Git. The launch command uses the checked-in result pair and does not need raw rasters.
+Package the Slope-only baseline from that rebuild into a fresh directory, then launch the app against it:
+
+```powershell
+python -m src.data.package_reduced_mvp `
+  --fingerprints outputs/final_mvp_rebuild_2026-11-15/terrain_fingerprints.csv `
+  --rankings outputs/final_mvp_rebuild_2026-11-15/candidate_rankings.csv `
+  --robustness outputs/final_mvp_rebuild_2026-11-15/ranking_robustness.json `
+  --output-dir outputs/final_mvp_package_rebuild_2026-11-15
+$env:AREA67_MVP_DATA_DIR = "outputs/final_mvp_package_rebuild_2026-11-15"
+streamlit run app/main.py
+```
+
+The package command refuses an existing output path. Choose a new directory for each rebuild so prior outputs remain intact.
+
+The builder fails if any configured raster or required Site01 quality layer is missing. This workstation checkout does not currently contain `data/raw/moon/site01/`; therefore the raw-raster rebuild was not run here. The documented manual acquisition workflow is `.github/workflows/gis-data-acquisition.yml` (`workflow_dispatch`, dataset `both`), and acquisition artifacts must be kept outside Git. The default launch uses the checked-in reduced package and does not need raw rasters. To point the app at a newly rebuilt package, set `AREA67_MVP_DATA_DIR` to that package directory before launching.
 
 ## Release gates still open
 
