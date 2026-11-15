@@ -152,6 +152,18 @@ def main() -> None:
             st.write(f"- {error}")
         st.stop()
 
+    exploratory_rows = False
+    if "scientific_status" in fingerprints.columns:
+        exploratory_rows = fingerprints["scientific_status"].astype(str).str.upper().str.contains("EXPLORATORY").any()
+    if "aoi_approval" in fingerprints.columns:
+        exploratory_rows = exploratory_rows or (~fingerprints["aoi_approval"].astype(str).str.upper().eq("APPROVED")).any()
+    if exploratory_rows:
+        st.warning(
+            "EXPLORATORY REAL-DATA PILOT — these measurements come from real NASA LOLA and Copernicus rasters, "
+            "but every footprint is a provisional reference-centred sampling window, not an approved geomorphic AOI. "
+            "Scores are exploratory relative rankings only; do not present them as site certification or rover safety evidence."
+        )
+
     fingerprints = fingerprints.copy()
     rankings = rankings.copy()
     fingerprints["site_id"] = fingerprints["site_id"].astype(str)
@@ -244,7 +256,7 @@ def main() -> None:
                 "rank", "candidate_site_id", "site_name", "planet",
                 "similarity_score", "relative_similarity",
                 "weighted_distance", "similarity_distance",
-                "data_completeness", "ranking_stability_note",
+                "data_completeness", "ranking_stability_note", "ranking_note",
                 "source_id", "analysis_scale_m", "valid_coverage_pct",
                 "nodata_pct",
             )
@@ -279,6 +291,7 @@ def main() -> None:
                     px.scatter_geo(mapped, lat="latitude", lon="longitude", color="planet", hover_name="site_name", hover_data=["site_id"], title="Earth candidate locations (target coordinates are not plotted on an Earth basemap)"),
                     width="stretch",
                 )
+                st.caption("Map markers are reference-window anchors only; they are not approved AOI polygons.")
             else:
                 st.info("No valid coordinates are available for this target/profile.")
         else:
@@ -291,7 +304,11 @@ def main() -> None:
         else:
             st.info("Per-feature differences/contributions have not been supplied by the matcher. The app does not estimate them.")
 
-        quality_cols = [col for col in ("site_id", "site_name", "source_id", "analysis_scale_m", "valid_coverage_pct", "nodata_pct", "valid_cell_count") if col in fingerprints.columns]
+        quality_cols = [col for col in (
+            "site_id", "site_name", "source_id", "analysis_scale_m",
+            "valid_coverage_pct", "nodata_pct", "direct_observation_coverage_pct",
+            "aoi_status", "aoi_approval", "source_checksum_sha256",
+        ) if col in fingerprints.columns]
         if quality_cols:
             st.markdown("#### Data quality and provenance")
             st.dataframe(fingerprints[fingerprints["site_id"].isin(comparison_ids)][quality_cols], width="stretch", hide_index=True)
@@ -337,6 +354,13 @@ def main() -> None:
         c1.metric("Analysis scale", f"{provenance.get('analysis_scale_m')} m" if provenance.get("analysis_scale_m") is not None else "Not supplied")
         c2.metric("NoData", f"{provenance.get('nodata_pct')}%" if provenance.get("nodata_pct") is not None else "Not supplied")
         c3.metric("Source ID", str(provenance.get("source_id", "Not supplied")))
+        direct_support = pd.to_numeric(
+            pd.Series([site_row.get("direct_observation_coverage_pct")]), errors="coerce"
+        ).iloc[0]
+        if pd.notna(direct_support):
+            st.metric("Direct LOLA shot support", f"{direct_support:.3f}%")
+        elif str(site_row.get("planet", "")).casefold() == "earth":
+            st.caption("Direct instrument-shot support was not supplied for this Earth DSM; this is separate from raster NoData.")
 
         st.markdown("#### Terrain Fingerprint evidence")
         missing_features = []
@@ -359,6 +383,18 @@ def main() -> None:
 
         st.markdown("#### Source provenance and quality")
         st.json(provenance)
+        extra_quality = {
+            key: site_row.get(key)
+            for key in (
+                "scientific_status", "aoi_status", "aoi_approval",
+                "aoi_note", "source_quality_note", "effective_resolution_note",
+                "source_checksum_sha256", "ldec_checksum_sha256",
+                "z_uncertainty_checksum_sha256",
+            )
+            if key in site_row.index and pd.notna(site_row.get(key))
+        }
+        if extra_quality:
+            st.json(extra_quality)
         if comparison:
             st.markdown("#### Target-to-candidate comparison")
             st.write(f"Target: {target_id} · Mission: {mission_profile}")
