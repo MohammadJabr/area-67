@@ -95,6 +95,8 @@ Feature 5's 12.5 m² fragment has only one pixel centre and no direct LDEC shot 
 
 ## 5. Pixel-registration audit
 
+The versioned ROI-quality workflow now exports each original provider polygon as native_geometry in its compact JSON artifact, alongside the original shapefile WKT, one-based provider ROI number, validity reason, native bounds/area/centroid, and any valid-pixel support statistics. Coordinates are retained in the source projected coordinate plane; this is not WGS84 GeoJSON and does not assign a physical frame to the ROI shapefile.
+
 The read-only registration audit examined all seven source geometries, including the two invalid polygons:
 
 - 7 features and 607 vertices.
