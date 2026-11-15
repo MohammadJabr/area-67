@@ -69,7 +69,7 @@ The acquisition steps in run #43700032212 both completed successfully. The job f
 
 The defect was fixed on current main in commit d8d81d1b35ddcd55e1e0d2bf78e5a063ea14c14d: src/data/ci_gis_audit.py now recursively converts non-finite numeric metadata to JSON null, with a regression test in tests/test_ci_gis_audit.py.
 
-Current-main verification at that commit:
+Current-main verification after the fix (full test run #43702408688 at commit 9d1d55f):
 
 - GitHub Actions full test suite: 202 passed, 491 warnings.
 - python -m compileall -q src tests: passed.
@@ -86,6 +86,7 @@ A second run on current main completed the missing ROI acquisition and reran the
 - Contents: the 15 Earth/LOLA GeoTIFFs, both original ROI archives, extracted shapefile components, extraction manifests, ROI inspection JSON, and GIS acquisition audit JSON/Markdown.
 - Workflow conclusion: success. The structural audit inspected 15 rasters and reported 0 PASS, 15 REVIEW, 0 FAIL. The REVIEW states are intentional: source rasters are readable, but metric-grid, unit/vertical-reference, effective-resolution, lunar-frame, and scientific-approval gates remain unresolved.
 - The targeted GIS test step passed: 80 passed, 71 warnings. Current-main full CI at commit 98b6 also passed 202 tests, 491 warnings; compileall and the geospatial artifact ignore-policy check passed.
+- A follow-up current-main run [#43702408661](https://github.com/MohammadJabr/area-67/actions/runs/43702408661), commit 9d1d55f, executed the project's polygon-level lola_roi_quality audit. It produced compact report artifact 14157092727 (19,741 bytes), containing Site01 and Site04 JSON/Markdown reports. Both overall statuses are review_required because the invalid provider polygons were deliberately not repaired; valid-feature statistics match the independent table below. The run completed successfully and its targeted GIS suite passed 80 tests.
 
 ### Official provider ROI geometry inventory
 
