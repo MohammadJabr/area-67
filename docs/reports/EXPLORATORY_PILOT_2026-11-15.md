@@ -65,3 +65,17 @@ These settings are **provisional team assumptions**, not official NASA or rover-
 3. Omar must independently rerun the repository matching workflow using approved tolerances/completeness gates and verify the CSV and robustness sidecar.
 4. The team must agree whether the three provisional Earth regions are the final pilot candidates; Askja requires a new specific AOI before it can be ranked.
 5. Only after those reviews should the app stop describing results as exploratory.
+
+
+## Local-relief window sensitivity (exploratory)
+
+The same five 30m sample grids were recomputed with the requested local-relief window changed while all other feature calculations, sample extents, weights, and tolerances were held constant. The configured windows round to odd cell widths:
+
+| Requested window | Cells | Actual centre-to-centre span | Haughton | Yungay | Mauna Kea |
+|---:|---:|---:|---:|---:|---:|
+| 90m | 3×3 | 60m | Rank 1 · 74.08 | Rank 2 · 67.10 | Rank 3 · 28.63 |
+| 150m | 5×5 | 120m | Rank 1 · 73.79 | Rank 2 · 66.13 | Rank 3 · 27.39 |
+| 210m | 7×7 | 180m | Rank 1 · 73.23 | Rank 2 · 64.51 | Rank 3 · 26.01 |
+
+The relative rank order remains unchanged across these three local-relief windows. Score values change because the Local Relief feature changes. This is a one-parameter window sensitivity check at a fixed 30m grid, **not** a full analysis-scale sensitivity test and not AOI approval. See `ranking_robustness.json` for the detailed values and configuration notes.
+
