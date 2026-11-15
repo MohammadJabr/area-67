@@ -28,7 +28,7 @@ The current dataset does not contain approved polygon boundaries or publicly ser
 - Consistent spacing, rounded cards, clear typographic hierarchy, and responsive layouts for narrow screens.
 - Ranking cards foreground rank, matcher-supplied relative index, weighted distance and supplied ranking notes.
 - Ranking charts use candidate names, explicit rank colors, and visible numeric labels.
-- The Passport uses readable field/value tables rather than exposing raw JSON as the main presentation.
+- The Passport uses readable field/value tables rather than exposing raw JSON as the main presentation, and supports a ZIP evidence export.
 - The theme is stored locally in `app/theme.css`. The map's basemap is the exception and uses public CARTO tiles.
 
 ## Scientific integrity in the UI
