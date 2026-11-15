@@ -56,3 +56,7 @@ def test_site01_exploratory_pilot_matching_is_reproducible(tmp_path: Path) -> No
     assert robustness["matching_configuration"]["min_feature_group_completeness"] == 1.0
     assert robustness["matching_configuration"]["min_data_completeness"] == 0.95
     assert len(robustness["slope_only_baseline"]["ranking"]) == 3
+    assert robustness["tolerance_sensitivity"]["scenario_count"] == 11
+    assert robustness["tolerance_sensitivity"]["factors"] == [0.5, 1.0, 1.5]
+    assert len(robustness["tolerance_sensitivity"]["scenario_rankings"]) == 11
+    assert "rejected_candidates_by_scenario" in robustness["tolerance_sensitivity"]
