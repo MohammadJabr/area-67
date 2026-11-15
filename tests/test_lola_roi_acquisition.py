@@ -149,3 +149,29 @@ def test_inspection_reports_missing_shapefiles_without_inventing_geometry(tmp_pa
 def test_inspection_rejects_unknown_site(tmp_path):
     with pytest.raises(ValueError, match="Unknown ROI site"):
         inspect_extracted_rois("Site99", tmp_path)
+
+
+def test_inspection_reports_crs_bounds_and_null_geometries(tmp_path):
+    import geopandas as gpd
+    from shapely.geometry import Polygon
+
+    extracted = tmp_path / "roi_shapes"
+    extracted.mkdir()
+    shape_path = extracted / "candidate_rois.shp"
+    frame = gpd.GeoDataFrame(
+        {"roi_name": ["valid", "missing"], "geometry": [
+            Polygon([(0, 0), (10, 0), (10, 10), (0, 10)]), None
+        ]},
+        crs="EPSG:3031",
+    )
+    frame.to_file(shape_path)
+
+    report = inspect_extracted_rois("Site04", extracted)
+    assert report["shapefile_count"] == 1
+    shape = report["shapefiles"][0]
+    assert shape["feature_count"] == 2
+    assert shape["crs"] == "EPSG:3031"
+    assert shape["bounds"] == [0.0, 0.0, 10.0, 10.0]
+    assert shape["null_geometry_count"] == 1
+    assert shape["area_native_units2"] == 100.0
+    assert report["status"] == "review_required"
