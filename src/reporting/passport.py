@@ -80,6 +80,17 @@ def passport_to_markdown(passport: Mapping[str, Any], demo_mode: bool = False) -
     lines = ["# AREA 67 — Analog Passport", ""]
     if demo_mode:
         lines.append("> DEMONSTRATION DATA — synthetic example, not a measured scientific result.")
+    elif (
+        str(other.get("scientific_status", "")).upper().startswith("EXPLORATORY")
+        or (
+            other.get("aoi_approval") is not None
+            and str(other.get("aoi_approval")).upper() != "APPROVED"
+        )
+    ):
+        lines.append(
+            "> EXPLORATORY REAL-DATA PILOT — this is a measured-data sample window, "
+            "not an approved geomorphic AOI or site certification."
+        )
     else:
         lines.append("> Generated from supplied project data files. Verify source metadata before scientific use.")
 
@@ -99,6 +110,34 @@ def passport_to_markdown(passport: Mapping[str, Any], demo_mode: bool = False) -
         ("license", "License/usage terms"),
     ):
         lines.append(f"- **{label}:** {provenance.get(key, 'Not provided')}")
+
+    quality_fields = (
+        ("aoi_status", "Study footprint status"),
+        ("aoi_approval", "AOI approval"),
+        ("aoi_note", "Footprint note"),
+        ("analysis_scale_status", "Analysis scale status"),
+        ("relief_window_m", "Requested local-relief window (m)"),
+        ("relief_window_cells", "Local-relief window cells"),
+        ("relief_window_span_m", "Local-relief centre-to-centre span (m)"),
+        ("direct_observation_coverage_pct", "Direct LOLA shot support (%)"),
+        ("z_rms_median_m", "Median LOLA Z RMS (m)"),
+        ("effective_resolution_note", "Effective-resolution note"),
+        ("source_quality_note", "Source quality note"),
+        ("source_checksum_sha256", "Source raster SHA-256"),
+    )
+    supplied_quality = [(label, other.get(key)) for key, label in quality_fields if other.get(key) is not None]
+    if supplied_quality:
+        lines += ["", "## Study footprint and observation support"]
+        lines.extend(f"- **{label}:** {value}" for label, value in supplied_quality)
+    if (
+        str(identity.get("planet", "")).casefold() == "earth"
+        and other.get("direct_observation_coverage_pct") is None
+    ):
+        if not supplied_quality:
+            lines += ["", "## Study footprint and observation support"]
+        lines.append(
+            "- Direct instrument-shot support: not supplied for this Earth DSM; this is separate from raster NoData."
+        )
 
     lines += ["", "## Terrain Fingerprint"]
     for group, metrics in passport.get("fingerprint", {}).items():
