@@ -400,6 +400,8 @@ def run_screen(
             "roi_body_fixed_frame_proven": False,
             "site01_vs_sdem_nominal_math_match": None,
             "site01_sdem_crs_metadata_equal": None,
+            "sdem_all_expected_layers_present": False,
+            "sdem_layer_checks": {},
             "projection_note": "Comparison ignores datum labels and is only a nominal coordinate-plane check; the legacy Site01 ROI shapefile's physical frame remains unconfirmed.",
         },
         "source_data_modified": False,
@@ -417,25 +419,44 @@ def run_screen(
     required_sdem_layers = {"sdem_elevation", "sfs_data_mask", "best_input_resolution",
                             "solar_bin_count", "solar_bin_count_all"}
     for name, path in sdem_paths.items():
+        layer_check = {
+            "path": str(path),
+            "status": "missing",
+            "nominal_math_match": None,
+            "crs_metadata_equal": None,
+        }
         if not path.is_file():
             if name in required_sdem_layers:
                 report["warnings"].append(f"Missing required local SDEM layer: {path}")
+            report["coordinate_review"]["sdem_layer_checks"][name] = layer_check
             continue
         with rasterio.open(path) as ds:
             if ds.crs is None:
+                layer_check["status"] = "missing_crs"
                 report["warnings"].append(f"SDEM layer has no CRS: {path}")
+                report["coordinate_review"]["sdem_layer_checks"][name] = layer_check
                 continue
             try:
-                sdem_sig = nominal_polar_signature(ds.crs)
+                nominal_polar_signature(ds.crs)
                 math_match = same_nominal_polar_math(site01_crs, ds.crs)
             except ValueError as exc:
+                layer_check["status"] = "invalid_crs"
+                layer_check["error"] = str(exc)
                 report["warnings"].append(f"Could not validate SDEM projection for {path}: {exc}")
+                report["coordinate_review"]["sdem_layer_checks"][name] = layer_check
                 continue
-            report["coordinate_review"]["site01_vs_sdem_nominal_math_match"] = math_match
-            report["coordinate_review"]["site01_sdem_crs_metadata_equal"] = CRS.from_user_input(site01_crs) == CRS.from_user_input(ds.crs)
+
+            exact_match = CRS.from_user_input(site01_crs) == CRS.from_user_input(ds.crs)
+            layer_check.update({
+                "status": "nominal_projection_mismatch" if not math_match else "validated",
+                "nominal_math_match": bool(math_match),
+                "crs_metadata_equal": bool(exact_match),
+            })
+            report["coordinate_review"]["sdem_layer_checks"][name] = layer_check
             if not math_match:
                 report["warnings"].append(f"SDEM layer not sampled because nominal projection math differs: {path}")
                 continue
+
             screen_sample = _window_sample(ds, screen_bounds)
             if screen_sample.get("status") == "sampled":
                 report["local_samples"].append({
@@ -443,7 +464,9 @@ def run_screen(
                     "sample_area": "1 km screening square",
                     **screen_sample,
                 })
+                layer_check["status"] = "sampled"
             else:
+                layer_check["status"] = "no_overlap"
                 report["warnings"].append(f"Screening square does not overlap SDEM layer: {path}")
             features = []
             for feature_index in range(min(5, len(gdf))):
@@ -451,6 +474,19 @@ def run_screen(
                 sample = _polygon_sample(ds, geom)
                 features.append({"feature_index": feature_index, **sample})
             report["feature_samples"].append({"layer": name, "features": features})
+
+    layer_checks = list(report["coordinate_review"]["sdem_layer_checks"].values())
+    checked_layers = [row for row in layer_checks if row["nominal_math_match"] is not None]
+    report["coordinate_review"]["site01_vs_sdem_nominal_math_match"] = (
+        all(row["nominal_math_match"] for row in checked_layers) if checked_layers else None
+    )
+    report["coordinate_review"]["site01_sdem_crs_metadata_equal"] = (
+        all(row["crs_metadata_equal"] for row in checked_layers) if checked_layers else None
+    )
+    report["coordinate_review"]["sdem_all_expected_layers_present"] = (
+        len(layer_checks) == len(SDEM_LAYERS)
+        and all(row["status"] == "sampled" for row in layer_checks)
+    )
 
     for name, filename in LOLA_LAYERS.items():
         path = lola_root / filename
