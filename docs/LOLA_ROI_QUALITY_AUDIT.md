@@ -62,6 +62,8 @@ Direct-observation support is calculated as positive LDEC cells divided by valid
 
 The ROI polygons can be checked against the native raster's affine pixel lattice without changing either source. The diagnostic reports whether every polygon-ring vertex lies on the pixel-centre lattice, the pixel-corner lattice, or neither. It measures residuals in map units and also records the raster's `AREA_OR_POINT` tag.
 
+A preliminary **bounding-box-only** check is already possible from the recorded Site04 metadata. With affine transform `[5, 0, -9000, 0, -5, 1000]`, the ROI-cluster extrema `X=[-2842.5, -2627.5] m` and `Y=[-6802.5, -5902.5] m` map to pixel-centre indices `column=[1231, 1274]` and `row=[1560, 1380]` respectively. Thus all four bounding-box extrema lie on the pixel-centre lattice. This is not yet a full vertex audit: the remaining ring vertices must still be checked by the diagnostic below. No half-pixel shift is indicated by these extrema.
+
 Run from the repository root:
 
 ```bash
