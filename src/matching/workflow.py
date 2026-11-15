@@ -15,6 +15,7 @@ from src.data.fingerprint_loader import (
 )
 from src.matching.pipeline import rank_terrain_fingerprints
 from src.matching.sensitivity import run_matching_robustness
+from src.matching.tolerance_sensitivity import run_tolerance_sensitivity
 from src.reporting.ranking_export import export_rankings_csv
 
 
@@ -22,6 +23,7 @@ def _write_robustness_summary(
     output_path: str | Path,
     ranking_result: Mapping,
     robustness_result: Mapping,
+    tolerance_sensitivity: Mapping,
 ) -> Path:
     """Write a compact, reproducible JSON sidecar for baseline/sensitivity."""
     path = Path(output_path)
@@ -54,6 +56,7 @@ def _write_robustness_summary(
             "top_k_counts": sensitivity["top_k_counts"],
             "interpretation": sensitivity["interpretation"],
         },
+        "tolerance_sensitivity": tolerance_sensitivity,
         "slope_only_baseline": {
             "ranking": [
                 {
@@ -138,6 +141,18 @@ def run_matching_workflow(
         min_completeness=min_feature_group_completeness,
     )
 
+    tolerance_sensitivity = run_tolerance_sensitivity(
+        target_fingerprint=target_fingerprint,
+        candidate_fingerprints=candidate_fingerprints,
+        weights=weights,
+        tolerances=tolerances,
+        mission_profile=mission_profile,
+        min_feature_group_completeness=min_feature_group_completeness,
+        min_data_completeness=min_data_completeness,
+        scale_relative_tolerance=scale_relative_tolerance,
+        distribution_sum_tolerance_pp=distribution_sum_tolerance_pp,
+    )
+
     ranking_path = export_rankings_csv(
         ranking_result=ranking_result,
         mission_profile=mission_profile,
@@ -148,11 +163,13 @@ def run_matching_workflow(
         robustness_output_path,
         ranking_result,
         robustness_result,
+        tolerance_sensitivity,
     )
 
     return {
         "ranking_result": ranking_result,
         "robustness_result": robustness_result,
+        "tolerance_sensitivity": tolerance_sensitivity,
         "ranking_csv": ranking_path,
         "robustness_json": robustness_path,
     }
