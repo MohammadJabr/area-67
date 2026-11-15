@@ -157,13 +157,18 @@ def _local_relief_map(
         p5, p95 = np.percentile(finite, [5, 95], method="linear")
         return float(p95 - p5)
 
-    return ndimage.generic_filter(
+    relief = ndimage.generic_filter(
         z,
         percentile_range,
         size=window_cells,
         mode="constant",
         cval=np.nan,
     ).astype(np.float64, copy=False)
+    # A moving window may have enough neighbouring samples even when its
+    # centre cell is NoData. Do not publish a derived value at an invalid
+    # source location: preserve the source mask in every feature map.
+    relief[~np.isfinite(z)] = np.nan
+    return relief
 
 
 def _summary(values: np.ndarray) -> dict[str, float | int]:
