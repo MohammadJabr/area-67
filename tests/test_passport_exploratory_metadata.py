@@ -23,8 +23,31 @@ def test_exploratory_lunar_passport_includes_aoi_and_direct_support_caveats():
         "relief_window_m": 150.0,
         "relief_window_cells": 5,
         "relief_window_span_m": 120.0,
-        "direct_observation_coverage_pct": 9.235,
-        "z_rms_median_m": 0.3379,
+        "direct_observation_coverage_pct": 9.21334557698194,
+        "ldec_positive_cells": 3612,
+        "ldec_zero_cells": 35592,
+        "ldec_valid_coverage_pct": 100.0,
+        "ldec_zero_count_pct": 90.78665442301806,
+        "ldec_nodata_pct": 0.0,
+        "z_rms_median_m": 0.3381803631782532,
+        "z_rms_p90_m": 0.564525663852692,
+        "slope_rms_median_deg": 1.8849945068359375,
+        "slope_rms_p90_deg": 2.398340034484865,
+        "native_quality_pixel_size_m": 5.0,
+        "native_quality_window_shape": "[198,198]",
+        "native_quality_window_area_km2": 0.9801,
+        "native_quality_selection_rule": "5m native pixel centres inside the same 990m analysis footprint (all_touched=false semantics).",
+        "provider_roi_union_overlap_pct": 3.8657,
+        "provider_roi_overlap_note": "Coordinate-plane overlap diagnostic; provider ROI frame remains unresolved.",
+        "coordinate_frame": "MOON_ME / JPL DE421 is documented for Product 78 GeoTIFF layers; ROI shapefile frame not inferred.",
+        "analysis_crs": "Custom lunar south-polar stereographic; WKT preserved in run manifest.",
+        "source_url": "https://pgda.gsfc.nasa.gov/products/78",
+        "source_raster_path": "moon/site01/Site01_final_adj_5mpp_surf.tif",
+        "processing_method": "Bilinearly prepared common 30m grid; canonical terrain fingerprint function.",
+        "access_date": "2026-11-15",
+        "ldec_source_checksum_sha256": "16d6ed21020ad48fa71d94e7437492acf5bf04118f52bcd292f57f22ead4cd23",
+        "z_rms_source_checksum_sha256": "cf2cf52f52d2aa51e60d058010d10b0ebfb1d3e920f5a2b9a46eb6c51054ab1c",
+        "slope_rms_source_checksum_sha256": "52bc3b239f61605e6bb98bab6d6b17acd22389c59e57336862157f2fbd643a33",
         "effective_resolution_note": "Product 90 EFFRES P90 24.08m.",
         "source_quality_note": "Local CRS datum label remains unknown.",
         "source_checksum_sha256": "3ba7b97cb00a2bcf21189c3aeb535f65afc21207154ab9f0d43c5bdc1f7e747e",
@@ -45,9 +68,14 @@ def test_exploratory_lunar_passport_includes_aoi_and_direct_support_caveats():
     assert "AOI approval" in report
     assert "NOT_APPROVED" in report
     assert "Direct LOLA shot support (%)" in report
-    assert "9.235" in report
+    assert "9.21334557698194" in report
     assert "centre-to-centre span (m)" in report
     assert "120.0" in report
+    assert "90.78665442301806" in report
+    assert "0.3381803631782532" in report
+    assert "1.8849945068359375" in report
+    assert "3.8657" in report
+    assert "LDEC source SHA-256" in report
 
 
 def test_earth_passport_states_direct_observation_support_not_supplied():
