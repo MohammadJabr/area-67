@@ -99,6 +99,12 @@ The current science pilot uses a Site01/Site04 lunar comparison pair and three p
     ├── tests/
     └── .github/workflows/
 
+## Interactive mission console
+
+The Streamlit interface provides a **Mission Control** workspace, an **Analog Radar** for ranked candidate cards or detailed tables, interactive terrain comparisons and an Earth-only reference map, plus a downloadable **Analog Passport**. Target and mission-profile controls are driven by supplied ranking data. The visual system is documented in [UI Experience](docs/UI_EXPERIENCE.md).
+
+The interface preserves the exploratory-data warning and distinguishes real-raster pilot rows from synthetic demo fixtures. It does not change the underlying terrain measurements or matching results.
+
 ## Run locally
 
     python -m venv .venv

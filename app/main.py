@@ -1,5 +1,6 @@
 """AREA 67 Streamlit MVP: streamlit run app/main.py."""
 from __future__ import annotations
+import html
 import sys
 from pathlib import Path
 from typing import Any
@@ -26,6 +27,94 @@ FP = ROOT / "data/processed/terrain_fingerprints.csv"
 RANK = ROOT / "data/processed/candidate_rankings.csv"
 DEMO_FP = ROOT / "data/sample/demo_terrain_fingerprints.csv"
 DEMO_RANK = ROOT / "data/sample/demo_candidate_rankings.csv"
+
+
+def apply_theme() -> None:
+    """Load the repository-owned visual theme without external network assets."""
+    theme_path = Path(__file__).with_name("theme.css")
+    if theme_path.exists():
+        st.markdown(f"<style>{theme_path.read_text(encoding='utf-8')}</style>", unsafe_allow_html=True)
+
+
+def render_hero(status: str, site_count: int, candidate_count: int) -> None:
+    """Render the product identity and the current data scope."""
+    safe_status = html.escape(status)
+    st.markdown(
+        f"""
+        <section class="a67-hero">
+          <div class="a67-hero-top">
+            <div class="a67-brand-chip">AREA <span>67</span></div>
+            <div class="a67-status-pill">{safe_status}</div>
+          </div>
+          <div class="a67-hero-copy">
+            <p class="a67-eyebrow">MISSION INTELLIGENCE / SPACE-TO-EARTH</p>
+            <h1>Find Earth's <span>terrain analogs</span><br>for other worlds.</h1>
+            <p>Explore mission-specific terrain comparisons with traceable data, transparent uncertainty and evidence you can inspect — from the Moon to Earth.</p>
+            <div class="a67-hero-foot">
+              <span class="a67-hero-chip">{site_count} fingerprint records</span>
+              <span class="a67-hero-chip">{candidate_count} ranked Earth references</span>
+              <span class="a67-hero-chip">5 terrain evidence groups</span>
+            </div>
+          </div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def format_display_number(value: Any, digits: int = 2) -> str:
+    clean = value_or_none(value)
+    if clean is None:
+        return "Not supplied"
+    try:
+        return f"{float(clean):,.{digits}f}"
+    except (TypeError, ValueError, OverflowError):
+        return html.escape(str(clean))
+
+
+def render_candidate_cards(frame: pd.DataFrame) -> None:
+    """Show matcher-supplied ranking rows as readable candidate cards."""
+    if frame.empty:
+        st.info("No candidate rows are available for this target and mission profile.")
+        return
+    for _, row in frame.sort_values("rank").iterrows():
+        rank_value = value_or_none(row.get("rank"))
+        try:
+            rank = int(float(rank_value))
+        except (TypeError, ValueError, OverflowError):
+            rank = 0
+        site_name = html.escape(str(value_or_none(row.get("site_name")) or row.get("candidate_site_id", "Unknown site")))
+        site_id = html.escape(str(row.get("candidate_site_id", "Unknown ID")))
+        planet = html.escape(str(value_or_none(row.get("planet")) or "Earth"))
+        score = row.get("similarity_score", row.get("relative_similarity"))
+        distance = row.get("weighted_distance", row.get("similarity_distance"))
+        note_value = value_or_none(row.get("ranking_stability_note")) or value_or_none(row.get("ranking_note"))
+        note = html.escape(str(note_value)) if note_value is not None else "Rank and index are reported by the current matcher output."
+        distance_line = (
+            f"<small>Weighted distance · {format_display_number(distance, 3)}</small>"
+            if value_or_none(distance) is not None else ""
+        )
+        rank_label = "LEADING CANDIDATE" if rank == 1 else (f"RANK {rank:02d}" if rank > 0 else "RANK NOT SUPPLIED")
+        card_class = "a67-candidate top" if rank == 1 else "a67-candidate"
+        score_text = format_display_number(score, 2) if value_or_none(score) is not None else "—"
+        st.markdown(
+            f"""
+            <article class="{card_class}">
+              <div class="a67-rank">{("#" + str(rank)) if rank > 0 else "—"}</div>
+              <div class="a67-candidate-main">
+                <div class="a67-candidate-name">{site_name}</div>
+                <div class="a67-candidate-sub">{planet} · {site_id} · {rank_label}</div>
+                <div class="a67-candidate-note">{note}</div>
+              </div>
+              <div class="a67-candidate-score">
+                <span>RELATIVE MATCH INDEX</span>
+                <strong>{score_text}</strong>
+                {distance_line}
+              </div>
+            </article>
+            """,
+            unsafe_allow_html=True,
+        )
 
 
 def load_data():
@@ -81,7 +170,7 @@ def show_feature_groups(frame: pd.DataFrame, site_ids: list[str]) -> None:
             if metric in selected.columns
             and pd.to_numeric(selected[metric], errors="coerce").notna().any()
         ]
-        with st.expander(group, expanded=True):
+        with st.expander(group, expanded=(group == "Slope")):
             if available:
                 st.dataframe(selected[["site_id", "site_name", *available]], width="stretch", hide_index=True)
             else:
@@ -113,14 +202,20 @@ def show_single_parameter_explorer(frame: pd.DataFrame, site_ids: list[str]) -> 
             st.caption(f"Reported unit: {units[0]}")
         elif len(units) > 1:
             st.warning("Unit labels vary across sites; interpret values cautiously.")
-    st.plotly_chart(px.bar(selected, x="site_name", y=metric, color="site_id", title=f"Single-parameter comparison · {metric}"), width="stretch")
+    figure = px.bar(
+        selected, x="site_name", y=metric, color="site_id",
+        title=f"Single-parameter comparison · {metric}", template="plotly_dark",
+    )
+    figure.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(8,18,31,.35)",
+        font_color="#dce9f8", margin=dict(l=16, r=16, t=56, b=20),
+        legend_title_text="Site",
+    )
+    st.plotly_chart(figure, width="stretch", config={"displayModeBar": True, "responsive": True})
 
 
 def main() -> None:
-    st.title("AREA 67")
-    st.caption("Planetary Analog Discovery & Mission Planning · Discover Earth. Explore Other Worlds.")
-    st.write("An evidence-based platform for finding useful terrestrial analogs for selected lunar or Martian exploration tasks.")
-
+    apply_theme()
     fingerprints, rankings, demo_mode, messages = load_data()
     if demo_mode:
         st.warning("DEMO MODE — displayed measurements and rankings are synthetic interface fixtures. They are NOT NASA observations or validated scientific results.")
@@ -193,47 +288,91 @@ def main() -> None:
             for warning in quality_warnings:
                 st.warning(warning)
 
-    tab_setup, tab_results, tab_passport = st.tabs(["1 · Mission Setup", "2 · Results & Comparison", "3 · Site Passport"])
+    targets = sorted(rankings["target_site_id"].dropna().unique().tolist())
+    if not targets:
+        st.error("No target IDs are available in the ranking file.")
+        st.stop()
 
-    with tab_setup:
-        st.subheader("Mission setup")
-        st.info("Space-to-Earth is the active MVP workflow: select a lunar or Martian target and inspect ranked Earth candidates. Earth-to-Space is retained as a future search direction.")
-        targets = sorted(rankings["target_site_id"].dropna().unique().tolist())
-        if not targets:
-            st.error("No target IDs are available in the ranking file.")
-            st.stop()
+    with st.sidebar:
+        st.markdown('<div class="a67-sidebar-brand">AREA <span>67</span><small>PLANETARY ANALOG INTELLIGENCE</small></div>', unsafe_allow_html=True)
+        st.markdown('<div class="a67-sidebar-caption">Mission configuration</div>', unsafe_allow_html=True)
         target_id = st.selectbox("Target site", targets, key="area67_target")
-        profiles = sorted(rankings.loc[rankings["target_site_id"] == target_id, "mission_profile"].dropna().astype(str).unique().tolist())
+        profiles = sorted(
+            rankings.loc[rankings["target_site_id"] == target_id, "mission_profile"]
+            .dropna().astype(str).unique().tolist()
+        )
         if not profiles:
             st.error("No mission profile is supplied for this target.")
             st.stop()
         mission_profile = st.selectbox("Mission profile", profiles, key="area67_mission_profile")
-        target_rows = fingerprints[fingerprints["site_id"] == target_id]
-        target_row = target_rows.iloc[0] if not target_rows.empty else None
-        target_body = str(target_row.get("planet", "Not supplied")) if target_row is not None else "Target row not found"
-        target_name = str(target_row.get("site_name", target_id)) if target_row is not None else target_id
-        c1, c2 = st.columns(2)
-        c1.metric("Target", target_name)
-        c2.metric("Target body", target_body)
-        st.caption("Mission-profile selection filters the ranking produced by the matching module. The app does not recalculate weights or rankings.")
-        st.markdown("#### AREA 67 product capabilities")
         st.markdown(
-            "| Capability | Scope / current status |\n"
-            "|---|---|\n"
-            "| Analog Radar | Candidate discovery and ranking from the selected target |\n"
-            "| Mission Matching | MVP profile: Rover Navigation / Terrain Traversal; actual weights come from Omar's ranking output |\n"
-            "| Single-Parameter Explorer | Available in Results & Comparison |\n"
-            "| Rover Gauntlet | A* least-cost route planned after the core data-to-ranking workflow is validated |\n"
-            "| ShadowTwin | DEM + SPICE Sun-position illumination analysis; planned until implemented and tested |\n"
-            "| Analog Passport | Evidence, provenance, candidate explanation, gaps, and analogy limits |"
+            '<div class="a67-sidebar-status"><strong>SPACE-TO-EARTH ACTIVE</strong>'
+            '<p>Target selection filters the supplied matcher output. Scores and rankings are not recalculated in the interface.</p></div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown('<div class="a67-sidebar-caption">Evidence workspace</div>', unsafe_allow_html=True)
+        st.markdown("- Analog Radar\n- Terrain Lab\n- Analog Passport")
+        st.caption("Earth-to-Space discovery, Rover Gauntlet and ShadowTwin remain outside this MVP.")
+
+    target_rows = fingerprints[fingerprints["site_id"] == target_id]
+    target_row = target_rows.iloc[0] if not target_rows.empty else None
+    target_body = str(target_row.get("planet", "Not supplied")) if target_row is not None else "Target row not found"
+    target_name = str(target_row.get("site_name", target_id)) if target_row is not None else target_id
+
+    status_label = (
+        "SYNTHETIC DEMO · NOT MEASURED"
+        if demo_mode else
+        "EXPLORATORY REAL-DATA PILOT"
+        if exploratory_rows else
+        "CONNECTED DATASET"
+    )
+    render_hero(status_label, len(fingerprints), rankings["candidate_site_id"].nunique())
+
+    tab_setup, tab_results, tab_passport = st.tabs(["01 · Mission Control", "02 · Analog Radar", "03 · Analog Passport"])
+
+    with tab_setup:
+        st.markdown(
+            '<div class="a67-section"><div class="a67-section-kicker">Mission workspace</div>'
+            '<div class="a67-section-title">Your mission, configured.</div>'
+            '<div class="a67-section-subtitle">Choose a supported target and mission profile from the controls in the left panel. The interface reads the matcher output; it does not invent or recompute rankings.</div></div>',
+            unsafe_allow_html=True,
+        )
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Target region", target_name)
+        c2.metric("Target body", target_body)
+        c3.metric("Mission profile", mission_profile)
+        st.markdown(
+            '<div class="a67-inline-note">Space-to-Earth is the active MVP workflow: start from a lunar or Martian target and inspect ranked Earth reference windows. Earth-to-Space remains a future search direction.</div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<div class="a67-section"><div class="a67-section-kicker">Platform modules</div>'
+            '<div class="a67-section-title">Evidence-first capability stack</div>'
+            '<div class="a67-section-subtitle">Each module is labelled by what is implemented today, not by the long-term product vision.</div></div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<div class="a67-capability-grid">'
+            '<article class="a67-capability"><span class="a67-cap-status">ACTIVE</span><h4>Analog Radar</h4><p>Mission-filtered candidate ranking from the supplied real-data pilot outputs.</p></article>'
+            '<article class="a67-capability"><span class="a67-cap-status">ACTIVE</span><h4>Mission Matching</h4><p>Weighted five-group similarity and matcher-reported ranking explanations.</p></article>'
+            '<article class="a67-capability"><span class="a67-cap-status">ACTIVE</span><h4>Terrain Lab</h4><p>Five terrain groups, source values and single-parameter exploration.</p></article>'
+            '<article class="a67-capability"><span class="a67-cap-status">ACTIVE</span><h4>Analog Passport</h4><p>Site identity, evidence, provenance, data quality and portable report export.</p></article>'
+            '<article class="a67-capability"><span class="a67-cap-status planned">PLANNED</span><h4>Rover Gauntlet</h4><p>Optional A* least-cost route prototype; not merged into this MVP and not a rover-safety planner.</p></article>'
+            '<article class="a67-capability"><span class="a67-cap-status planned">PLANNED</span><h4>ShadowTwin</h4><p>Illumination and shadow analysis requires validated DEM and SPICE solar-position inputs.</p></article>'
+            '</div>',
+            unsafe_allow_html=True,
         )
         st.caption(
-            "Thermal products (MODIS, Diviner, THEMIS) are separate supporting context in the project report. "
-            "They are not part of the core topographic similarity score unless source compatibility and an independent method are validated."
+            "Thermal products (MODIS, Diviner, THEMIS) are supporting context only. They are not part of the core topographic score unless compatibility and an independent method are validated."
         )
 
     with tab_results:
-        st.subheader("Candidate results")
+        st.markdown(
+            '<div class="a67-section"><div class="a67-section-kicker">Analog Radar</div>'
+            '<div class="a67-section-title">Candidate intelligence</div>'
+            '<div class="a67-section-subtitle">Explore the ranking and inspect the terrain evidence behind each candidate.</div></div>',
+            unsafe_allow_html=True,
+        )
         selected_rankings = rankings[
             (rankings["target_site_id"] == target_id)
             & (rankings["mission_profile"].astype(str) == mission_profile)
@@ -266,11 +405,35 @@ def main() -> None:
             )
             if col in merged.columns
         ]
-        st.dataframe(merged[display_cols], width="stretch", hide_index=True)
+        view_mode = st.radio(
+            "Ranking display",
+            ["Candidate cards", "Detailed data table"],
+            horizontal=True,
+            key="area67_ranking_display",
+        )
+        if view_mode == "Candidate cards":
+            render_candidate_cards(merged)
+        else:
+            st.dataframe(merged[display_cols], width="stretch", hide_index=True)
+
         if selected_rankings["similarity_score"].notna().any():
+            ranking_figure = px.bar(
+                selected_rankings,
+                x="candidate_site_id",
+                y="similarity_score",
+                color="rank",
+                title="Relative similarity index · supplied by the matcher",
+                template="plotly_dark",
+            )
+            ranking_figure.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(8,18,31,.35)",
+                font_color="#dce9f8", margin=dict(l=16, r=16, t=56, b=25),
+                xaxis_title="Earth reference window", yaxis_title="Relative index",
+                legend_title_text="Rank",
+            )
             st.plotly_chart(
-                px.bar(selected_rankings, x="candidate_site_id", y="similarity_score", color="rank", title="Relative similarity score (as supplied by the matcher)"),
-                width="stretch",
+                ranking_figure, width="stretch",
+                config={"displayModeBar": True, "scrollZoom": True, "responsive": True},
             )
 
         candidate_ids = selected_rankings["candidate_site_id"].tolist()
@@ -292,7 +455,19 @@ def main() -> None:
             mapped = mapped.dropna(subset=["latitude", "longitude"])
             if not mapped.empty:
                 st.plotly_chart(
-                    px.scatter_geo(mapped, lat="latitude", lon="longitude", color="planet", hover_name="site_name", hover_data=["site_id"], title="Earth candidate locations (target coordinates are not plotted on an Earth basemap)"),
+                    px.scatter_geo(
+                        mapped, lat="latitude", lon="longitude", color="planet",
+                        hover_name="site_name", hover_data=["site_id"],
+                        title="Earth candidate reference locations",
+                        template="plotly_dark",
+                    ).update_layout(
+                        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(8,18,31,.35)",
+                        font_color="#dce9f8", margin=dict(l=10, r=10, t=56, b=10),
+                        geo=dict(
+                            bgcolor="rgba(0,0,0,0)", showocean=True, oceancolor="#081525",
+                            showland=True, landcolor="#1a2a3d", coastlinecolor="#38516a",
+                        ),
+                    ),
                     width="stretch",
                 )
                 st.caption("Map markers are reference-window anchors only; they are not approved AOI polygons.")
@@ -320,7 +495,12 @@ def main() -> None:
         st.caption("Similarity is a relative ranking under supplied features, scaling, and mission weights. It is not a probability of mission success or certification of site suitability.")
 
     with tab_passport:
-        st.subheader("Analog Passport")
+        st.markdown(
+            '<div class="a67-section"><div class="a67-section-kicker">Evidence dossier</div>'
+            '<div class="a67-section-title">Analog Passport</div>'
+            '<div class="a67-section-subtitle">A portable record of the selected site, its measured terrain descriptors, source lineage and known gaps.</div></div>',
+            unsafe_allow_html=True,
+        )
         passport_sites = fingerprints[fingerprints["site_id"].isin(comparison_ids)][["site_id", "site_name"]].drop_duplicates()
         if passport_sites.empty:
             st.info("No target or candidate site rows are available for a Passport.")
@@ -439,7 +619,11 @@ def main() -> None:
         )
 
     st.divider()
-    st.caption("AREA 67 · Verify sources, units, vertical references, analysis scale, and data quality before interpreting cross-body comparisons.")
+    st.markdown(
+        '<div class="a67-section-subtitle">AREA 67 · Discover Earth. Explore Other Worlds. '
+        'Verify sources, units, vertical references, analysis scale and data quality before interpreting cross-body comparisons.</div>',
+        unsafe_allow_html=True,
+    )
 
 
 if __name__ == "__main__":
