@@ -41,6 +41,8 @@ The valid native Site01 features are 0–4; features 5 and 6 are invalid and rem
 - **Feature 2 — independent high-direct-support alternative:** 135 pixel centres, 17.78% positive LDEC support, median Z RMS 0.266 m, median slope RMS 1.664°.
 - Feature 3 (484 centres) remains a larger comparison region; its uncertainty indicators are less favourable than Feature 4 in the current native-ROI audit.
 
+The broader seven-ROI screen prevents over-interpreting these Site01 measurements: Site07 Feature 1 has the largest sample (612 centres), Site11 Feature 2 has the lowest median Z RMS (0.245 m) and slope RMS (1.533°), and Site04 Feature 3 has the lowest median slope RMS (1.473°) but only 101 centres and a steeper slope distribution. Site01 is therefore the working target because of the separate illumination/SDEM evidence, not because it wins every terrain or uncertainty metric. See the [multi-site ROI candidate screening report](reports/lunar_roi/MULTI_SITE_ROI_CANDIDATE_SCREENING_2026-11-15.md).
+
 These are separate evidence dimensions, not an automatic score. Do not turn the small provider polygons into the final study area without evaluating the surrounding SDEM landform and the intended rover-analysis footprint.
 
 ### Initial Site01 screening window
