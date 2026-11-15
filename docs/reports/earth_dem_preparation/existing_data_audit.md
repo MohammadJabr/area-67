@@ -14,6 +14,23 @@ Five local Copernicus GLO-30 DSM tiles were cross-checked against `data/metadata
 
 The product is a digital surface model, not a guaranteed bare-earth DTM. Product documentation identifies EGM2008 heights and meters; exact package release is not identified in local filenames. Nominal product posting is not effective terrain resolution. Source dates and local per-cell uncertainty are unavailable. Copernicus product information describes quality/editing layers, but these companion layers were not acquired.
 
+### Authoritative Copernicus product specification
+
+The Copernicus DEM Product Handbook, version 5.0 (29 November 2022), specifies for the DGED GLO-30 product family:
+- Horizontal reference: WGS84-G1150 / EPSG:4326.
+- Vertical reference: EGM2008 / EPSG:3855.
+- Vertical unit: metres.
+- GLO-30 latitude grid spacing: 1 arc-second; longitude spacing varies with latitude.
+- DGED grid registration: RasterPixelIsPoint.
+- GeoTIFF delivery includes product metadata and quality-layer information in the specified product package.
+
+Sources:
+- [Copernicus DEM Product Handbook v5.0, PDF](https://dataspace.copernicus.eu/sites/default/files/media/files/2024-06/geo1988-copernicusdem-spe-002_producthandbook_i5.0.pdf) — sections 1.2.1–1.2.2.
+- [Copernicus Data Space — Copernicus DEM collection description](https://dataspace.copernicus.eu/explore-data/data-collections/copernicus-contributing-missions/collections-description/COP-DEM).
+
+This is **product-level evidence**, not a substitute for identifying the exact package release behind each AWS mirror tile or checking the tile's own metadata. The local COG tags do not declare a vertical datum or band unit, and no per-tile quality companions were retrieved in the current artifact. Keep the distinction visible in manifests and preflight reports; do not silently rewrite raster tags or promote scientific readiness solely because the product handbook specifies the family-level reference system.
+
+
 **Coverage risks:** McMurdo's manifest coordinate is approximate and almost on the western raster boundary; it does not identify which Dry Valley is intended. Haughton and Askja candidate landforms may reach beyond their present tile margins. Mauna Kea and Yungay have larger margins but a point alone cannot establish full landform coverage. QA JSON and Markdown reports use repository-relative paths so the screening workflow is reproducible from another checkout. The source rasters themselves remain local and gitignored.
 
 See [source inventory](../../../data/metadata/earth_dem_source_inventory.csv) for per-source provenance and `data/metadata/earth_dem_qa/` for exact hashes and raster statistics.
