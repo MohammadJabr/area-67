@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 import rasterio
+from pyproj import CRS as PyprojCRS
 
 DEFAULT_ROOT = Path("data/raw/moon/sdem_connecting_ridge/A3CLR22_6_Connecting_Ridge")
 EXPECTED_LAYERS = (
@@ -28,6 +29,7 @@ def raster_metadata(path: Path) -> dict[str, Any]:
     """Return header-level metadata for one raster without reading pixel values."""
     with rasterio.open(path) as dataset:
         crs = dataset.crs
+        geodetic_crs = PyprojCRS.from_wkt(crs.to_wkt()).geodetic_crs if crs else None
         return {
             "path": str(path),
             "driver": dataset.driver,
@@ -37,7 +39,7 @@ def raster_metadata(path: Path) -> dict[str, Any]:
             "dtypes": list(dataset.dtypes),
             "crs": crs.to_string() if crs else None,
             "crs_wkt": crs.to_wkt() if crs else None,
-            "crs_geodetic": str(crs.geodetic_crs) if crs and crs.geodetic_crs else None,
+            "crs_geodetic": geodetic_crs.to_wkt() if geodetic_crs else None,
             "bounds": {
                 "left": dataset.bounds.left,
                 "bottom": dataset.bounds.bottom,
