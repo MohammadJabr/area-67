@@ -83,7 +83,7 @@ Before treating the pilot as reproducible, record the exact common-grid transfor
 
 ## Local-relief window sensitivity (exploratory)
 
-The same five 30m sample grids were recomputed with the requested local-relief window changed while all other feature calculations, sample extents, weights, and tolerances were held constant. The configured windows round to odd cell widths:
+The same four 30m sample grids were recomputed with the requested local-relief window changed while all other feature calculations, sample extents, weights, and tolerances were held constant. The configured windows round to odd cell widths:
 
 | Requested window | Cells | Actual centre-to-centre span | Haughton | Yungay | Mauna Kea |
 |---:|---:|---:|---:|---:|---:|
