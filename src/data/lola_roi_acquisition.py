@@ -29,7 +29,7 @@ AVAILABLE_ROI_SITES = {
 RAW_ARCHIVE_ROOT = REPO_ROOT / "data/raw/moon/roi_archives"
 EXTRACTED_ROOT = REPO_ROOT / "data/raw/moon/roi_shapes"
 REPORT_ROOT = REPO_ROOT / "data/metadata/lola_rois"
-TIFF_SIGNATURE = b"\x1f\x8b"
+GZIP_SIGNATURE = b"\x1f\x8b"
 DEFAULT_MAX_ARCHIVE_MB = 50.0
 MAX_MEMBERS = 5000
 
@@ -92,11 +92,11 @@ def download_roi_archive(
                         raise RuntimeError(
                             f"Download exceeded configured limit {max_bytes:,} bytes"
                         )
-                    if len(prefix) < len(TIFF_SIGNATURE):
-                        prefix += chunk[: len(TIFF_SIGNATURE) - len(prefix)]
+                    if len(prefix) < len(GZIP_SIGNATURE):
+                        prefix += chunk[: len(GZIP_SIGNATURE) - len(prefix)]
                     digest.update(chunk)
                     output.write(chunk)
-        if prefix != TIFF_SIGNATURE:
+        if prefix != GZIP_SIGNATURE:
             raise RuntimeError(f"Response is not a gzip archive: {url}")
         if declared_length is not None and received != int(declared_length):
             raise RuntimeError(
