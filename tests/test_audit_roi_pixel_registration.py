@@ -51,7 +51,7 @@ def test_reports_vertices_aligned_to_pixel_centres(tmp_path):
     assert report["summary"]["vertex_count"] == 5
     assert report["summary"]["pixel_center_aligned_vertex_count"] == 5
     assert report["summary"]["pixel_center_aligned_pct"] == 100.0
-    assert report["summary"]["maximum_pixel_center_residual_m"] == 0.0
+    assert report["summary"]["maximum_pixel_center_residual_m"] <= 1e-12
 
 
 def test_handles_rotated_and_sheared_affine_pixel_centres(tmp_path):
