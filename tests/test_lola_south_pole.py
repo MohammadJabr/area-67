@@ -138,6 +138,51 @@ def test_download_enforces_declared_size_limit(tmp_path):
             download_site_asset("Site01", "elevation", tmp_path / "large.tif", max_bytes=4)
 
 
+def test_raster_batch_continues_after_failure_and_preserves_successes(
+    tmp_path, monkeypatch, capsys
+):
+    import lola_south_pole as acquisition
+
+    monkeypatch.setattr(acquisition, "RAW_ROOT", tmp_path)
+
+    def fake_download(site_id, asset_name, destination, *, max_bytes):
+        if (site_id, asset_name) == ("Site01", "counts"):
+            raise RuntimeError("temporary provider error")
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(f"{site_id}/{asset_name}".encode("utf-8"))
+        return {
+            "site_id": site_id,
+            "asset": asset_name,
+            "path": str(destination),
+        }
+
+    monkeypatch.setattr(acquisition, "download_site_asset", fake_download)
+    failures = acquisition.download_requested_assets(
+        ["Site01", "Site04"],
+        ["elevation", "counts"],
+        max_bytes=1024,
+    )
+
+    assert failures == [("Site01", "counts")]
+    assert (tmp_path / "site01" / acquisition.asset_filename("Site01", "elevation")).is_file()
+    assert not (tmp_path / "site01" / acquisition.asset_filename("Site01", "counts")).exists()
+    assert (tmp_path / "site04" / acquisition.asset_filename("Site04", "elevation")).is_file()
+    assert (tmp_path / "site04" / acquisition.asset_filename("Site04", "counts")).is_file()
+
+    output = capsys.readouterr().out
+    assert "ERROR downloading Site01/counts" in output
+    assert "Successful files were preserved" in output
+
+
+def test_raster_batch_rejects_non_positive_size_limit():
+    import lola_south_pole as acquisition
+
+    with pytest.raises(ValueError, match="max_bytes must be positive"):
+        acquisition.download_requested_assets(
+            ["Site01"], ["elevation"], max_bytes=0
+        )
+
+
 def test_asset_contract_contains_only_five_measured_layers():
     assert set(ASSETS) == {
         "elevation", "counts", "slope", "z_uncertainty", "slope_uncertainty"

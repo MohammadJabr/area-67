@@ -150,6 +150,55 @@ def site_asset_paths(site_id: str, asset_names: list[str]) -> dict[str, Path]:
     }
 
 
+def download_requested_assets(
+    site_ids: list[str],
+    asset_names: list[str],
+    *,
+    max_bytes: int,
+) -> list[tuple[str, str]]:
+    """Attempt every selected site/layer and preserve successful local rasters.
+
+    A provider error for one asset must not prevent other requested assets
+    from downloading. Existing files are skipped and never overwritten.
+    The returned (site_id, asset_name) pairs identify any failed downloads.
+    """
+    if max_bytes < 1:
+        raise ValueError("max_bytes must be positive")
+
+    failures: list[tuple[str, str]] = []
+    for site_id in site_ids:
+        paths = site_asset_paths(site_id, asset_names)
+        for asset_name, destination in paths.items():
+            if destination.exists():
+                print(f"Already present; leaving unchanged: {destination}")
+                continue
+            try:
+                result = download_site_asset(
+                    site_id,
+                    asset_name,
+                    destination,
+                    max_bytes=max_bytes,
+                )
+                print(json.dumps(result, indent=2))
+            except Exception as exc:
+                failures.append((site_id, asset_name))
+                print(
+                    f"ERROR downloading {site_id}/{asset_name}: "
+                    f"{type(exc).__name__}: {exc}"
+                )
+
+    if failures:
+        failed_items = ", ".join(f"{site}/{asset}" for site, asset in failures)
+        print(
+            "Raster batch completed with failures for: "
+            + failed_items
+            + ". Successful files were preserved."
+        )
+    else:
+        print("All requested LOLA raster assets are available locally.")
+    return failures
+
+
 def inspect_site(site_id: str, asset_names: list[str]) -> dict[str, Any]:
     paths = site_asset_paths(site_id, asset_names)
     report = {
@@ -200,17 +249,13 @@ def main(argv: list[str] | None = None) -> int:
                 parser.error("download requires --confirm-download after reviewing selected assets")
             if args.max_file_mb <= 0:
                 parser.error("--max-file-mb must be positive")
-            for site_id in args.sites:
-                paths = site_asset_paths(site_id, args.assets)
-                for asset_name, destination in paths.items():
-                    if destination.exists():
-                        print(f"Already present; leaving unchanged: {destination}")
-                        continue
-                    result = download_site_asset(
-                        site_id, asset_name, destination,
-                        max_bytes=int(args.max_file_mb * 1024 * 1024),
-                    )
-                    print(json.dumps(result, indent=2))
+            failures = download_requested_assets(
+                args.sites,
+                args.assets,
+                max_bytes=int(args.max_file_mb * 1024 * 1024),
+            )
+            if failures:
+                return 1
 
         elif args.command == "inspect":
             for site_id in args.sites:

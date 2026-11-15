@@ -86,7 +86,7 @@ Outputs:
 - Raw site rasters: data/raw/moon/site01/
 - Inspection and QA JSON: data/metadata/lola_south_pole/
 
-Each file has a per-file safety ceiling (default 100 MiB), TIFF signature check, raster metadata check, SHA-256, partial-download cleanup, and no-overwrite behavior. Do not commit source rasters.
+Each file has a per-file safety ceiling (default 100 MiB), TIFF signature check, raster metadata check, SHA-256, partial-download cleanup, and no-overwrite behavior. Multi-site/multi-layer batches continue after an individual asset failure, preserve successful files, report every failed site/layer pair, and return a nonzero exit code when any asset fails. Do not commit source rasters.
 
 ## How to interpret the ROI inspection
 
