@@ -1,8 +1,15 @@
+import json
+
 import numpy as np
 import pandas as pd
 import pytest
 
-from src.features.terrain_fingerprint import TerrainConfig, analyze_geotiff, calculate_terrain_fingerprint
+from src.features.terrain_fingerprint import (
+    TerrainConfig,
+    analyze_geotiff,
+    analyze_run_config,
+    calculate_terrain_fingerprint,
+)
 from src.features.validation import compare_scale_runs, feature_correlation_audit, validate_fingerprint_rows
 
 
@@ -240,3 +247,75 @@ def test_local_relief_support_fraction_cannot_be_omitted():
             relief_window_m=40,
             local_relief_min_valid_fraction=None,
         ).validate()
+
+
+@pytest.mark.parametrize(
+    ("coverage_setting", "expected_threshold"),
+    [
+        ("omitted", None),
+        ("null", None),
+        ("explicit", 85.0),
+    ],
+)
+def test_run_config_preserves_optional_minimum_coverage_threshold(
+    tmp_path, monkeypatch, coverage_setting, expected_threshold
+):
+    from src.features import terrain_fingerprint as fingerprint_module
+
+    document = {
+        "analysis_scale_m": 10,
+        "relief_window_m": 40,
+        "local_relief_min_valid_fraction": 0.8,
+        "sites": [
+            {
+                "site_id": "TEST_MOON",
+                "planet": "Moon",
+                "source_id": "SYNTHETIC_TEST",
+                "dem_path": "unused-dem.tif",
+                "aoi_path": "unused-aoi.geojson",
+            }
+        ],
+    }
+    if coverage_setting == "null":
+        document["minimum_valid_coverage_pct"] = None
+    elif coverage_setting == "explicit":
+        document["minimum_valid_coverage_pct"] = expected_threshold
+
+    config_path = tmp_path / "terrain_run.json"
+    output_path = tmp_path / "terrain_fingerprints.csv"
+    config_path.write_text(json.dumps(document), encoding="utf-8")
+
+    captured = []
+
+    def fake_analyze_geotiff(dem_path, aoi_path, site, run_config, write_maps_to=None):
+        captured.append(run_config)
+        return {
+            "site_id": "TEST_MOON",
+            "planet": "Moon",
+            "source_id": "SYNTHETIC_TEST",
+            "analysis_scale_m": 10.0,
+            "nodata_pct": 0.0,
+            "valid_coverage_pct": 100.0,
+            "slope_unit": "degrees",
+            "slope_median": 1.0,
+            "slope_p90": 2.0,
+            "tri_definition": "Riley eight-neighbour",
+            "tri_window_cells": 1,
+            "tri_median": 1.0,
+            "relief_window_m": 40.0,
+            "local_relief_p95_p5": 3.0,
+            "terrain_class_thresholds": "low < 10; mid 10-25; high >= 25",
+            "terrain_low_pct": 40.0,
+            "terrain_mid_pct": 40.0,
+            "terrain_high_pct": 20.0,
+            "spatial_pattern_definition": "largest connected steep patch",
+            "largest_steep_patch_pct": 5.0,
+        }
+
+    monkeypatch.setattr(fingerprint_module, "analyze_geotiff", fake_analyze_geotiff)
+
+    analyze_run_config(config_path, output_path)
+
+    assert len(captured) == 1
+    assert captured[0].minimum_valid_coverage_pct == expected_threshold
+    assert output_path.is_file()
