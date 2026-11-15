@@ -1,0 +1,96 @@
+name: AREA 67 GIS data acquisition and audit
+
+on:
+  workflow_dispatch:
+    inputs:
+      dataset:
+        description: Public datasets to acquire
+        required: true
+        type: choice
+        options:
+          - both
+          - earth
+          - moon
+        default: both
+
+permissions:
+  contents: read
+
+concurrency:
+  group: area67-gis-acquisition-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  acquire-and-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install geospatial dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Acquire Earth candidate DEM source tiles
+        if: inputs.dataset == 'earth' || inputs.dataset == 'both'
+        continue-on-error: true
+        run: |
+          python -m src.data.earth_dem_acquisition \
+            --sites haughton mcmurdo askja mauna_kea yungay \
+            --confirm-download --max-file-mb 250
+
+      - name: Acquire lunar LOLA layers for Site01 and Site04
+        if: inputs.dataset == 'moon' || inputs.dataset == 'both'
+        continue-on-error: true
+        run: |
+          python -m src.data.lola_south_pole download \
+            --sites Site01 Site04 \
+            --assets elevation counts slope z_uncertainty slope_uncertainty \
+            --confirm-download --max-file-mb 500
+
+      - name: Acquire and inspect official lunar ROI archives
+        if: inputs.dataset == 'moon' || inputs.dataset == 'both'
+        continue-on-error: true
+        run: |
+          python -m src.data.lola_roi_acquisition download \
+            --sites Site01 Site04 --confirm-download --max-archive-mb 50
+          python -m src.data.lola_roi_acquisition inspect --sites Site01 Site04
+
+      - name: Inventory and structurally preflight every acquired raster
+        if: always()
+        run: |
+          python -m src.data.ci_gis_audit
+
+      - name: Run terrain fingerprint and GIS data tests
+        if: always()
+        run: |
+          python -m pytest -q \
+            tests/test_terrain_fingerprint.py \
+            tests/test_raster_inventory.py \
+            tests/test_raster_preflight.py \
+            tests/test_lola_site04_qa.py \
+            tests/test_lola_south_pole.py \
+            tests/test_lola_roi_acquisition.py \
+            tests/test_lola_roi_quality.py
+
+      - name: Upload acquisition data and audit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: area67-gis-${{ inputs.dataset }}-${{ github.run_id }}
+          path: |
+            data/raw/earth/
+            data/raw/moon/
+            data/metadata/ci_gis_audit/
+            data/metadata/lola_south_pole/
+            data/metadata/lola_rois/
+          if-no-files-found: warn
+          retention-days: 14
