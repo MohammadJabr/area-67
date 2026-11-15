@@ -129,12 +129,15 @@ def passport_to_markdown(passport: Mapping[str, Any], demo_mode: bool = False) -
     if supplied_quality:
         lines += ["", "## Study footprint and observation support"]
         lines.extend(f"- **{label}:** {value}" for label, value in supplied_quality)
-    elif str(identity.get("planet", "")).casefold() == "earth":
-        lines += [
-            "",
-            "## Study footprint and observation support",
-            "- Direct instrument-shot support: not supplied for this Earth DSM; this is separate from raster NoData.",
-        ]
+    if (
+        str(identity.get("planet", "")).casefold() == "earth"
+        and other.get("direct_observation_coverage_pct") is None
+    ):
+        if not supplied_quality:
+            lines += ["", "## Study footprint and observation support"]
+        lines.append(
+            "- Direct instrument-shot support: not supplied for this Earth DSM; this is separate from raster NoData."
+        )
 
     lines += ["", "## Terrain Fingerprint"]
     for group, metrics in passport.get("fingerprint", {}).items():
