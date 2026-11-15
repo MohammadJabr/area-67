@@ -62,10 +62,22 @@ def test_repair_preview_lists_nonpolygonal_output_and_uses_polygon_only():
         [[(2, 2), (3, 3), (2, 3), (2, 2)]],
     )
     info, candidate = make_valid_preview(polygon_with_cut)
-    assert info["status"] in {"preview_available", "no_polygonal_output"}
-    if candidate is not None:
-        assert candidate.geom_type in {"Polygon", "MultiPolygon"}
-        assert candidate.is_valid
+    assert info["status"] == "preview_available"
+    assert info["validity_reason"] == "Self-intersection[3 3]"
+    assert info["make_valid_output_geometry_type"] == "GeometryCollection"
+    assert info["make_valid_output_component_types"] == [
+        "Polygon",
+        "Polygon",
+        "LineString",
+    ]
+    assert info["polygon_component_count_before_union"] == 2
+    assert info["non_polygon_component_types_excluded_from_raster_preview"] == [
+        "LineString"
+    ]
+    assert candidate is not None
+    assert candidate.geom_type == "MultiPolygon"
+    assert candidate.is_valid
+    assert not polygon_with_cut.is_valid  # the source remains unchanged
 
 
 def test_report_keeps_invalid_source_stats_separate_from_preview(tmp_path):
