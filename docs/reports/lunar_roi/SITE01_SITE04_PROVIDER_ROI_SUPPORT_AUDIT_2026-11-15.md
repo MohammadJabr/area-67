@@ -7,7 +7,7 @@
 
 The audit used the official NASA PGDA Site01 and Site04 ROI archives together with the corresponding five native LOLA raster layers: surface elevation, LDEC spot counts, slope, total elevation RMS uncertainty, and slope RMS uncertainty. Statistics count native raster pixel centres inside each source polygon (`all_touched=false`). No geometry repair, reprojection, resampling, or vertical-reference transformation was applied.
 
-The five layers within each site have matching 3200 × 3200 dimensions, 5m nominal posting, and matching grid metadata. The local lunar WKT labels its datum as unknown. Matching projection parameters do not establish the physical Moon-fixed frame (ME/PA).
+The five layers within each site have matching 3200 × 3200 dimensions, 5m nominal posting, and matching grid metadata. The embedded lunar raster WKT uses an unknown datum placeholder, but NASA PGDA Product 78 documents the GeoTIFF layers as MOON_ME / JPL DE421. The provider ROI shapefile frame remains unverified because Product 78 explicitly excludes ROI shapefiles from that frame statement. Do not relabel either source CRS or infer the shapefile frame from projection parameters.
 
 ## Site01 — Connecting Ridge
 
