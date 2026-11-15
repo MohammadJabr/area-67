@@ -36,7 +36,7 @@ Tool: **src/data/lola_roi_acquisition.py**
 - Extracts regular files and directories; records relative symbolic links in an extraction manifest but never creates or follows them. Hard links and special files are rejected.
 - Rejects absolute paths, parent traversal, duplicate case-insensitive paths, and extraction-manifest path collisions.
 - Stages extraction and publishes only after validation. The inspection report surfaces every skipped symbolic link as a review warning.
-- Inventories every .shp through GeoPandas, recording feature count, CRS, geometry types, bounds, empty/invalid geometries, fields, and native-CRS area when projected.
+- Inventories every .shp through GeoPandas, recording feature count, CRS, geometry types, bounds, empty/invalid geometries, fields, and native-CRS area when projected. For each invalid non-empty feature, records its feature index, source attributes, and Shapely validity reason; no repair is attempted.
 - Does not reproject, repair, clip, simplify or label any geometry as an approved AREA 67 AOI.
 
 Download the five small ROI archives after reviewing the site list:
