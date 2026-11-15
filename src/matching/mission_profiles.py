@@ -6,6 +6,7 @@ Initial weights are operational assumptions for the prototype.
 They are NOT official NASA specifications.
 """
 
+from collections.abc import Mapping
 from math import isclose, isfinite
 
 
@@ -29,12 +30,12 @@ ROVER_NAVIGATION_PROFILE = {
 def validate_weights(weights: dict) -> None:
     """Validate mission weights and ensure they sum to 1."""
 
-    if not weights:
-        raise ValueError("Mission weights cannot be empty.")
+    if not isinstance(weights, Mapping) or not weights:
+        raise ValueError("Mission weights must be a non-empty mapping.")
 
     for group, weight in weights.items():
 
-        if not isinstance(weight, (int, float)):
+        if isinstance(weight, bool) or not isinstance(weight, (int, float)):
             raise ValueError(f"Invalid weight for {group}.")
 
         if not isfinite(weight) or weight < 0:

@@ -78,3 +78,32 @@ def test_candidates_are_ranked_correctly():
 
     assert result["target_site_id"] == "MOON_SITE04"
     assert result["rejected_candidates"] == []
+
+
+def test_boolean_weights_and_distances_are_rejected():
+    import pytest
+
+    with pytest.raises(ValueError, match="Invalid weight"):
+        weighted_similarity_distance({"slope": 1.0}, {"slope": True})
+
+    with pytest.raises(ValueError, match="Invalid distance"):
+        weighted_similarity_distance({"slope": True}, {"slope": 1.0})
+
+
+def test_boolean_completeness_threshold_is_rejected():
+    import pytest
+
+    with pytest.raises(ValueError, match="min_completeness"):
+        weighted_similarity_distance(
+            {"slope": 1.0},
+            {"slope": 1.0},
+            min_completeness=True,
+        )
+
+
+def test_boolean_mission_profile_weight_is_rejected():
+    import pytest
+    from src.matching.mission_profiles import validate_weights
+
+    with pytest.raises(ValueError, match="Invalid weight"):
+        validate_weights({"slope": True})
