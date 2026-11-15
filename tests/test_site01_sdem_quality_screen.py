@@ -62,14 +62,31 @@ def test_nominal_signature_ignores_datum_label_but_checks_map_math():
         'PARAMETER["false_northing",0],UNIT["metre",1],AXIS["Easting",NORTH],AXIS["Northing",NORTH]]'
     )
     right = rasterio.crs.CRS.from_wkt(
-        'PROJCS["unknown",GEOGCS["unknown",DATUM["unknown",SPHEROID["unknown",1737400,0]],'
-        'PRIMEM["Reference meridian",0],UNIT["Degree",0.0174532925199433]],'
-        'PROJECTION["Polar_Stereographic"],PARAMETER["latitude_of_origin",-90],'
-        'PARAMETER["central_meridian",0],PARAMETER["false_easting",0],'
-        'PARAMETER["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],'
-        'AXIS["Easting",NORTH],AXIS["Northing",NORTH]]'
+        'PROJCRS["unknown",BASEGEOGCRS["unknown",DATUM["unknown",ELLIPSOID["unknown",1737400,0,LENGTHUNIT["metre",1,ID["EPSG",9001]]]],'
+        'PRIMEM["Reference meridian",0,ANGLEUNIT["Degree",0.0174532925199433]]],'
+        'CONVERSION["unnamed",METHOD["Polar Stereographic (variant B)",ID["EPSG",9829]],'
+        'PARAMETER["Latitude of standard parallel",-90,ANGLEUNIT["Degree",0.0174532925199433],ID["EPSG",8832]],'
+        'PARAMETER["Longitude of origin",0,ANGLEUNIT["Degree",0.0174532925199433],ID["EPSG",8833]],'
+        'PARAMETER["False easting",0,LENGTHUNIT["metre",1],ID["EPSG",8806]],'
+        'PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],'
+        'CS[Cartesian,2],AXIS["easting",north,ORDER[1],LENGTHUNIT["metre",1,ID["EPSG",9001]]],'
+        'AXIS["northing",north,ORDER[2],LENGTHUNIT["metre",1,ID["EPSG",9001]]]]'
     )
     assert m.same_nominal_polar_math(left, right)
+
+
+def test_nominal_projection_check_rejects_different_standard_parallel_and_scale():
+    reference = rasterio.crs.CRS.from_proj4(
+        "+proj=stere +lat_0=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +k=1 +units=m"
+    )
+    different_parallel = rasterio.crs.CRS.from_proj4(
+        "+proj=stere +lat_ts=-80 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m"
+    )
+    different_scale = rasterio.crs.CRS.from_proj4(
+        "+proj=stere +lat_0=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +k=0.9 +units=m"
+    )
+    assert not m.same_nominal_polar_math(reference, different_parallel)
+    assert not m.same_nominal_polar_math(reference, different_scale)
 
 
 def test_summary_separates_zero_from_nonfinite():
