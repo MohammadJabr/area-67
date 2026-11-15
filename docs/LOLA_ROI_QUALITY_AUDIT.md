@@ -58,6 +58,18 @@ Direct-observation support is calculated as positive LDEC cells divided by valid
 - No raster data are altered, resampled, clipped to disk, or exported.
 - All statistics are descriptive summaries in the source product's declared units. They are not accuracy thresholds or approval cutoffs.
 
+## Invalid-geometry repair sensitivity preview
+
+The normal ROI quality audit deliberately does not calculate statistics for invalid source geometries. Use the separate preview tool to learn why a feature is invalid and what a Shapely `make_valid` candidate would produce, without changing the source shapefile:
+
+```bash
+python src/data/preview_invalid_roi_repairs.py --site Site04 --roi-directory data/raw/moon/roi_shapes/Site04 --output data/metadata/site04_invalid_roi_repair_preview.json
+```
+
+For invalid features, the JSON records the Shapely validity reason, `make_valid` output type, polygon component count, any non-polygon components excluded from raster statistics, candidate geometry bounds/area, and preview-only LOLA statistics for the union of polygonal components. Already-valid features are summarized from their original geometry for comparison.
+
+The utility is diagnostic only. It never writes geometry, replaces an ROI, or treats a make-valid result as the provider's intended boundary. Repair-preview statistics must not be merged into the official ROI QA report or used as AREA 67 study-AOI evidence until the team reviews the candidate geometry and its scientific provenance.
+
 ## Pixel-registration diagnostic
 
 The ROI polygons can be checked against the native raster's affine pixel lattice without changing either source. The diagnostic reports whether every polygon-ring vertex lies on the pixel-centre lattice, the pixel-corner lattice, or neither. It measures residuals in map units and also records the raster's `AREA_OR_POINT` tag.
