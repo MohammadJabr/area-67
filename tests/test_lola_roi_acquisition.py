@@ -1,5 +1,6 @@
 import gzip
 import hashlib
+import json
 import io
 import sys
 import tarfile
@@ -153,7 +154,7 @@ def test_extract_skips_symbolic_links_and_records_them_in_manifest(tmp_path):
     assert not (destination / "Site01_ROIs.gmt").exists()
     assert len(written) == 1
 
-    manifest = __import__("json").loads(
+    manifest = json.loads(
         (destination / "archive_extraction_manifest.json").read_text(encoding="utf-8")
     )
     assert manifest["source_archive"] == "site01.tgz"
@@ -171,7 +172,7 @@ def test_inspection_reports_skipped_symbolic_links(tmp_path):
     folder = tmp_path / "extracted"
     folder.mkdir()
     (folder / "archive_extraction_manifest.json").write_text(
-        __import__("json").dumps(
+        json.dumps(
             {
                 "schema_version": 1,
                 "source_archive": "Site01_ROIs.tgz",
