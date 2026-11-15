@@ -147,9 +147,7 @@ The archive's own README also defines the A306 region footprint in projected coo
 
 ### Screened small derivative: not the Site04/SP-4 tile
 
-A third-party Hugging Face dataset, “Connecting Ridge 5 m: Lunar South Pole Terrain & Ice-Prospectivity” (Terranova Robotics, 2026), describes a 3 km × 3 km, 5 m/pixel tile centered at 89.439°S, 222.856°E (the Site001 / Connecting Ridge vicinity). Its published South Polar Stereographic georeferencing places that tile center approximately 10.90 km from the SP-4 point; the 3 km square therefore does not overlap SP-4.
-
-This third-party tile should not be treated as the Site04/SP-4 SDEM subset. It is centered on the Connecting Ridge/Site001 vicinity, about 10.90 km from the SP-4 point in the local projection; its 3 km square does not overlap SP-4. It may be useful as an example of a small derived terrain bundle or pipeline reference, but not as elevation coverage for this Site04 target. Its derived layers and model outputs have the limitations stated in its dataset card and are not substitutes for the NASA source rasters.
+A third-party Hugging Face dataset, “Connecting Ridge 5 m: Lunar South Pole Terrain & Ice-Prospectivity” (Terranova Robotics, 2026), describes a 3 km × 3 km, 5 m/pixel tile centered at 89.439°S, 222.856°E (the Site001 / Connecting Ridge vicinity). Its published South Polar Stereographic georeferencing places that tile center approximately 10.90 km from the SP-4 point; the 3 km square therefore does not overlap SP-4. It should not be used as the Site04/SP-4 elevation source.
 
 This is a screening result from the dataset card's published center and grid description, not inspection of the files themselves. Source: https://huggingface.co/datasets/terranova-robotics/connecting-ridge-5m.
 
@@ -209,6 +207,7 @@ This review used header metadata only. No SDEM pixel arrays were read, and no ra
 - NASA GSFC, Lunar Surface Data Book, ACD-50044 Rev A (2023), Appendix A, Table A2-2: https://ntrs.nasa.gov/api/citations/20230007818/downloads/ACD-50044%20Lunar%20Surface%20Data%20Book%20Rev%20A.pdf
 - Patterson et al. (2024), “Lithologies and Chronologic Opportunities of Materials to Be Returned From the Artemis Exploration Zone,” section 1.2.2: https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2023JE008275
 - NASA GSFC PGDA Product 104, Enhanced Topography Models for Selected Lunar South Pole Regions with Shape-from-Shading: https://pgda.gsfc.nasa.gov/products/104
+- Bertone et al. (2026), “Enhanced Topography Models for selected Lunar South Pole regions with Shape-from-Shading,” The Planetary Science Journal, 7, 118, DOI: https://doi.org/10.3847/PSJ/ae5b70
 - Bertone et al. (2025), archived SDEM geospatial products, Zenodo record 17954508: https://zenodo.org/records/17954508
 
-**No new raster or vector data was downloaded, modified, repaired, reprojected or resampled for this note.**
+The SDEM elevation, mask, best-resolution and solar-bin companion files were selectively extracted from Zenodo using HTTP byte-range requests and CRC32-verified. The audit read their GeoTIFF headers only; no raster pixel arrays were read, and no original source raster/vector was modified, repaired, reprojected, resampled or combined.
