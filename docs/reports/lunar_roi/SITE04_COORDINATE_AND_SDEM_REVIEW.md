@@ -143,7 +143,7 @@ The Zenodo README gives the Connecting Ridge regional bounding box in longitude/
 - Max longitude: -101.888658°
 - Max latitude: -89.090284°
 
-This coarse regional bounding box includes the inverse-transformed local provider ROI centroids and the peer-reviewed SP-4 coordinate. It does not, by itself, prove exact raster-mask coverage for every point or every layer.
+The archive's own README also defines the A306 region footprint in projected coordinates as a rectangle with X from -19,000 m to -3,000 m and Y from -20,000 m to -4,000 m. The extracted 5 m elevation GeoTIFF confirms those bounds exactly. This projected footprint is the decisive screening geometry; the broader longitude/latitude bounding box is not an adequate substitute for testing the actual projected footprint.
 
 ### Screened small derivative: not the Site04/SP-4 tile
 
@@ -155,24 +155,52 @@ This is a screening result from the dataset card's published center and grid des
 
 ### Suitability and limitations
 
-This is a promising alternate/companion lunar terrain source for the Site04 ROI cluster because the local ROI coordinates lie within the Connecting Ridge region bounds. It is not yet approved as a replacement for Site04 LDEM.
+### Result of the local A306 / Connecting Ridge header audit
 
-Before use, verify locally:
-1. The exact raster footprints and valid masks of SDEM, uncertainty/resolution, slope and image/solar coverage layers.
-2. The SDEM CRS, Moon body/reference frame, pixel spacing, affine transform, NoData semantics and vertical relationship to the existing Site04 LOLA products.
-3. Whether the provider ROI cluster and the selected Artemis SP-4 research point are actually covered by valid SDEM/ancillary pixels.
-4. Which areas have adequate multi-illumination/image support and which remain constrained by shadows or sparse image input.
-5. Product citation and license/usage terms before redistribution.
+The selectively extracted files were CRC32-verified, and the read-only GeoTIFF metadata audit reported:
 
-The archive should not be downloaded in full until the team agrees that a targeted SDEM validation is worth the approximately 2.2 GB compressed regional download. The file-level preview is available, but this review did not download or inspect the GeoTIFF raster data.
+| Layer | Dimensions | Pixel size | Bounds (Xmin, Ymin, Xmax, Ymax) | NoData |
+|---|---:|---:|---|---:|
+| GLDELEV | 3200 × 3200 | 5 m | [-19000, -20000, -3000, -4000] | -3.4028235e38 |
+| GLDMASK | 1066 × 1066 | 15 m | [-19000, -19990, -3010, -4000] | None |
+| GLDBRES | 1066 × 1066 | 15 m | [-19000, -19990, -3010, -4000] | None |
+| GLDSBCT | 1066 × 1066 | 15 m | [-19000, -19990, -3010, -4000] | None |
+| GLDSBCTALL | 1066 × 1066 | about 15.0094 m | [-19000, -20000, -3000, -4000] | 0 |
+
+All five GeoTIFFs declare the same Moon (2015) spherical South Polar Stereographic CRS (radius 1,737,400 m; longitude of origin 0°; latitude of origin -90°). The elevation product is 5 m/pixel, while the mask and most coverage companions are 15 m/pixel. Therefore the earlier `GRID DIFFERS` output is expected: it means the companions are not cell-for-cell on the elevation grid, not that their CRS necessarily differs. The mask README meaning is a count of illuminated LROC image pixels contributing to the SfS solution; the mask has no declared NoData value. GLDSBCT is described as solar bins per pixel.
+
+### Critical projected-footprint screening result
+
+The local Site04 ROI shapefile and SP-4 coordinates were previously calculated in the custom lunar polar stereographic plane with the same nominal sphere radius and polar-stereographic parameters. Under direct comparison in that projected plane:
+
+- A306 SDEM elevation maximum X is **-3,000 m**.
+- Local Site04 provider ROI X bounds are **-2,842.5 to -2,627.5 m**. All four features lie east of the A306 footprint boundary, with the nearest part of their combined bounding box 157.5 m beyond it.
+- The published Mazarico Site 4 / Artemis Site 004 (SP-4) point is at X=-2,742.09 m, **257.91 m east** of the A306 elevation footprint boundary.
+- The previous 1.2 km ROI-cluster window spans X=[-3,335,-2,135] m. It overlaps the A306 rectangular extent only in the 335 m strip from X=-3,335 to -3,000 m; it does not contain SP-4 or any part of the provider ROI bounding box.
+
+**Operational conclusion:** A306 / Connecting Ridge is not currently demonstrated to cover the Site04/SP-4 ROI cluster. In the shared projected coordinate plane, its raster bounds exclude the provider ROIs and SP-4. Do not sample its pixels at those locations, resample it into Site04, or call it a Site04 SDEM source.
+
+There is one remaining coordinate-reference caveat: the SDEM GeoTIFFs explicitly identify the Moon (2015) datum/IAU CRS, while the legacy Site04 shapefile WKT names its datum/spheroid as `unknown` (although its nominal sphere radius and projection parameters match). The direct projected-coordinate comparison is therefore the correct screening result under the apparent common map plane, but a definitive physical co-registration claim requires the shapefile's original source/reference-frame provenance to be confirmed. The fact that Product 104 SDEMs are geodetically consistent with their LOLA reference is relevant, but it does not by itself prove the legacy shapefile WKT's datum identity.
+
+### Candidate next regional products
+
+The Zenodo archive separately lists:
+- `A3CLR22_5_Connecting_Ridge_Extension.zip` (region A305);
+- `A3CLR22_8_Peak_Near_Shackleton.zip` (region A308).
+
+These are more reasonable candidates to screen next than repeatedly inspecting A306. Their READMEs should be extracted by HTTP range and their projected bounds checked before downloading their elevation/coverage rasters. No assumption is made that either one covers SP-4 until its own projected footprint is verified.
+
+The archive README in the local A306 package contains placeholder `doi:XYZ` citation fields. Use the completed official publication citation listed below rather than copying those placeholders. NASA PGDA Product 104 identifies the paper as Bertone et al. (2026), DOI 10.3847/PSJ/ae5b70.
+
+This review used header metadata only. No SDEM pixel arrays were read, and no raster was reprojected, resampled, modified or combined.
 
 ## 5. Recommended next steps
 
 1. Retain the existing four provider ROI polygons and their feature attributes as source evidence. Do not alter them or write repaired alternatives over the source.
-2. Record both published coordinate definitions with their labels and citations. Ask the GIS owner to reconcile whether the team is targeting the PGDA R04 region center, Artemis site 004 / SP-4, or a broader Shackleton-Rim/Connecting-Ridge terrain unit.
-3. Use the four local ROI polygons as a cluster reference, not as the only possible study-area boundary.
-4. Validate the Connecting Ridge SDEM file-level footprint and ancillary masks before any large download or switch of the lunar DEM source.
-5. Keep the 1.2 km, 1.5 km and 2.0 km Site04 windows labelled as ROI-cluster sensitivity windows, not approved study AOIs.
+2. Preserve the published coordinate definitions with their labels and citations. For the local ROI cluster, the Mazarico Site 4 / Artemis Site 004 (SP-4) vicinity is the stronger provisional identity.
+3. Keep the 1.2 km, 1.5 km and 2.0 km windows labelled as exploratory ROI-cluster/SP-4 vicinity sensitivity windows, not approved study AOIs.
+4. Screen A305 Connecting Ridge Extension and A308 Peak Near Shackleton by extracting only their README files with the HTTP range ZIP tool. Compare their declared projected ROI polygons/footprints with the local Site04 ROI and SP-4 coordinates before extracting any raster.
+5. Confirm the legacy Site04 shapefile's geodetic reference frame from the original provider archive/metadata before making a definitive cross-product co-registration statement.
 6. Do not launch real terrain fingerprint extraction until the lunar target AOI, Earth candidate AOIs, common physical analysis scale, relief window, local-relief neighborhood support and vertical-reference policy are reviewed.
 
 ## 6. Sources
