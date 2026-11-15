@@ -90,18 +90,22 @@ def _datum_identity_compatible(left_geodetic: Any, right_geodetic: Any) -> bool:
 
 def _is_lunar_spherical_projected_crs(crs: Any) -> bool:
     """Identify the project's Moon-radius spherical projected coordinate systems."""
-    if not crs.is_projected or crs.geodetic_crs is None:
-        return False
-    ellipsoid = crs.geodetic_crs.ellipsoid
-    return all(
-        math.isclose(
-            float(value),
-            1_737_400.0,
-            rel_tol=1e-12,
-            abs_tol=1e-6,
+    try:
+        parsed = CRS.from_user_input(crs)
+        if not parsed.is_projected or parsed.geodetic_crs is None:
+            return False
+        ellipsoid = parsed.geodetic_crs.ellipsoid
+        return all(
+            math.isclose(
+                float(value),
+                1_737_400.0,
+                rel_tol=1e-12,
+                abs_tol=1e-6,
+            )
+            for value in (ellipsoid.semi_major_metre, ellipsoid.semi_minor_metre)
         )
-        for value in (ellipsoid.semi_major_metre, ellipsoid.semi_minor_metre)
-    )
+    except Exception:
+        return False
 
 
 def _equivalent_custom_projected_crs(left: Any, right: Any) -> bool:
