@@ -69,6 +69,37 @@ def same_grid(reference: dict[str, Any], candidate: dict[str, Any]) -> bool:
     )
 
 
+def compare_grids(
+    reference: dict[str, Any], candidate: dict[str, Any], *, tolerance_m: float = 0.01
+) -> dict[str, Any]:
+    """Explain why two rasters do or do not share an exact grid."""
+    bound_keys = ("left", "bottom", "right", "top")
+    bound_deltas = {
+        key: candidate["bounds"][key] - reference["bounds"][key]
+        for key in bound_keys
+    }
+    max_bound_delta = max(abs(value) for value in bound_deltas.values())
+    same_crs = reference["crs_wkt"] == candidate["crs_wkt"]
+    same_dimensions = (
+        reference["width"] == candidate["width"]
+        and reference["height"] == candidate["height"]
+    )
+    same_resolution = all(
+        abs(a - b) <= tolerance_m
+        for a, b in zip(reference["resolution"], candidate["resolution"])
+    )
+    same_extent = max_bound_delta <= tolerance_m
+    return {
+        "same_crs": same_crs,
+        "same_dimensions": same_dimensions,
+        "same_resolution": same_resolution,
+        "same_extent_within_tolerance": same_extent,
+        "max_absolute_bound_delta_m": max_bound_delta,
+        "bound_deltas_m": bound_deltas,
+        "same_grid": same_grid(reference, candidate),
+    }
+
+
 def print_metadata(metadata: dict[str, Any]) -> None:
     print(f"\n{'=' * 88}")
     print(metadata["path"])
@@ -126,12 +157,43 @@ def main() -> int:
     reference_name = "A306_GLDELEV_005.tif"
     reference = summaries.get(reference_name)
     if reference:
-        print("\nGRID ALIGNMENT AGAINST SDEM ELEVATION")
+        print("\nGRID COMPARISON AGAINST SDEM ELEVATION")
         print("-" * 88)
         for filename, summary in summaries.items():
             if filename == reference_name:
                 continue
-            print(f"{filename}: {'EXACT SAME GRID' if same_grid(reference, summary) else 'GRID DIFFERS'}")
+            comparison = compare_grids(reference, summary)
+            if comparison["same_grid"]:
+                status = "EXACT SAME GRID"
+            elif (
+                comparison["same_crs"]
+                and comparison["same_extent_within_tolerance"]
+                and not comparison["same_resolution"]
+            ):
+                status = "SAME CRS/FOOTPRINT; DIFFERENT PIXEL SIZE"
+            elif (
+                comparison["same_crs"]
+                and comparison["max_absolute_bound_delta_m"] <= 20.0
+            ):
+                status = "SAME CRS; NEAR-COINCIDENT EXTENT; GRID DIFFERS"
+            elif comparison["same_crs"]:
+                status = "SAME CRS; EXTENT/GRID DIFFERS"
+            else:
+                status = "CRS DIFFERS; GRID DIFFERS"
+            print(f"{filename}: {status}")
+            print(
+                f"  resolution: reference={reference['resolution']} m, "
+                f"candidate={summary['resolution']} m"
+            )
+            print(
+                f"  dimensions: reference={reference['width']}x{reference['height']}, "
+                f"candidate={summary['width']}x{summary['height']}"
+            )
+            print(
+                f"  max absolute bounds delta: "
+                f"{comparison['max_absolute_bound_delta_m']:.6f} m"
+            )
+            print(f"  bounds deltas (candidate - reference): {comparison['bound_deltas_m']}")
 
     if failures:
         print("\nINSPECTION WARNINGS")
