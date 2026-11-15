@@ -56,6 +56,10 @@ def test_nodata_is_not_interpolated_and_coverage_is_separately_counted():
     assert metrics["valid_cell_count"] == 31 * 31 - 1
     assert np.isnan(maps["slope"][15, 15])
     assert np.isnan(maps["tri"][14, 14])
+    # Local relief uses a moving neighbourhood, but an invalid centre must
+    # remain NoData rather than receiving a value from surrounding cells.
+    assert np.isnan(maps["local_relief"][15, 15])
+    assert metrics["local_relief_valid_cell_count"] < metrics["valid_cell_count"]
     assert metrics["slope_valid_cell_count"] < metrics["valid_cell_count"]
 
 
