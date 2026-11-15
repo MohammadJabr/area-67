@@ -9,7 +9,7 @@ from rasterio.transform import from_origin
 from shapely.geometry import box
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src" / "data"))
-from lola_roi_quality import ASSET_NAMES, build_roi_quality_report  # noqa: E402
+from lola_roi_quality import ASSET_NAMES, build_roi_quality_report, same_crs  # noqa: E402
 
 
 def write_site_rasters(folder: Path, *, crs="EPSG:3031", nodata_cell=False):
@@ -60,6 +60,30 @@ def write_rois(folder: Path, *, crs="EPSG:3031", geometries=None):
     path = folder / "site_rois.shp"
     frame.to_file(path)
     return path
+
+
+SITE04_SHAPEFILE_CRS_WKT = """PROJCS["unknown",GEOGCS["unknown",DATUM["unknown",SPHEROID["unknown",1737400,0]],PRIMEM["Reference meridian",0],UNIT["Degree",0.0174532925199433]],PROJECTION["Polar_Stereographic"],PARAMETER["latitude_of_origin",-90],PARAMETER["central_meridian",0],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",NORTH],AXIS["Northing",NORTH]]"""
+
+SITE04_RASTER_CRS_WKT = """PROJCS["unnamed",GEOGCS["unnamed ellipse",DATUM["unknown",SPHEROID["unnamed",1737400,0]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]]],PROJECTION["Polar_Stereographic"],PARAMETER["latitude_of_origin",-90],PARAMETER["central_meridian",0],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["metre",1],AXIS["Easting",NORTH],AXIS["Northing",NORTH]]"""
+
+
+def test_same_crs_accepts_equivalent_lunar_polar_stereographic_wkt():
+    assert same_crs(SITE04_SHAPEFILE_CRS_WKT, SITE04_RASTER_CRS_WKT)
+
+
+def test_same_crs_rejects_different_lunar_projection_parameters():
+    different_meridian = SITE04_SHAPEFILE_CRS_WKT.replace(
+        'PARAMETER["central_meridian",0]',
+        'PARAMETER["central_meridian",1]',
+    )
+    different_body_radius = SITE04_SHAPEFILE_CRS_WKT.replace(
+        'SPHEROID["unknown",1737400,0]',
+        'SPHEROID["unknown",1737401,0]',
+    )
+
+    assert not same_crs(SITE04_SHAPEFILE_CRS_WKT, different_meridian)
+    assert not same_crs(SITE04_SHAPEFILE_CRS_WKT, different_body_radius)
+    assert not same_crs("EPSG:4326", "EPSG:3857")
 
 
 def test_roi_quality_audit_reports_support_and_uncertainty_by_polygon(tmp_path):
