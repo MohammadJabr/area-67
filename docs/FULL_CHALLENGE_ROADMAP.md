@@ -120,7 +120,7 @@ The local Site01 (Connecting Ridge) review now includes the provider ROI shapefi
 The source rasters and machine-readable QA/preview outputs remain local and gitignored. The detailed measurements, paths and reproduction commands are recorded in [the Site01 review](reports/lunar_roi/SITE01_COORDINATE_AND_SDEM_REVIEW.md).
 
 
-Detailed measurements and provenance are recorded in `docs/LOLA_ROI_QUALITY_AUDIT.md` and `docs/reports/lunar_roi/SITE04_COORDINATE_AND_SDEM_REVIEW.md`. The immediate scientific decisions remain: resolve the intended topology/provenance of invalid provider features, select and approve the actual Site04 sub-AOI (or another target), and agree a common physical analysis scale and neighborhood/window policy before real fingerprint extraction.
+Detailed measurements and provenance are recorded in `docs/LOLA_ROI_QUALITY_AUDIT.md` and `docs/reports/lunar_roi/SITE04_COORDINATE_AND_SDEM_REVIEW.md`. The immediate scientific decisions are to delineate and approve the Site01 working study AOI using A306/illumination context, retain Site04 as a reviewed alternative, resolve the intended topology/provenance of invalid provider features where relevant, and agree a common physical analysis scale and neighborhood/window policy before real fingerprint extraction.
 
 ### Important review note
 The application currently exposes the only supplied target and profile from the loaded ranking CSV. Seeing only MOON_DEMO_01 and Rover Navigation / Terrain Traversal is therefore a property of the synthetic fixture, not proof that the product is scientifically limited to one target/profile. Do not add fake selectable entries. Real target/profile options should be driven by validated datasets and implemented profile contracts.
@@ -180,7 +180,7 @@ Prioritize one vertical at a time, with separate data contracts and tests:
 
 ## 8. Immediate next actions (not silently assigned as approvals)
 1. Site01 and Site04 local ROI/raster review is now recorded. Complete the equivalent archive, five-layer support/uncertainty, topology and registration review for Site06, Site07 and Site11 where the local assets are available.
-2. Decide which lunar provider ROI(s) to carry forward; use Site01's published illumination context as a research lead, not as an overall base-site ranking.
+2. Execute the Site01 / Connecting Ridge working baseline in `docs/SCIENCE_EXECUTION_DECISION_2026-11-15.md`; delineate and approve the final study AOI using A306, illumination and terrain evidence. Keep Site04 as a reviewed alternative, not a permanent-base ranking.
 3. Finalize 3–5 Earth candidate landform AOIs, stable IDs, and authoritative boundary evidence; the whole 1° DEM tiles are not study ROIs.
 4. Approve a common physical analysis scale, projection, resampling/reprojection policy, vertical-reference treatment, windows, and quality/uncertainty policy.
 5. Have Ghassan hand over analysis-ready target/candidate rasters and manifests; have Hiba produce and validate the real fingerprint CSV.
