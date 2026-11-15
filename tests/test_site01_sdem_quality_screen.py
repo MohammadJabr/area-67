@@ -110,6 +110,8 @@ def test_read_only_local_screen_creates_reports_without_overwriting(tmp_path):
     assert report["source_data_modified"] is False
     assert report["reprojection_performed"] is False
     assert report["coordinate_review"]["site01_vs_sdem_nominal_math_match"] is True
+    assert len(report["coordinate_review"]["sdem_layer_checks"]) == len(m.SDEM_LAYERS)
+    assert report["coordinate_review"]["sdem_all_expected_layers_present"] is False
     assert len(report["local_samples"]) == 10
     assert len(report["feature_samples"]) == 5
     assert (output / "site01_sdem_quality_screen.md").is_file()
