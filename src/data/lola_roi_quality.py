@@ -91,7 +91,7 @@ def _datum_identity_compatible(left_geodetic: Any, right_geodetic: Any) -> bool:
 def _is_lunar_spherical_projected_crs(crs: Any) -> bool:
     """Identify the project's Moon-radius spherical projected coordinate systems."""
     try:
-        parsed = CRS.from_user_input(crs)
+        parsed = CRS.from_wkt(crs.to_wkt()) if hasattr(crs, "to_wkt") else CRS.from_user_input(crs)
         if not parsed.is_projected or parsed.geodetic_crs is None:
             return False
         ellipsoid = parsed.geodetic_crs.ellipsoid
