@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - .github/workflows/gis-data-acquisition.yml
+      - src/data/ci_gis_audit.py
+      - tests/test_ci_gis_audit.py
   workflow_dispatch:
     inputs:
       dataset:
@@ -68,7 +70,7 @@ jobs:
 
       - name: Acquire and inspect official lunar ROI archives
         id: roi_acquire
-        if: inputs.include_rois == true && (inputs.dataset == 'moon' || inputs.dataset == 'both')
+        if: (github.event_name == 'push' || inputs.include_rois == true) && (github.event_name == 'push' || inputs.dataset == 'moon' || inputs.dataset == 'both')
         continue-on-error: true
         run: |
           python -m src.data.lola_roi_acquisition download \
