@@ -75,15 +75,63 @@ Current-main verification at that commit:
 - python -m compileall -q src tests: passed.
 - Geospatial artifact ignore-policy check: passed.
 
-The fixed project audit has not yet been rerun against this acquired raw-data artifact. The independent inspection in this report confirms that all 15 TIFFs are readable and records their grid/mask/checksum properties; it does not replace a fresh run of the project's own audit on the fixed commit.
+The fixed project audit was rerun successfully on current main in run #43701122008. That run acquired the same 15 rasters plus both official Site01/Site04 ROI archives, completed the structural audit, passed its targeted GIS test step (80 passed, 71 warnings), and uploaded the resulting artifact. The independent inspection in this report adds a block-wise checksum and polygon-support cross-check; it does not approve any AOI or scientific transformation.
+
+## ROI-enabled rerun and provider-polygon support
+
+A second run on current main completed the missing ROI acquisition and reran the fixed audit:
+
+- Workflow run: [#43701122008](https://github.com/MohammadJabr/area-67/actions/runs/43701122008), commit 98b6a422b7c2e18c43f1ee32b1b7a1e3d4c8c2c1.
+- Artifact: area67-gis-both-43701122008.zip, artifact ID 14156776998, 405,050,293 bytes; expiry 2026-11-29 09:56:27 UTC.
+- Contents: the 15 Earth/LOLA GeoTIFFs, both original ROI archives, extracted shapefile components, extraction manifests, ROI inspection JSON, and GIS acquisition audit JSON/Markdown.
+- Workflow conclusion: success. The structural audit inspected 15 rasters and reported 0 PASS, 15 REVIEW, 0 FAIL. The REVIEW states are intentional: source rasters are readable, but metric-grid, unit/vertical-reference, effective-resolution, lunar-frame, and scientific-approval gates remain unresolved.
+- The targeted GIS test step passed: 80 passed, 71 warnings. Current-main full CI at commit 98b6 also passed 202 tests, 491 warnings; compileall and the geospatial artifact ignore-policy check passed.
+
+### Official provider ROI geometry inventory
+
+| Site | Provider polygons | Valid polygons | Invalid polygons | Overall ROI inspection |
+|---|---:|---:|---:|---|
+| Site01 | 7 | 5 | 2 | review_required |
+| Site04 | 4 | 2 | 2 | review_required |
+
+Invalid geometries were not repaired and no raster statistics were calculated for them:
+
+- Site01 feature 5: ring self-intersection at approximately (-10732.5, -11722.5); feature 6: ring self-intersection at approximately (-10167.5, -11602.5).
+- Site04 feature 0: ring self-intersection at approximately (-2807.5, -6662.5); feature 1: self-intersection at approximately (-2742.5, -6387.5).
+
+Both provider shapefiles use a custom south-polar stereographic CRS with a 1,737,400 m lunar sphere and placeholder/unknown datum labels. Their projection mathematics are nominally compatible with the corresponding raster grids, but this does **not** establish whether the physical frame is MOON_ME/DE421, PA, or another Moon-fixed realization. Do not relabel either CRS.
+
+The source archives also contain a .gmt symbolic link whose target file is not present in the archive. The extraction tool skipped the link and did not create or follow it.
+
+### Read-only per-polygon support and uncertainty check
+
+The following independent check uses the same pixel-center inclusion rule (all_touched=false) as src/data/lola_roi_quality.py. It reads only valid geometries, does not repair polygons, and reports positive LDEC counts separately from zero-count/interpolated pixels.
+
+| Site / feature | Pixel centers | Positive LDEC support | Zero-count / interpolated | Median Z RMS (m) | Median slope RMS (°) |
+|---|---:|---:|---:|---:|---:|
+| Site01 / 0 | 317 | 4.73% | 95.27% | 0.440 | 2.119 |
+| Site01 / 1 | 270 | 11.48% | 88.52% | 0.310 | 1.823 |
+| Site01 / 2 | 135 | 17.78% | 82.22% | 0.266 | 1.664 |
+| Site01 / 3 | 484 | 9.09% | 90.91% | 0.349 | 1.932 |
+| Site01 / 4 | 362 | 11.05% | 88.95% | 0.304 | 1.780 |
+| Site04 / 2 | 102 | 14.71% | 85.29% | 0.266 | 1.604 |
+| Site04 / 3 | 101 | 13.86% | 86.14% | 0.268 | 1.473 |
+
+Every valid polygon had 100% valid elevation and LDEC coverage among its included pixel centers, but positive direct-shot support ranged from 4.73% to 17.78%. A valid raster mask is therefore not a substitute for direct LOLA observation support. The four invalid polygons remain review-required and have no computed polygon statistics.
+
+### Site01 pilot-window overlap check
+
+The 990 m × 990 m Site01 pilot window in PR #79 has area 980,100 m². Its overlap with the union of the five **valid** provider Site01 polygons is 37,887.5 m², or **3.87%** of the pilot window. Invalid provider polygons were excluded rather than repaired.
+
+The pilot window is therefore a broad reference/context window, not the provider-defined ROI footprint. This does not prohibit using a larger context window, but the app and report must not describe it as the NASA ROI or an approved Connecting Ridge geomorphic AOI. PR #79 has been asked to make its 5 m-to-30 m processing description reproducible and clarify the window/ROI distinction.
 
 ## Remaining gates
 
-1. Re-run the GIS acquisition/audit workflow from current main after the JSON-safety fix, retaining separate compact QA reports.
-2. Acquire/inspect official Site01 and Site04 ROI archives; this run skipped that optional step.
-3. Confirm lunar frame provenance and the A306/Site01 grid/ROI compatibility before using provider polygons.
-4. Approve actual lunar and Earth study AOIs with stable IDs; no source tile or provider ROI is automatically an AREA 67 AOI.
-5. Agree the projected metric analysis grid, physical scale, neighborhood windows, vertical-reference policy, mask/uncertainty treatment, and candidate source set.
-6. Only then prepare analysis-ready rasters, run five-group fingerprints, configure approved matching tolerances/completeness cutoffs, and produce real rankings.
+1. Resolve the lunar frame provenance for both raster and ROI shapefile (including MOON_ME/DE421 versus PA); projection-math compatibility is not frame identification.
+2. Have the science team review the four invalid provider polygons and decide whether/how any geometry repair is scientifically justified. No automatic repair is permitted.
+3. Decide whether the Site01 target should be the broader 990 m context window, selected provider ROI polygons, or a newly digitized geomorphic AOI; record stable IDs and approval.
+4. Select and approve Earth geomorphic AOIs rather than relying only on reference-centred sample windows.
+5. Agree the projected metric analysis grid, common physical scale, neighborhood windows, vertical-reference policy, mask/uncertainty treatment, and candidate source set.
+6. Only then run reproducible five-group fingerprints and matching with approved tolerances/completeness cutoffs and generate the validated ranking.
 
 No terrain fingerprint, Earth–Moon similarity score, candidate ranking, rover route, or permanent-base recommendation was produced by this acquisition or audit.
