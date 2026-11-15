@@ -134,7 +134,7 @@ def audit_shapefile_registration(
             center_residuals: list[float] = []
             corner_residuals: list[float] = []
             for x, y in _iter_geometry_vertices(geometry):
-                column, row = inverse_transform * (x, y)
+                column, row = inverse_transform @ (x, y)
                 _, _, center_error = _nearest_lattice_residual(
                     column, row, offset=0.5, transform=transform
                 )
