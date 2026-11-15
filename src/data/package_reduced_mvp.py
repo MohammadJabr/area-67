@@ -16,7 +16,7 @@ from typing import Any
 DEFAULT_FINGERPRINTS = Path("data/processed/terrain_fingerprints.csv")
 DEFAULT_RANKINGS = Path("data/processed/candidate_rankings.csv")
 DEFAULT_ROBUSTNESS = Path("data/processed/ranking_robustness.json")
-DEFAULT_OUTPUT = Path("data/processed/exploratory_mvp_2026-11-15")
+DEFAULT_OUTPUT = Path("data/processed/exploratory_mvp_2026-11-15_v2")
 TARGET_ID = "MOON_SITE01_PILOT990"
 RANKING_FIELDS = (
     "target_site_id",

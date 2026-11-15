@@ -1,0 +1,39 @@
+{
+  "status": "EXPLORATORY_NOT_APPROVED",
+  "target_site_id": "MOON_SITE01_PILOT990",
+  "candidate_site_ids": [
+    "EARTH_HAUGHTON_REF990",
+    "EARTH_YUNGAY_HYPERARID_REF990",
+    "EARTH_MAUNAKEA_REF990"
+  ],
+  "ranking_basis": "Canonical matcher Slope-only baseline using supplied slope P50/P90 features.",
+  "source_robustness_status": "EXPLORATORY_NOT_APPROVED",
+  "source_slope_only_baseline": [
+    {
+      "site_id": "EARTH_HAUGHTON_REF990",
+      "rank": 1,
+      "similarity_distance": 0.5397594256670749,
+      "similarity_score": 64.94521048746084
+    },
+    {
+      "site_id": "EARTH_YUNGAY_HYPERARID_REF990",
+      "rank": 2,
+      "similarity_distance": 0.7619317750059044,
+      "similarity_score": 56.75588658911886
+    },
+    {
+      "site_id": "EARTH_MAUNAKEA_REF990",
+      "rank": 3,
+      "similarity_distance": 3.525503575278068,
+      "similarity_score": 22.09698839843598
+    }
+  ],
+  "multi_feature_ranking_preserved_separately": "data\\processed\\candidate_rankings.csv",
+  "limitations": [
+    "All footprints are provisional reference-centred windows, not approved geomorphic AOIs.",
+    "Scores are relative indices, not probabilities or suitability certification.",
+    "No Slope-only tolerance/weight sensitivity analysis is included.",
+    "Slope-only ranking does not establish that slope alone is scientifically sufficient.",
+    "The original multi-feature fingerprint, ranking, and robustness files are unchanged."
+  ]
+}

@@ -159,7 +159,7 @@ The following software and data-management components are merged into `main`:
 - data/metadata/earth_candidate_reference_points.geojson records 13 provisional/alternative reference points. The Haughton, McMurdo and Yungay markers have documented discrepancies or unresolved location identity; none is an approved AOI.
 - Source manifests, checksums, QA JSON/Markdown, remote-access summaries and screening previews are tracked. Large raw DEM rasters remain gitignored and must be acquired locally using the documented tools.
 - The project shortlist for future geomorphic AOIs is Haughton, Askja, and Mauna Kea. The currently tracked exploratory ranking instead contains Haughton, Yungay, and Mauna Kea reference-centred windows; Yungay's location discrepancy is disclosed in the pilot report. No AOI boundaries, common physical analysis scale, reprojection/resampling policy, or target sub-area have been approved.
-- The canonical Site01 exploratory builder and original five-group outputs are present in `main`. The app uses the separate `data/processed/exploratory_mvp_2026-11-15/` package: one target, three Earth windows, and the existing Slope P50/P90-only baseline. Raw Site01 inputs are not committed.
+- The canonical Site01 exploratory builder and original five-group outputs are present in `main`. The app uses `data/processed/exploratory_mvp_2026-11-15_v2/`: one target, three Earth windows, and the existing Slope P50/P90-only baseline. The earlier v1 package is retained as a provenance snapshot. Raw Site01 inputs are not committed.
 
 ### Running the matching workflow
 

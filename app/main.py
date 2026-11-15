@@ -23,7 +23,7 @@ from src.data.contracts import (
 from src.reporting.passport import build_passport, passport_to_markdown
 
 st.set_page_config(page_title="AREA 67 | Planetary Analog Discovery", page_icon="🪐", layout="wide")
-MVP_DATA = Path(os.environ.get("AREA67_MVP_DATA_DIR", "data/processed/exploratory_mvp_2026-11-15"))
+MVP_DATA = Path(os.environ.get("AREA67_MVP_DATA_DIR", "data/processed/exploratory_mvp_2026-11-15_v2"))
 if not MVP_DATA.is_absolute():
     MVP_DATA = ROOT / MVP_DATA
 FP = MVP_DATA / "terrain_fingerprints.csv"

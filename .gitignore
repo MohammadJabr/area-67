@@ -70,3 +70,10 @@ data/processed/exploratory_mvp_2026-11-15/*
 !data/processed/exploratory_mvp_2026-11-15/ranking_robustness.json
 !data/processed/exploratory_mvp_2026-11-15/README.md
 !data/processed/exploratory_mvp_2026-11-15/package_manifest.json
+!data/processed/exploratory_mvp_2026-11-15_v2/
+data/processed/exploratory_mvp_2026-11-15_v2/*
+!data/processed/exploratory_mvp_2026-11-15_v2/terrain_fingerprints.csv
+!data/processed/exploratory_mvp_2026-11-15_v2/candidate_rankings.csv
+!data/processed/exploratory_mvp_2026-11-15_v2/ranking_robustness.json
+!data/processed/exploratory_mvp_2026-11-15_v2/README.md
+!data/processed/exploratory_mvp_2026-11-15_v2/package_manifest.json
