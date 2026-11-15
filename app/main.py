@@ -354,7 +354,13 @@ def main() -> None:
     )
     render_hero(status_label, len(fingerprints), rankings["candidate_site_id"].nunique())
 
-    tab_setup, tab_results, tab_terrain, tab_passport = st.tabs(["01 · Mission Control", "02 · Analog Radar", "03 · Terrain Lab", "04 · Analog Passport"])
+    tab_setup, tab_results, tab_terrain, tab_atlas, tab_passport = st.tabs([
+        "01 · Mission Control",
+        "02 · Analog Radar",
+        "03 · Terrain Lab",
+        "04 · Planetary Atlas",
+        "05 · Analog Passport",
+    ])
 
     with tab_setup:
         st.markdown(
@@ -858,6 +864,88 @@ def main() -> None:
                 else:
                     st.info("No quality/provenance fields were supplied for this comparison.")
 
+    with tab_atlas:
+        st.markdown(
+            '<div class="a67-section"><div class="a67-section-kicker">Planetary map workspace</div>'
+            '<div class="a67-section-title">Planetary Atlas</div>'
+            '<div class="a67-section-subtitle">Explore the source worlds with dedicated planetary mapping tools. These external reference maps are not automatically ingested into the current matching results.</div></div>',
+            unsafe_allow_html=True,
+        )
+        earth_col, moon_col, mars_col = st.columns(3)
+        with earth_col:
+            st.markdown("### Earth")
+            st.markdown("**AREA 67 Analog Radar**")
+            st.write(
+                "The project's interactive Earth map is in Analog Radar. It shows the three current "
+                "reference-window anchors and their matcher-supplied rank. The pins are not approved AOI polygons."
+            )
+            st.link_button(
+                "Open Copernicus DEM catalogue",
+                "https://dataspace.copernicus.eu/explore-data/data-collections/copernicus-contributing-missions/collections-description/COP-DEM",
+                use_container_width=True,
+            )
+            st.caption("Current ranking input: Copernicus DEM GLO-30 DSM reference windows.")
+        with moon_col:
+            st.markdown("### Moon")
+            st.markdown("**NASA Moon Trek**")
+            st.write(
+                "Explore lunar mosaics, polar views, elevation products, slope and illumination layers. "
+                "Use the product search and inspect each layer's source metadata before using it in a study."
+            )
+            st.link_button(
+                "Open interactive Moon Trek",
+                "https://trek.nasa.gov/moon/",
+                use_container_width=True,
+            )
+            st.caption(
+                "Reference layers include LRO WAC mosaics and polar imagery. Some advanced analysis "
+                "functions may require a registered research account."
+            )
+        with mars_col:
+            st.markdown("### Mars")
+            st.markdown("**NASA Mars Trek**")
+            st.write(
+                "Explore global and regional Martian imagery, MOLA elevation and hillshade, THEMIS "
+                "thermal mosaics, and higher-resolution CTX/HiRISE coverage where available."
+            )
+            st.link_button(
+                "Open interactive Mars Trek",
+                "https://trek.nasa.gov/mars/",
+                use_container_width=True,
+            )
+            st.caption(
+                "These are external source-exploration tools. The current AREA 67 ranking has no Mars "
+                "target fingerprint and does not use these layers as scored inputs."
+            )
+        st.divider()
+        st.markdown("#### What is connected to AREA 67 today?")
+        atlas_rows = [
+            {
+                "Body": "Earth",
+                "Current project connection": "Three Copernicus GLO-30 reference windows in the exploratory pilot",
+                "Map experience": "Interactive Earth candidate map in Analog Radar",
+                "Scientific status": "Provisional reference windows; not approved AOIs",
+            },
+            {
+                "Body": "Moon",
+                "Current project connection": "NASA LOLA Site01 target fingerprint and quality companions",
+                "Map experience": "NASA Moon Trek external explorer; project-native lunar raster map pending",
+                "Scientific status": "Exploratory target window; local frame/AOI approval unresolved",
+            },
+            {
+                "Body": "Mars",
+                "Current project connection": "No Mars target fingerprint in the current MVP",
+                "Map experience": "NASA Mars Trek external explorer",
+                "Scientific status": "Future integration; no Mars-to-Earth ranking claimed",
+            },
+        ]
+        st.dataframe(pd.DataFrame(atlas_rows), width="stretch", hide_index=True)
+        st.info(
+            "Important: opening a NASA planetary map does not add its layers to AREA 67's scoring engine. "
+            "A layer becomes an analytical input only after its exact product, coordinate frame, scale, units, "
+            "quality metadata and processing method are recorded and validated."
+        )
+
     with tab_passport:
         st.markdown(
             '<div class="a67-section"><div class="a67-section-kicker">Evidence dossier</div>'
@@ -938,6 +1026,9 @@ def main() -> None:
             st.success("All five feature groups have at least one supplied value. This does not by itself establish full scientific validation.")
 
         st.markdown("#### Source provenance and quality")
+        source_url = value_or_none(site_row.get("source_url"))
+        if source_url and str(source_url).startswith(("https://", "http://")):
+            st.link_button("Open original source product", str(source_url))
         provenance_rows = [
             {"Field": key.replace("_", " ").title(), "Value": value}
             for key, value in provenance.items()
