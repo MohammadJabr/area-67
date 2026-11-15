@@ -46,7 +46,7 @@ For each site, all five rasters are 3200 × 3200 and have exactly matching CRS W
 
 The remaining LDEC cells are zero-count/interpolated LDEM support, not NoData. Both sites have 100% raster-valid masks while only about 9–9.5% of cells have positive shot counts. These are distinct measures and must remain separate in all downstream quality reporting.
 
-The embedded lunar WKT for both sites declares an unknown datum. It is a south-polar stereographic grid in metres, but this artifact alone does not resolve the Moon-fixed frame identity. Do not infer or relabel the datum from projection parameters.
+The embedded lunar raster WKT for both sites declares an unknown datum. However, the official PGDA Product 78 documentation states that all products except XYZI point clouds and ROI shapefiles are 5 m/pixel GeoTIFFs with south-polar stereographic X/Y coordinates in metres in the MOON_ME reference frame of ephemeris DE421: https://pgda.gsfc.nasa.gov/products/78. This resolves the raster frame at product-documentation level despite the placeholder WKT; do not rewrite the raw WKT or apply an unrecorded transformation. The statement explicitly excludes ROI shapefiles.
 
 ### Lunar file checksums
 
@@ -100,7 +100,7 @@ Invalid geometries were not repaired and no raster statistics were calculated fo
 - Site01 feature 5: ring self-intersection at approximately (-10732.5, -11722.5); feature 6: ring self-intersection at approximately (-10167.5, -11602.5).
 - Site04 feature 0: ring self-intersection at approximately (-2807.5, -6662.5); feature 1: self-intersection at approximately (-2742.5, -6387.5).
 
-Both provider shapefiles use a custom south-polar stereographic CRS with a 1,737,400 m lunar sphere and placeholder/unknown datum labels. Their projection mathematics are nominally compatible with the corresponding raster grids, but this does **not** establish whether the physical frame is MOON_ME/DE421, PA, or another Moon-fixed realization. Do not relabel either CRS.
+Both provider shapefiles use a custom south-polar stereographic CRS with a 1,737,400 m lunar sphere and placeholder/unknown datum labels. Their projection mathematics are nominally compatible with the corresponding raster grids, but the PGDA Product 78 frame statement explicitly excludes ROI shapefiles. The raster layers are documented as MOON_ME/DE421; the provider ROI shapefile frame therefore remains unverified. Do not assign the raster frame to the shapefiles or relabel either embedded CRS.
 
 The source archives also contain a .gmt symbolic link whose target file is not present in the archive. The extraction tool skipped the link and did not create or follow it.
 
@@ -128,7 +128,7 @@ The pilot window is therefore a broad reference/context window, not the provider
 
 ## Remaining gates
 
-1. Resolve the lunar frame provenance for both raster and ROI shapefile (including MOON_ME/DE421 versus PA); projection-math compatibility is not frame identification.
+1. Record the source-backed MOON_ME/DE421 frame for the GeoTIFF layers in a metadata sidecar without editing their raw WKT; independently obtain the physical frame for the ROI shapefiles, which PGDA explicitly excludes from its frame statement.
 2. Have the science team review the four invalid provider polygons and decide whether/how any geometry repair is scientifically justified. No automatic repair is permitted.
 3. Decide whether the Site01 target should be the broader 990 m context window, selected provider ROI polygons, or a newly digitized geomorphic AOI; record stable IDs and approval.
 4. Select and approve Earth geomorphic AOIs rather than relying only on reference-centred sample windows.
