@@ -300,10 +300,12 @@ def _read_geojson_geometries(path: Path) -> list[dict[str, Any]]:
             raise ValueError(f"AOI geometry {index} is malformed: {exc}") from exc
         if parsed.geom_type not in {"Polygon", "MultiPolygon"}:
             raise ValueError(f"AOI geometry {index} must be Polygon or MultiPolygon; found {parsed.geom_type}.")
-        if parsed.is_empty or parsed.area <= 0:
-            raise ValueError(f"AOI geometry {index} is empty or has zero area.")
+        if parsed.is_empty:
+            raise ValueError(f"AOI geometry {index} is empty.")
         if not parsed.is_valid:
             raise ValueError(f"AOI geometry {index} is invalid: {explain_validity(parsed)}")
+        if parsed.area <= 0:
+            raise ValueError(f"AOI geometry {index} has zero area.")
     return geometries
 
 
