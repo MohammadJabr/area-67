@@ -191,6 +191,56 @@ def test_geotiff_pipeline_rejects_unprojected_degree_grid(tmp_path):
         analyze_geotiff(dem_path,aoi_path,site,config(scale=10,relief=40))
 
 
+def test_geotiff_pipeline_rejects_invalid_aoi_polygon(tmp_path):
+    rasterio = pytest.importorskip("rasterio")
+    from rasterio.transform import from_origin
+
+    dem_path = tmp_path / "dem.tif"
+    aoi_path = tmp_path / "invalid_aoi.geojson"
+    with rasterio.open(
+        dem_path, "w", driver="GTiff", height=10, width=10, count=1,
+        dtype="float32", crs="EPSG:32631", transform=from_origin(500000, 1000, 10, 10),
+    ) as dataset:
+        dataset.write(np.ones((10, 10), dtype=np.float32), 1)
+    aoi_path.write_text(json.dumps({
+        "type": "Polygon",
+        "coordinates": [[[500010, 990], [500090, 910], [500010, 910], [500090, 990], [500010, 990]]],
+    }), encoding="utf-8")
+    site = {
+        "site_id": "INVALID_AOI", "planet": "Earth", "source_id": "SYNTHETIC",
+        "elevation_unit": "m", "vertical_reference": "Synthetic local datum",
+        "aoi_crs": "EPSG:32631",
+    }
+
+    with pytest.raises(ValueError, match="AOI geometry 1 is invalid"):
+        analyze_geotiff(dem_path, aoi_path, site, config())
+
+
+def test_geotiff_pipeline_rejects_aoi_extending_beyond_dem_bounds(tmp_path):
+    rasterio = pytest.importorskip("rasterio")
+    from rasterio.transform import from_origin
+
+    dem_path = tmp_path / "dem.tif"
+    aoi_path = tmp_path / "partial_aoi.geojson"
+    with rasterio.open(
+        dem_path, "w", driver="GTiff", height=10, width=10, count=1,
+        dtype="float32", crs="EPSG:32631", transform=from_origin(500000, 1000, 10, 10),
+    ) as dataset:
+        dataset.write(np.ones((10, 10), dtype=np.float32), 1)
+    aoi_path.write_text(json.dumps({
+        "type": "Polygon",
+        "coordinates": [[[499990, 990], [500050, 990], [500050, 950], [499990, 950], [499990, 990]]],
+    }), encoding="utf-8")
+    site = {
+        "site_id": "PARTIAL_AOI", "planet": "Earth", "source_id": "SYNTHETIC",
+        "elevation_unit": "m", "vertical_reference": "Synthetic local datum",
+        "aoi_crs": "EPSG:32631",
+    }
+
+    with pytest.raises(ValueError, match="extends beyond DEM bounds"):
+        analyze_geotiff(dem_path, aoi_path, site, config())
+
+
 def test_geotiff_pipeline_requires_explicit_vertical_reference():
     with pytest.raises(ValueError, match="explicit vertical_reference"):
         analyze_geotiff(

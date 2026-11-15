@@ -278,6 +278,9 @@ def calculate_terrain_fingerprint(
 
 
 def _read_geojson_geometries(path: Path) -> list[dict[str, Any]]:
+    from shapely.geometry import shape
+    from shapely.validation import explain_validity
+
     with path.open("r", encoding="utf-8") as stream:
         document = json.load(stream)
     kind = document.get("type")
@@ -290,6 +293,17 @@ def _read_geojson_geometries(path: Path) -> list[dict[str, Any]]:
     geometries = [geometry for geometry in geometries if geometry]
     if not geometries:
         raise ValueError(f"AOI GeoJSON contains no geometries: {path}")
+    for index, geometry in enumerate(geometries, start=1):
+        try:
+            parsed = shape(geometry)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"AOI geometry {index} is malformed: {exc}") from exc
+        if parsed.geom_type not in {"Polygon", "MultiPolygon"}:
+            raise ValueError(f"AOI geometry {index} must be Polygon or MultiPolygon; found {parsed.geom_type}.")
+        if parsed.is_empty or parsed.area <= 0:
+            raise ValueError(f"AOI geometry {index} is empty or has zero area.")
+        if not parsed.is_valid:
+            raise ValueError(f"AOI geometry {index} is invalid: {explain_validity(parsed)}")
     return geometries
 
 
@@ -352,6 +366,22 @@ def analyze_geotiff(
         geometries_wgs84 = _read_geojson_geometries(aoi_path)
         aoi_crs = str(site.get("aoi_crs", "EPSG:4326"))
         geometries = [transform_geom(aoi_crs, dataset.crs, geometry, precision=6) for geometry in geometries_wgs84]
+        from shapely.geometry import box, shape
+        from shapely.validation import explain_validity
+
+        raster_footprint = box(*dataset.bounds)
+        for index, geometry in enumerate(geometries, start=1):
+            projected_geometry = shape(geometry)
+            if not projected_geometry.is_valid or projected_geometry.is_empty or projected_geometry.area <= 0:
+                raise ValueError(
+                    f"AOI geometry {index} is invalid after CRS transformation: "
+                    f"{explain_validity(projected_geometry)}"
+                )
+            if not raster_footprint.covers(projected_geometry):
+                raise ValueError(
+                    f"AOI geometry {index} extends beyond DEM bounds; complete AOI coverage is required "
+                    "before fingerprint extraction."
+                )
         from rasterio.mask import mask as raster_mask
         clipped, clipped_transform = raster_mask(
             dataset,

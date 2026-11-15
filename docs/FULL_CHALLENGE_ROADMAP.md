@@ -78,6 +78,8 @@ The app-facing four-row fingerprint CSV, three-row ranking CSV, and robustness s
 
 The tracked results do not approve an AOI, scale, resampling/mask policy, coordinate/vertical frame, weight, tolerance, or candidate's suitability. Site01 direct LDEC support in the pilot window is 9.235%; it is distinct from raster-valid coverage. Site04's separate 8.292% operational-window figure is not comparable as a cross-target ranking metric. Generated rasters and raw inputs remain outside Git.
 
+The follow-up AOI implementation check found no defensible, reproducible geometry source for the four selected target/candidate areas in the current checkout: Site01 provider ROI source files are absent locally and their recorded frame caveat remains; Haughton's cited geology map has not been georeferenced/digitized; Yungay's reference point differs from the published field locality by about 5.81 km; and Mauna Kea's geomorphic unit is not selected. No AOI polygons or new fingerprints were fabricated. The extractor now validates polygon geometry and rejects AOIs extending beyond DEM bounds before calculating features; see [AOI implementation status](reports/AOI_MVP_IMPLEMENTATION_2026-11-15.md). The existing five-group ranking remains the primary exploratory output; Slope-only is diagnostic.
+
 ### Implemented in main
 - Streamlit app with Mission Setup, Results & Comparison, Site Passport, paired synthetic DEMO MODE fixtures, and an integrated four-row **real-raster exploratory pilot** (Site01 target + three Earth candidate windows). The app and exported Passport prominently label the pilot as exploratory and the windows as not-approved AOIs.
 - NASA LOLA Site04 acquisition/structural QA workflow; Site04 is provisional.
