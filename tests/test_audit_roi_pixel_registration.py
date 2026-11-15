@@ -96,6 +96,22 @@ def test_rejects_crs_mismatch_without_reprojecting(tmp_path):
         raise AssertionError("Expected mismatched CRS to be rejected")
 
 
+def test_rejects_nonmetre_projected_crs_when_reporting_metres(tmp_path):
+    raster = write_raster(tmp_path / "reference.tif", crs="EPSG:2263")
+    shapefile = write_shapefile(
+        tmp_path / "roi.shp",
+        box(0.5, 8.5, 2.5, 9.5),
+        crs="EPSG:2263",
+    )
+
+    try:
+        audit_shapefile_registration(shapefile, raster)
+    except ValueError as exc:
+        assert "requires a metre-based projected CRS" in str(exc)
+    else:
+        raise AssertionError("Expected non-metre CRS to be rejected")
+
+
 def test_rejects_nonpositive_tolerance(tmp_path):
     raster = write_raster(tmp_path / "reference.tif")
     shapefile = write_shapefile(
