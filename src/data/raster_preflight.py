@@ -101,11 +101,11 @@ def preflight_raster(
                                  "Single raster band." if ds.count == 1 else "Confirm intended data band."))
             unit_check_name = "elevation_unit" if data_kind == "elevation" else "value_unit"
             checks.append(_check(unit_check_name, "PASS" if effective_value_unit else "REVIEW",
-                                 effective_value_unit, "Explicit/tagged product value unit recorded." if effective_value_unit else
+                                 effective_value_unit, "Explicit or source-documented product value unit recorded." if effective_value_unit else
                                  "Product value unit missing; verify authoritative documentation."))
             if vertical_reference_applicable:
                 checks.append(_check("vertical_reference", "PASS" if vertical_evidence else "REVIEW",
-                                     vertical_evidence, "Explicit vertical reference recorded." if vertical_evidence else
+                                     vertical_evidence, "Explicit or source-documented vertical reference recorded." if vertical_evidence else
                                      "Vertical reference missing; do not infer it from horizontal CRS."))
             else:
                 checks.append(_check("vertical_reference", "PASS", "not_applicable",
