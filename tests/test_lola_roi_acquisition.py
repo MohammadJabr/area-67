@@ -230,6 +230,41 @@ def test_inspection_reports_missing_shapefiles_without_inventing_geometry(tmp_pa
     assert "No .shp files" in report["warnings"][0]
 
 
+def test_inspection_reports_invalid_geometry_reasons_and_source_attributes(tmp_path):
+    import geopandas as gpd
+    from shapely.geometry import Polygon, box
+
+    extracted = tmp_path / "invalid_roi"
+    extracted.mkdir()
+    frame = gpd.GeoDataFrame(
+        {
+            "X": [123.0, 456.0],
+            "Y": [-10.0, -20.0],
+            "roi_name": ["valid", "self_intersection"],
+            "geometry": [
+                box(0, 0, 10, 10),
+                Polygon([(0, 0), (10, 10), (0, 10), (10, 0), (0, 0)]),
+            ],
+        },
+        crs="EPSG:3031",
+    )
+    frame.to_file(extracted / "candidate_rois.shp")
+
+    report = inspect_extracted_rois("Site04", extracted)
+    shapefile = report["shapefiles"][0]
+
+    assert shapefile["invalid_geometry_count"] == 1
+    assert len(shapefile["invalid_geometry_details"]) == 1
+    invalid = shapefile["invalid_geometry_details"][0]
+    assert invalid["feature_index"] == 1
+    assert invalid["properties"] == {
+        "X": 456.0,
+        "Y": -20.0,
+        "roi_name": "self_intersection",
+    }
+    assert "self-intersection" in invalid["validity_reason"].lower()
+
+
 def test_inspection_rejects_unknown_site(tmp_path):
     with pytest.raises(ValueError, match="Unknown ROI site"):
         inspect_extracted_rois("Site99", tmp_path)
