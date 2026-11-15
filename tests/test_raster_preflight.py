@@ -112,3 +112,38 @@ def test_multiband_raster_requires_band_review(tmp_path):
 
     assert report["status"] == "REVIEW"
     assert check(report, "band_count")["status"] == "REVIEW"
+
+
+def test_non_elevation_layer_does_not_require_vertical_reference(tmp_path):
+    path = tmp_path / "slope.tif"
+    write_dem(path)
+    report = preflight_raster(
+        path,
+        data_kind="slope",
+        value_unit="degrees",
+        vertical_reference_applicable=False,
+        coordinate_reference_frame="MOON_ME/DE421",
+        coordinate_reference_frame_source="NASA PGDA Product 78",
+    )
+
+    assert report["status"] == "PASS"
+    assert report["raster"]["data_kind"] == "slope"
+    assert check(report, "value_unit")["status"] == "PASS"
+    assert check(report, "vertical_reference")["value"] == "not_applicable"
+    assert check(report, "coordinate_reference_frame")["status"] == "PASS"
+
+
+def test_elevation_layer_keeps_missing_vertical_reference_in_review(tmp_path):
+    path = tmp_path / "lunar_surface.tif"
+    write_dem(path)
+    report = preflight_raster(
+        path,
+        elevation_unit="m",
+        coordinate_reference_frame="MOON_ME/DE421",
+        coordinate_reference_frame_source="NASA PGDA Product 78",
+    )
+
+    assert report["status"] == "REVIEW"
+    assert check(report, "elevation_unit")["status"] == "PASS"
+    assert check(report, "vertical_reference")["status"] == "REVIEW"
+    assert check(report, "coordinate_reference_frame")["status"] == "PASS"
