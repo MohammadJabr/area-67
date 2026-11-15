@@ -11,6 +11,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src" / "data"))
 from lola_roi_acquisition import (  # noqa: E402
     AVAILABLE_ROI_SITES,
+    download_requested_sites,
     download_roi_archive,
     extract_roi_archive,
     inspect_extracted_rois,
@@ -175,3 +176,66 @@ def test_inspection_reports_crs_bounds_and_null_geometries(tmp_path):
     assert shape["null_geometry_count"] == 1
     assert shape["area_native_units2"] == 100.0
     assert report["status"] == "review_required"
+
+
+def test_batch_download_continues_after_provider_error_and_preserves_successes(
+    tmp_path, monkeypatch, capsys
+):
+    import lola_roi_acquisition as acquisition
+
+    monkeypatch.setattr(acquisition, "RAW_ARCHIVE_ROOT", tmp_path)
+
+    def fake_download(site_id, destination, *, max_bytes):
+        if site_id == "Site06":
+            raise RuntimeError("HTML error page from provider")
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(b"test-archive-placeholder")
+        return {"site_id": site_id, "path": str(destination)}
+
+    monkeypatch.setattr(acquisition, "download_roi_archive", fake_download)
+    failures = download_requested_sites(
+        ["Site01", "Site06", "Site07"], max_bytes=1024
+    )
+
+    assert failures == ["Site06"]
+    assert (tmp_path / "Site01" / "Site01_ROIs.tgz").is_file()
+    assert (tmp_path / "Site07" / "Site07_ROIs.tgz").is_file()
+    output = capsys.readouterr().out
+    assert "ERROR downloading Site06" in output
+    assert "Successful archives were preserved" in output
+
+
+def test_download_non_gzip_error_includes_response_diagnostics(tmp_path):
+    payload = b"<html><title>Temporary server page</title></html>"
+
+    class FakeResponse:
+        status = 200
+        headers = {
+            "Content-Length": str(len(payload)),
+            "Content-Type": "text/html",
+        }
+        url = "https://example.invalid/error"
+
+        def __init__(self):
+            self.stream = io.BytesIO(payload)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            self.stream.close()
+
+        def read(self, size=-1):
+            return self.stream.read(size)
+
+    destination = tmp_path / "bad.tgz"
+    with patch("lola_roi_acquisition.urllib.request.urlopen", return_value=FakeResponse()):
+        with pytest.raises(RuntimeError) as exc:
+            download_roi_archive("Site06", destination)
+
+    message = str(exc.value)
+    assert "HTTP=200" in message
+    assert "content_type='text/html'" in message
+    assert "Temporary server page" in message
+    assert not destination.exists()
+    assert not destination.with_name(destination.name + ".part").exists()
