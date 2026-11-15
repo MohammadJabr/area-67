@@ -45,7 +45,8 @@ jobs:
           python -m pip install -r requirements.txt
 
       - name: Acquire Earth candidate DEM source tiles
-        if: github.event_name == 'push' || inputs.dataset == 'earth' || inputs.dataset == 'both'
+        id: earth_acquire
+        if: inputs.dataset == 'earth' || inputs.dataset == 'both'
         continue-on-error: true
         run: |
           python -m src.data.earth_dem_acquisition \
@@ -53,7 +54,8 @@ jobs:
             --confirm-download --max-file-mb 250
 
       - name: Acquire lunar LOLA layers for Site01 and Site04
-        if: github.event_name == 'push' || inputs.dataset == 'moon' || inputs.dataset == 'both'
+        id: moon_acquire
+        if: inputs.dataset == 'moon' || inputs.dataset == 'both'
         continue-on-error: true
         run: |
           python -m src.data.lola_south_pole download \
@@ -91,7 +93,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: area67-gis-${{ github.event_name == 'push' && 'both' || inputs.dataset }}-${{ github.run_id }}
+          name: area67-gis-${{ inputs.dataset }}-${{ github.run_id }}
           path: |
             data/raw/earth/
             data/raw/moon/
