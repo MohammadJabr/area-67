@@ -163,7 +163,7 @@ The following software and data-management components are merged into `main`:
 
 ### Running the matching workflow
 
-The matching CLI refuses to run unless the operator explicitly supplies both `--min-feature-group-completeness` and `--min-data-completeness`. Their values, along with the five feature tolerances, must be approved for the chosen study. The software does not select scientific cutoffs for the team. A value of `0.0` explicitly disables a gate and must not be treated as a recommendation.
+The matching CLI refuses to run unless the operator explicitly supplies `--candidate-site-ids` (an allowlist; unlisted Earth rows are excluded), `--min-feature-group-completeness`, and `--min-data-completeness`. Their values, along with the five feature tolerances, must be approved for the chosen study. The software does not select scientific cutoffs for the team. A value of `0.0` explicitly disables a gate and must not be treated as a recommendation.
 
 ### Application and optional route status
 
