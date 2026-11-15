@@ -70,6 +70,23 @@ For invalid features, the JSON records the Shapely validity reason, `make_valid`
 
 The utility is diagnostic only. It never writes geometry, replaces an ROI, or treats a make-valid result as the provider's intended boundary. Repair-preview statistics must not be merged into the official ROI QA report or used as AREA 67 study-AOI evidence until the team reviews the candidate geometry and its scientific provenance.
 
+### Previously captured Site04 make-valid preview
+
+A local diagnostic run recorded on 2026-11-15 had already applied Shapely `make_valid` in memory to the two invalid source features and passed each polygon component separately to the existing ROI raster-statistics function. The measurements below are **preview-only**, not official ROI statistics:
+
+| Source feature | Polygon component | Component area (m²) | Pixel centres | Positive LDEC support | Median Z RMS (m) | Median slope (°) | Median slope RMS (°) |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 0 | 0 | 2,137.5 | 88 | 12.50% | 0.4134 | 2.9892 | 1.6728 |
+| 0 | 1 | 3,312.5 | 133 | 8.27% | 0.4295 | 2.9562 | 1.6875 |
+| 1 | 0 | 225.0 | 10 | 10.00% | 0.4651 | 3.5467 | 1.6971 |
+| 1 | 1 | 37.5 | 2 | 50.00% | 0.1211 | 2.5720 | 1.1064 |
+| 1 | 2 | 2,487.5 | 102 | 13.73% | 0.2478 | 2.5022 | 1.4690 |
+
+Feature 0 therefore produced two polygon components with a combined area of **5,450 m²** and 221 raster pixel centres. Feature 1 produced three components with a combined area of **2,750 m²** and 114 pixel centres. These sums describe the polygonal output from that in-memory repair run; they do not prove that the provider intended each component to be an independent ROI, nor that the original geometry's intended topology was recovered.
+
+The small 225 m² and 37.5 m² components from source feature 1 deserve special scrutiny. The 37.5 m² component has only two pixel centres, so its apparently high 50% positive LDEC percentage is based on just two cells and should not be compared directly with the larger components as if the support were equally stable.
+
+
 ## Pixel-registration diagnostic
 
 The ROI polygons can be checked against the native raster's affine pixel lattice without changing either source. The diagnostic reports whether every polygon-ring vertex lies on the pixel-centre lattice, the pixel-corner lattice, or neither. It measures residuals in map units and also records the raster's `AREA_OR_POINT` tag.
