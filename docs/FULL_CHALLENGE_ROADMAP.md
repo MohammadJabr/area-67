@@ -75,15 +75,19 @@ Do not populate selectable profiles with empty or misleading results. A profile 
 - NASA LOLA Site04 acquisition/structural QA workflow; Site04 is provisional.
 - Multi-site NASA PGDA south-pole LOLA acquisition and inspection for Site01, Site04, Site06, Site07 and Site11, including five raster layers (elevation, LDEC counts, slope, Z RMS uncertainty, slope RMS uncertainty).
 - Safe download/extraction and geometry inventory for the five provider-linked ROI archives; polygon-level QA reports raster-valid coverage, positive-shot direct support, zero-count/interpolated share, and elevation/slope plus RMS-uncertainty summaries. Both ROI-archive and five-layer raster batch downloaders continue past individual provider errors, preserve successful files, and report failed items.
-- Five provisional Copernicus GLO-30 Earth DSM source tiles: Haughton, McMurdo, Askja, Mauna Kea and Yungay, with manifest/checksum/structural QA; a separate Mauna Kea USGS 3DEP 1 m alternative is documented.
+- Five provisional Copernicus GLO-30 Earth DSM source tiles: Haughton, McMurdo, Askja, Mauna Kea and Yungay, with manifest/checksum/structural QA. Two adjacent Mauna Kea USGS 3DEP 1 m DTM tiles are recorded in EPSG:26904 and EPSG:26905; the eastern tile's vertical reference and elevation units are unverified, and the pair is not approved for mosaicking.
+- Read-only Earth raster inventory and structural preflight, local block-wise raster audit, and remote COG/STAC inspection using HTTP byte-range checks and bounded windows. Remote probes cover ArcticDEM Haughton, REMA McMurdo and ÍslandsDEM Askja; full remote rasters were not downloaded.
+- Provisional Earth landmark/reference-point GeoJSON with 13 records; these are not AOI boundaries and include unresolved Haughton, McMurdo and Yungay location differences.
 - Five-group DEM terrain fingerprint extraction and synthetic/GeoTIFF tests.
 - CSV-driven target-aware matching, candidate ranking, feature contributions, Slope-only baseline and weight sensitivity utilities.
 - Integration contracts, data provenance and judging-readiness gates.
-- Latest full main CI at commit `11ed4cf` (2026-11-15, workflow run #250): **154 passed, 99 warnings in 4.96s**. The warnings are not test failures; inspect the run logs if their details matter for a release.
+- Latest full main CI at commit `ce6a406` (2026-11-15, workflow run #255): **175 passed, 112 warnings in 3.01s**. The warnings are not test failures; inspect the run logs if their details matter for a release.
 
 ### Partially implemented / not scientifically complete
 - The five provider-defined lunar ROI archive and five-layer audit tools are implemented. Site04's local provider ROI archive and all five native rasters have been inspected with polygon-level support/uncertainty QA and a pixel-registration audit; equivalent site-level inspection remains to be confirmed for Site01, Site06, Site07 and Site11. Provider polygons are not approved AREA 67 study AOIs.
-- No lunar target sub-AOI, Earth candidate AOIs, common analysis grid, or source harmonization policy has been approved.
+- No lunar target sub-AOI, Earth candidate AOIs, common analysis grid, or source harmonization policy has been approved. Earth source tiles and remote catalog probes are not analysis-ready AOI rasters.
+- The reference-point GeoJSON contains points only. Haughton has a ~1.47 km marker/reference difference; McMurdo's provisional point is not a named valley and alternatives may fall outside the local Copernicus tile; Yungay's marker differs by ~5.81 km from a published field reference. Askja and Mauna Kea reference points align at recorded precision but do not define the target landform.
+- Remote COG 500 × 500 windows prove only that selected assets can be queried and return values in those windows; they do not establish full-tile coverage, effective resolution, or candidate suitability.
 - Real `terrain_fingerprints.csv` and `candidate_rankings.csv` are still absent; polygon-level tooling does not itself create terrain fingerprints.
 - Cross-site real-data validation, feature-correlation/double-counting audit, approved tolerances, weights and completeness gates remain pending.
 - End-to-end real-data app/Passport flow remains pending.

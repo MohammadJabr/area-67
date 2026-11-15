@@ -93,7 +93,7 @@ excluded from Git by `.gitignore`.
 - Match terrain descriptors at compatible effective scales and account for
   the lunar interpolated fraction and uncertainty. Do not compare raw lunar
   and Earth elevations or treat a score as mission-success probability.
-- No Earth candidate DEMs have been collected by this GIS contribution.
+- Earth source DEMs have since been collected and screened in a separate GIS workstream: five provisional Copernicus GLO-30 DSM tiles and two adjacent Mauna Kea USGS 3DEP 1 m DTM tiles are recorded in the Earth manifests. These are source tiles, not approved candidate AOIs or harmonized analysis surfaces. The USGS eastern tile's vertical reference and elevation units remain unverified; the two UTM-zone tiles must not be mosaicked without an approved transformation/grid policy.
 
 ### Mohammed: application integration
 
@@ -107,8 +107,9 @@ excluded from Git by `.gitignore`.
 ## Still missing / unresolved
 
 - Official team approval of the target and a specific exploration task.
-- Earth candidate DEMs and source manifests; no Earth data are included here.
+- Approved Earth candidate AOI boundaries and analysis-ready, harmonized rasters. Source tiles and manifests now exist, but they are not final candidate study surfaces.
 - A final sub-area/ROI definition within the Site04 product footprint.
+- A documented common preparation policy linking the provisional Earth source package to the selected lunar target; see docs/reports/earth_dem_preparation/GIS_PREPROCESSING_SPECIFICATION.md.
 - Product release/version and exact source access date in the manifest.
 - An unambiguous embedded lunar datum/vertical reference; the raster WKT says
   unknown, while PGDA identifies the catalog frame as MOON_ME/DE421.

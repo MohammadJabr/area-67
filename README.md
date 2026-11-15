@@ -143,16 +143,20 @@ The following software and data-management components are merged into `main`:
 
 - Streamlit MVP, Analog Passport, application contracts, and paired synthetic demo fixtures.
 - NASA LOLA Site04 acquisition and structural QA workflow; Site04 remains a **provisional lunar target**.
-- Earth DEM acquisition, raster inventory, structural QA, and screening reports for five provisional Copernicus GLO-30 DSM source tiles: Haughton, McMurdo, Askja, Mauna Kea, and Yungay.
-- A separate USGS 3DEP 1 m bare-earth DEM alternative for Mauna Kea, with its different vertical reference documented.
+- Earth DEM acquisition, raster inventory, structural QA, candidate screening, and local-raster audit tooling for five provisional Copernicus GLO-30 DSM source tiles: Haughton, McMurdo, Askja, Mauna Kea, and Yungay.
+- Two adjacent Mauna Kea USGS 3DEP 1 m bare-earth tiles are recorded. The western tile has EPSG:26904 / NAVD88 / metres in its source record; the eastern tile is EPSG:26905, but its vertical reference and elevation units remain unverified. They must not be mosaicked or treated as a harmonized replacement for the Copernicus DSM.
+- Read-only remote COG inspection using HTTP byte-range preflight and bounded 500 × 500 pixel windows for ArcticDEM Haughton, REMA McMurdo, and ÍslandsDEM Askja catalog assets; no full high-resolution raster assets were downloaded.
+- Structural raster preflight checks and provisional Earth reference-point GeoJSON. The points are source/landmark checks, not approved candidate AOI polygons.
 - Target-aware terrain-matching engine plus a CSV loader/CLI, canonical ranking export, Slope-only baseline, and weight-sensitivity report.
 - Five-group terrain-fingerprint extraction and validation pipeline, including synthetic/GeoTIFF tests, explicit method/provenance metadata, and optional derived feature maps.
 
 ### Current data status
 
 - The five Copernicus products are full source tiles, not selected candidate AOIs. The named points and landforms remain provisional.
-- The Mauna Kea USGS tile is a regional alternative only; it is not a harmonized replacement for all five Copernicus sources.
-- Source manifests, checksums, QA JSON/Markdown, and screening previews are tracked. Large raw DEM rasters remain gitignored and must be acquired locally using the documented tools.
+- Mauna Kea's USGS 3DEP 1 m data now includes two adjacent tiles in different UTM zones (EPSG:26904 and EPSG:26905). The east tile's vertical reference and elevation units are unverified; do not mosaic or compare it until cross-zone and vertical handling are approved.
+- Targeted remote COG probes show accessible ArcticDEM v4.1 Haughton and REMA v2 McMurdo DSM assets with MAD/count/date companions, plus an ÍslandsDEM Askja asset. These are limited 500 × 500 window reads and metadata checks, not full-tile validation or local downloads.
+- data/metadata/earth_candidate_reference_points.geojson records 13 provisional/alternative reference points. The Haughton, McMurdo and Yungay markers have documented discrepancies or unresolved location identity; none is an approved AOI.
+- Source manifests, checksums, QA JSON/Markdown, remote-access summaries and screening previews are tracked. Large raw DEM rasters remain gitignored and must be acquired locally using the documented tools.
 - No AOI boundaries, final Earth candidate set, common physical analysis scale, reprojection/resampling policy, or target sub-area have been approved.
 - Hiba's five-group terrain extraction pipeline, scientific validation utilities, methodology, and synthetic/GeoTIFF tests are now merged into `main`. The real `data/processed/terrain_fingerprints.csv` is still pending approved AOIs, a shared physical scale, and analysis-ready rasters; no real terrain measurements are claimed. The canonical `candidate_rankings.csv` and robustness report are also absent.
 
@@ -166,6 +170,6 @@ The matching CLI refuses to run unless the operator explicitly supplies both `--
 - The five-group terrain-fingerprint extraction pipeline is merged into `main` and includes 16 focused synthetic/GeoTIFF tests. These verify the implementation against constructed surfaces, not actual lunar or Earth reference terrain.
 - The matching workflow is software plumbing tested with synthetic fixtures; no real Earth–Moon/Mars ranking is claimed.
 - The optional A* Rover Gauntlet work remains in [Draft PR #9](https://github.com/MohammadJabr/area-67/pull/9), not in `main`. Its updated branch rejects sheared affine grids, enforces a 250,000-cell default software resource guard, and writes a route provenance JSON sidecar. Its latest CI passed 76 synthetic tests; no real route is claimed.
-- The merged terrain pipeline's latest full CI run passed **101 tests** (41 warnings) on the PR head; the post-merge `main` run is recorded in the Actions history.
+- The latest full main CI at ce6a406 passed **175 tests** (112 warnings); compilation and the geospatial artifact ignore-policy check also passed.
 
 The project has a working application and reproducible source/matching software, but **it does not yet have a validated planetary-analog result**. The next priority is to approve study areas and physical scales, produce validated real fingerprints, and run the complete evidence chain—not to add more optional features.
