@@ -64,6 +64,7 @@ def test_workflow_reads_fingerprints_and_exports_results(
         "MOON_SITE04",
         get_mission_weights(),
         matching_tolerances,
+        candidate_site_ids=["EARTH_A", "EARTH_B"],
         mission_profile=ROVER_NAVIGATION_PROFILE["name"],
         min_feature_group_completeness=0.0,
         min_data_completeness=0.0,
