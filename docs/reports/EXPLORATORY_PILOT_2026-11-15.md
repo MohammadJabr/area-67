@@ -81,6 +81,18 @@ The pilot configuration describes Earth elevation as bilinearly resampled to a p
 
 Before treating the pilot as reproducible, record the exact common-grid transformation for the lunar target, the aggregation method for every quality/support layer, and the executable commands or script that regenerate the fingerprints, ranking, and robustness sidecar from the raw checksummed rasters. Until then, the results remain an exploratory app demonstration, not a canonical Hiba/Omar pipeline output.
 
+## Local-relief window sensitivity (exploratory)
+
+The same five 30m sample grids were recomputed with the requested local-relief window changed while all other feature calculations, sample extents, weights, and tolerances were held constant. The configured windows round to odd cell widths:
+
+| Requested window | Cells | Actual centre-to-centre span | Haughton | Yungay | Mauna Kea |
+|---:|---:|---:|---:|---:|---:|
+| 90m | 3×3 | 60m | Rank 1 · 74.08 | Rank 2 · 67.10 | Rank 3 · 28.63 |
+| 150m | 5×5 | 120m | Rank 1 · 73.79 | Rank 2 · 66.13 | Rank 3 · 27.39 |
+| 210m | 7×7 | 180m | Rank 1 · 73.23 | Rank 2 · 64.51 | Rank 3 · 26.01 |
+
+The relative rank order remains unchanged across these three local-relief windows. Score values change because the Local Relief feature changes. This is a one-parameter window sensitivity check at a fixed 30m grid, **not** a full analysis-scale sensitivity test and not AOI approval. See `ranking_robustness.json` for the detailed values and configuration notes.
+
 ## Provisional analysis and matching settings
 
 The exploratory configuration used 30m analysis cells, a 150m requested local-relief window (rounded to five cells with a 120m centre-to-centre span), an 0.80 minimum local-neighbour fraction, Riley eight-neighbour TRI (one-cell radius), slope classes below 10°, 10–25°, and at least 25°, and an eight-connected steep-patch metric. The mission weights were 0.30 Slope, 0.25 TRI, 0.20 Local Relief, 0.20 Spatial Pattern, and 0.05 Terrain Distribution. The tolerances were 5°, 10m, 15m, 20 percentage points, and 15 percentage points, respectively. Weight sensitivity perturbed one weight at a time by ±20%, producing 11 scenarios including baseline.
