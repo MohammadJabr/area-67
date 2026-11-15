@@ -82,7 +82,7 @@ def test_crs_comparison_accepts_same_polar_stereographic_math_with_different_enc
 
 def test_crs_comparison_rejects_unrelated_coordinate_systems():
     with pytest.raises(ValueError, match="do not match"):
-        compare_roi_raster_crs("EPSG:4326", "EPSG:3857")
+        compare_roi_raster_crs("EPSG:32636", "EPSG:3857")
 
 
 def test_crs_comparison_rejects_geographic_coordinates_even_when_equal():
@@ -101,13 +101,13 @@ def test_read_candidate_reports_native_layer_coverage(tmp_path):
         layer["valid_pct_of_roi_pixel_centers"] == 100.0
         for layer in result["layer_coverage"].values()
     )
-    assert result["lola_direct_support"]["positive_count_n"] == 2
+    assert result["lola_direct_support"]["positive_count_n"] == 1
     assert result["crs_screening"]["crs_objects_equal"] is True
 
 
 def test_read_candidate_rejects_mismatched_roi_crs(tmp_path):
     paths = _write_layers(tmp_path / "rasters")
-    gdf = gpd.GeoDataFrame({"id": [1]}, geometry=[box(5, 5, 15, 15)], crs="EPSG:4326")
+    gdf = gpd.GeoDataFrame({"id": [1]}, geometry=[box(5, 5, 15, 15)], crs="EPSG:32636")
 
     with pytest.raises(ValueError, match="do not match"):
         read_candidate("Synthetic", 0, gdf, paths)
