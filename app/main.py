@@ -307,6 +307,8 @@ def main() -> None:
         quality_cols = [col for col in (
             "site_id", "site_name", "source_id", "analysis_scale_m",
             "valid_coverage_pct", "nodata_pct", "direct_observation_coverage_pct",
+            "ldec_zero_count_pct", "z_rms_median_m", "z_rms_p90_m",
+            "slope_rms_median_deg", "slope_rms_p90_deg",
             "aoi_status", "aoi_approval", "source_checksum_sha256",
         ) if col in fingerprints.columns]
         if quality_cols:
