@@ -10,6 +10,8 @@
   "window_height_m": 990.0,
   "analysis_scale_m": 30.0,
   "relief_window_m": 150.0,
+  "relief_window_cells": 5,
+  "relief_window_span_m": 120.0,
   "local_relief_min_valid_fraction": 0.8,
   "tri_definition": "Riley 8-neighbour TRI, one-cell radius",
   "tri_window_cells": 1,
