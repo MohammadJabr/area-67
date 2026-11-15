@@ -71,7 +71,8 @@ def test_source_documentation_reads_earth_manifest(tmp_path, monkeypatch):
     assert source["value_unit"] == "m"
     assert source["vertical_reference"] == "EGM2008"
     assert source["vertical_reference_applicable"] is True
-    assert source["coordinate_reference_frame"] == "EPSG:4326"
+    assert source["horizontal_crs"] == "EPSG:4326"
+    assert "coordinate_reference_frame" not in source
 
 
 def test_build_report_passes_layer_semantics_to_preflight(tmp_path, monkeypatch):
