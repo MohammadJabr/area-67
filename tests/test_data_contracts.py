@@ -190,6 +190,7 @@ def test_ranking_distance_cannot_be_negative():
 
 def test_fingerprint_numeric_contract_rejects_boolean_measurements():
     fingerprints, _ = load_demo_data()
+    fingerprints["slope_median"] = fingerprints["slope_median"].astype(object)
     fingerprints.loc[0, "slope_median"] = True
     errors = validate_fingerprints(fingerprints)
     assert any("slope_median contains 1 boolean value(s)" in error for error in errors)
@@ -197,6 +198,8 @@ def test_fingerprint_numeric_contract_rejects_boolean_measurements():
 
 def test_ranking_numeric_contract_rejects_boolean_rank_and_score():
     _, rankings = load_demo_data()
+    rankings["rank"] = rankings["rank"].astype(object)
+    rankings["similarity_score"] = rankings["similarity_score"].astype(object)
     rankings.loc[0, "rank"] = True
     rankings.loc[1, "similarity_score"] = False
     errors = validate_rankings(rankings)
