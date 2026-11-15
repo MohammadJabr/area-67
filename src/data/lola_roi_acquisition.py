@@ -340,7 +340,7 @@ def extract_roi_archive(
             ),
         }
         (staging / "archive_extraction_manifest.json").write_text(
-            json.dumps(manifest, indent=2) + "\\n",
+            json.dumps(manifest, indent=2),
             encoding="utf-8",
         )
 
