@@ -17,8 +17,8 @@ from typing import Any
 import rasterio
 
 try:
-    from .lola_site04 import ASSETS, inspect_raster
-    from .lola_site04_qa import run as run_qa
+    from src.data.lola_site04 import ASSETS, inspect_raster
+    from src.data.lola_site04_qa import run as run_qa
 except ImportError:  # direct script execution from the repository root
     from lola_site04 import ASSETS, inspect_raster
     from lola_site04_qa import run as run_qa
