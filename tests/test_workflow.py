@@ -142,3 +142,29 @@ def test_workflow_refuses_to_run_without_explicit_completeness_policy(
             matching_tolerances,
             mission_profile=ROVER_NAVIGATION_PROFILE["name"],
         )
+
+
+def test_workflow_rejects_unknown_or_non_earth_candidate_ids(
+    tmp_path, target_fingerprint, earth_candidate, matching_tolerances
+):
+    from src.data.fingerprint_loader import select_space_to_earth_fingerprints
+
+    candidate = dict(earth_candidate)
+    candidate["site_id"] = "EARTH_A"
+    candidate["source_id"] = "DEM_A"
+    records = [target_fingerprint, candidate]
+
+    with pytest.raises(ValueError, match="missing or are not Earth rows"):
+        select_space_to_earth_fingerprints(
+            records, "MOON_SITE04", candidate_site_ids=["EARTH_NOT_IN_TABLE"]
+        )
+
+    with pytest.raises(ValueError, match="duplicates"):
+        select_space_to_earth_fingerprints(
+            records, "MOON_SITE04", candidate_site_ids=["EARTH_A", "EARTH_A"]
+        )
+
+    with pytest.raises(ValueError, match="non-empty"):
+        select_space_to_earth_fingerprints(
+            records, "MOON_SITE04", candidate_site_ids=[]
+        )
