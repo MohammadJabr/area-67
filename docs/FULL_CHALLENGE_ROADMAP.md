@@ -70,6 +70,14 @@ Do not populate selectable profiles with empty or misleading results. A profile 
 
 ## 5. Current repository state — verified 2026-11-15
 
+### Presentation MVP release snapshot (2026-11-15)
+
+The current in-repository demonstration is a **reproducible exploratory software pilot**, not a validated planetary-analog result. It uses one Site01 target context window and three Earth reference windows (Haughton, Yungay, Mauna Kea); every footprint and analysis/matching setting remains provisional. Site04 is excluded from the ranked demo. Askja is held out because its current sampled window is near-flat/equal-elevation dominated, not because all Askja terrain has been assessed.
+
+The app-facing four-row fingerprint CSV, three-row ranking CSV, and robustness sidecar are checked in under `data/processed/`. The canonical raw-raster builder is `src/data/build_exploratory_pilot.py`; it invokes the existing fingerprint, matching, and robustness implementations and writes a checksum-bearing run manifest. Use the non-overwriting output-path example in [the MVP method and results](FINAL_MVP_METHOD_AND_RESULTS_2026-11-15.md). The [judge demo script](JUDGE_DEMO_SCRIPT_2026-11-15.md) keeps the narration aligned with the actual caveats.
+
+The tracked results do not approve an AOI, scale, resampling/mask policy, coordinate/vertical frame, weight, tolerance, or candidate's suitability. Site01 direct LDEC support in the pilot window is 9.235%; it is distinct from raster-valid coverage. Site04's separate 8.292% operational-window figure is not comparable as a cross-target ranking metric. Generated rasters and raw inputs remain outside Git.
+
 ### Implemented in main
 - Streamlit app with Mission Setup, Results & Comparison, Site Passport, paired synthetic DEMO MODE fixtures, and an integrated four-row **real-raster exploratory pilot** (Site01 target + three Earth candidate windows). The app and exported Passport prominently label the pilot as exploratory and the windows as not-approved AOIs.
 - NASA LOLA Site04 acquisition/structural QA workflow; Site04 is provisional.

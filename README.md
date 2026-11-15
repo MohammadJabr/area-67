@@ -158,8 +158,8 @@ The following software and data-management components are merged into `main`:
 - Targeted remote COG probes show accessible ArcticDEM v4.1 Haughton and REMA v2 McMurdo DSM assets with MAD/count/date companions, plus an ÍslandsDEM Askja asset. These are limited 500 × 500 window reads and metadata checks, not full-tile validation or local downloads.
 - data/metadata/earth_candidate_reference_points.geojson records 13 provisional/alternative reference points. The Haughton, McMurdo and Yungay markers have documented discrepancies or unresolved location identity; none is an approved AOI.
 - Source manifests, checksums, QA JSON/Markdown, remote-access summaries and screening previews are tracked. Large raw DEM rasters remain gitignored and must be acquired locally using the documented tools.
-- The working Earth shortlist is Haughton, Askja and Mauna Kea, but no AOI boundaries, common physical analysis scale, reprojection/resampling policy, or target sub-area have been approved.
-- Hiba's five-group terrain extraction pipeline, scientific validation utilities, methodology, and synthetic/GeoTIFF tests are now merged into `main`. The real `data/processed/terrain_fingerprints.csv` is still pending approved AOIs, a shared physical scale, and analysis-ready rasters; no real terrain measurements are claimed. The canonical `candidate_rankings.csv` and robustness report are also absent.
+- The project shortlist for future geomorphic AOIs is Haughton, Askja, and Mauna Kea. The currently tracked exploratory ranking instead contains Haughton, Yungay, and Mauna Kea reference-centred windows; Yungay's location discrepancy is disclosed in the pilot report. No AOI boundaries, common physical analysis scale, reprojection/resampling policy, or target sub-area have been approved.
+- The canonical Site01 exploratory builder, app-facing `data/processed/terrain_fingerprints.csv` and `candidate_rankings.csv`, and `ranking_robustness.json` are present in `main`. These contain real-raster-derived exploratory measurements, not approved study results. The raw Site01 inputs are not committed.
 
 ### Running the matching workflow
 
@@ -167,10 +167,10 @@ The matching CLI refuses to run unless the operator explicitly supplies both `--
 
 ### Application and optional route status
 
-- The application remains in clearly labelled **DEMO MODE** until both real processed files exist and pass the integration contracts. It refuses to mix a single real file with synthetic fixtures.
+- The application loads the tracked Site01 exploratory result pair and labels it **EXPLORATORY REAL-DATA PILOT**. If the complete real pair is unavailable, it uses a clearly labelled synthetic demo pair; it refuses to mix one real file with one synthetic file.
 - The five-group terrain-fingerprint extraction pipeline is merged into `main` and includes 16 focused synthetic/GeoTIFF tests. These verify the implementation against constructed surfaces, not actual lunar or Earth reference terrain.
-- The matching workflow is software plumbing tested with synthetic fixtures; no real Earth–Moon/Mars ranking is claimed.
+- The matching workflow has produced an exploratory real-raster Site01-to-Earth ranking through the canonical matching functions. It is not a scientifically approved result.
 - The optional A* Rover Gauntlet work remains in [Draft PR #9](https://github.com/MohammadJabr/area-67/pull/9), not in `main`. Its updated branch rejects sheared affine grids, enforces a 250,000-cell default software resource guard, and writes a route provenance JSON sidecar. Its latest CI passed 76 synthetic tests; no real route is claimed.
 - The latest full main CI at `3325399` (2026-11-15, workflow run #267) passed **181 tests** (112 warnings in 4.05s); compilation and the geospatial artifact ignore-policy check also passed.
 
-The project has a working application and reproducible source/matching software, but **it does not yet have a validated planetary-analog result**. The next priority is to approve study areas and physical scales, produce validated real fingerprints, and run the complete evidence chain—not to add more optional features.
+The repository has a working, reproducible **exploratory presentation MVP**, but **it does not yet have a validated planetary-analog result**. See [the MVP method and results](docs/FINAL_MVP_METHOD_AND_RESULTS_2026-11-15.md) and [judge demo script](docs/JUDGE_DEMO_SCRIPT_2026-11-15.md). The next priority is approval of study areas and common physical settings, followed by independent fingerprint validation and matching review.
