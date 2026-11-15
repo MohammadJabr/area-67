@@ -78,6 +78,8 @@ def download_roi_archive(
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
             status = getattr(response, "status", 200)
+            content_type = response.headers.get("Content-Type", "unknown")
+            final_url = getattr(response, "url", url)
             if status != 200:
                 raise RuntimeError(f"HTTP {status} retrieving {url}")
             declared_length = response.headers.get("Content-Length")
@@ -98,7 +100,14 @@ def download_roi_archive(
                     digest.update(chunk)
                     output.write(chunk)
         if prefix != GZIP_SIGNATURE:
-            raise RuntimeError(f"Response is not a gzip archive: {url}")
+            body_preview = partial.read_bytes()[:300].decode(
+                "utf-8", errors="replace"
+            ).replace("\\r", " ").replace("\\n", " ").strip()
+            raise RuntimeError(
+                "Response is not a gzip archive: "
+                f"HTTP={status}, content_type={content_type!r}, "
+                f"final_url={final_url!r}, body_preview={body_preview!r}"
+            )
         if declared_length is not None and received != int(declared_length):
             raise RuntimeError(
                 f"Incomplete download: expected {declared_length}, received {received}"
@@ -131,6 +140,41 @@ def download_roi_archive(
         if isinstance(exc, (ValueError, FileExistsError)):
             raise
         raise RuntimeError(f"ROI archive download failed for {site_id}: {exc}") from exc
+
+
+def download_requested_sites(
+    site_ids: list[str],
+    *,
+    max_bytes: int,
+) -> list[str]:
+    """Attempt every selected site and return IDs that failed.
+
+    Successful local archives are skipped and never overwritten. A single
+    provider-side error must not prevent later sites from being attempted.
+    """
+    failures: list[str] = []
+    for site_id in site_ids:
+        destination = RAW_ARCHIVE_ROOT / site_id / AVAILABLE_ROI_SITES[site_id]
+        if destination.exists():
+            print(f"Already present; leaving unchanged: {destination}")
+            continue
+        try:
+            result = download_roi_archive(
+                site_id, destination, max_bytes=max_bytes
+            )
+            print(json.dumps(result, indent=2))
+        except Exception as exc:
+            failures.append(site_id)
+            print(f"ERROR downloading {site_id}: {type(exc).__name__}: {exc}")
+    if failures:
+        print(
+            "Download completed with failures for: "
+            + ", ".join(failures)
+            + ". Successful archives were preserved."
+        )
+    else:
+        print("All requested ROI archives are available locally.")
+    return failures
 
 
 def _safe_member_parts(member: tarfile.TarInfo) -> tuple[str, ...]:
@@ -330,15 +374,12 @@ def main(argv: list[str] | None = None) -> int:
                 parser.error("download requires --confirm-download after reviewing the selected sites")
             if args.max_archive_mb <= 0:
                 parser.error("--max-archive-mb must be positive")
-            for site_id in args.sites:
-                destination = RAW_ARCHIVE_ROOT / site_id / AVAILABLE_ROI_SITES[site_id]
-                if destination.exists():
-                    print(f"Already present; leaving unchanged: {destination}")
-                    continue
-                result = download_roi_archive(
-                    site_id, destination, max_bytes=int(args.max_archive_mb * 1024 * 1024)
-                )
-                print(json.dumps(result, indent=2))
+            failures = download_requested_sites(
+                args.sites,
+                max_bytes=int(args.max_archive_mb * 1024 * 1024),
+            )
+            if failures:
+                return 1
 
         else:
             if args.max_uncompressed_mb <= 0:
