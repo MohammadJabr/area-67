@@ -79,6 +79,11 @@ jobs:
             --sites Site01 Site04 --confirm-download --max-archive-mb 50
           python -m src.data.lola_roi_acquisition inspect --sites Site01 Site04
 
+      - name: Audit lunar ROI support and uncertainty by provider polygon
+        if: always() && steps.roi_acquire.outcome == 'success' && steps.moon_acquire.outcome == 'success'
+        run: |
+          python -m src.data.lola_roi_quality --sites Site01 Site04
+
       - name: Inventory and structurally preflight every acquired raster
         if: always()
         run: |
@@ -116,6 +121,7 @@ jobs:
             data/metadata/ci_gis_audit/
             data/metadata/lola_south_pole/
             data/metadata/lola_rois/
+            data/metadata/lola_roi_quality/
           if-no-files-found: warn
           retention-days: 14
 
