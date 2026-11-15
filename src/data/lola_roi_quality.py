@@ -44,16 +44,101 @@ def json_value(value: Any) -> Any:
     return str(value)
 
 
+def _axis_signature(crs: Any) -> tuple[tuple[str, float], ...]:
+    return tuple(
+        (str(axis.direction).casefold(), float(axis.unit_conversion_factor))
+        for axis in crs.axis_info
+    )
+
+
+def _projection_parameter_signature(crs: Any) -> tuple[str, tuple[tuple[str, float], ...]]:
+    operation = crs.coordinate_operation
+    parameters = tuple(
+        sorted(
+            (
+                str(parameter.name).casefold(),
+                float(parameter.value) * float(parameter.unit_conversion_factor),
+            )
+            for parameter in operation.params
+        )
+    )
+    return str(operation.method_name).casefold(), parameters
+
+
+def _equivalent_custom_projected_crs(left: Any, right: Any) -> bool:
+    """Compare projection mathematics while ignoring non-semantic WKT labels.
+
+    This narrow fallback is intended for custom lunar CRS WKT where providers
+    serialize the same sphere/projection with different placeholder names.
+    It requires identical geodetic body dimensions, prime meridian, projection
+    method and normalized parameters, and coordinate-axis directions/units.
+    """
+    if not (left.is_projected and right.is_projected):
+        return False
+
+    left_geodetic = left.geodetic_crs
+    right_geodetic = right.geodetic_crs
+    if left_geodetic is None or right_geodetic is None:
+        return False
+
+    left_ellipsoid = left_geodetic.ellipsoid
+    right_ellipsoid = right_geodetic.ellipsoid
+    for left_value, right_value in (
+        (left_ellipsoid.semi_major_metre, right_ellipsoid.semi_major_metre),
+        (left_ellipsoid.semi_minor_metre, right_ellipsoid.semi_minor_metre),
+    ):
+        if not math.isclose(
+            float(left_value), float(right_value), rel_tol=1e-12, abs_tol=1e-9
+        ):
+            return False
+
+    left_prime_meridian = (
+        float(left_geodetic.prime_meridian.longitude)
+        * float(left_geodetic.prime_meridian.unit_conversion_factor)
+    )
+    right_prime_meridian = (
+        float(right_geodetic.prime_meridian.longitude)
+        * float(right_geodetic.prime_meridian.unit_conversion_factor)
+    )
+    if not math.isclose(
+        left_prime_meridian, right_prime_meridian, rel_tol=1e-12, abs_tol=1e-12
+    ):
+        return False
+
+    if _axis_signature(left_geodetic) != _axis_signature(right_geodetic):
+        return False
+    if _axis_signature(left) != _axis_signature(right):
+        return False
+
+    try:
+        left_method, left_parameters = _projection_parameter_signature(left)
+        right_method, right_parameters = _projection_parameter_signature(right)
+    except (AttributeError, TypeError, ValueError):
+        return False
+
+    if left_method != right_method or len(left_parameters) != len(right_parameters):
+        return False
+    for (left_name, left_value), (right_name, right_value) in zip(
+        left_parameters, right_parameters
+    ):
+        if left_name != right_name or not math.isclose(
+            left_value, right_value, rel_tol=1e-12, abs_tol=1e-12
+        ):
+            return False
+    return True
+
+
 def same_crs(left: Any, right: Any) -> bool:
     if left is None or right is None:
         return False
     try:
         from pyproj import CRS
-        return bool(
-            CRS.from_user_input(left).equals(
-                CRS.from_user_input(right), ignore_axis_order=True
-            )
-        )
+
+        left_crs = CRS.from_user_input(left)
+        right_crs = CRS.from_user_input(right)
+        if left_crs.equals(right_crs, ignore_axis_order=True):
+            return True
+        return _equivalent_custom_projected_crs(left_crs, right_crs)
     except Exception:
         return False
 
