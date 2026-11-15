@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 import rasterio
 from rasterio.transform import from_origin
-from shapely.geometry import box
+from shapely.geometry import Polygon, box
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src" / "data"))
 from lola_roi_quality import ASSET_NAMES, build_roi_quality_report, same_crs  # noqa: E402
@@ -197,3 +197,58 @@ def test_roi_quality_audit_rejects_unknown_site_and_missing_directory(tmp_path):
         build_roi_quality_report("Site99", tmp_path)
     with pytest.raises(FileNotFoundError, match="ROI directory"):
         build_roi_quality_report("Site04", tmp_path / "missing")
+
+
+def test_roi_quality_audit_exports_exact_native_geometry(tmp_path):
+    raster_paths = write_site_rasters(tmp_path / "rasters")
+    roi_dir = tmp_path / "roi"
+    write_rois(roi_dir, geometries=[box(1, 1, 5, 5)])
+
+    report = build_roi_quality_report("Site04", roi_dir, raster_paths=raster_paths)
+    shp = report["shapefiles"][0]
+    feature = shp["features"][0]
+
+    assert feature["provider_roi_number"] == 1
+    assert feature["geometry_type"] == "Polygon"
+    assert feature["geometry_valid"] is True
+    assert feature["geometry_validity_reason"] == "Valid Geometry"
+    assert feature["native_bounds"] == [1.0, 1.0, 5.0, 5.0]
+    assert feature["native_area_m2"] == pytest.approx(16.0)
+    assert feature["native_geometry"]["type"] == "Polygon"
+    native_ring = {tuple(point) for point in feature["native_geometry"]["coordinates"][0]}
+    assert {(1.0, 1.0), (5.0, 1.0), (5.0, 5.0), (1.0, 5.0)}.issubset(native_ring)
+    assert shp["coordinate_handling"] == "native source coordinates; no reprojection or transformation"
+    assert shp["coordinate_reference_frame_status"] == "not_assessed"
+
+
+def test_roi_quality_audit_preserves_invalid_native_geometry_without_repair(tmp_path):
+    raster_paths = write_site_rasters(tmp_path / "rasters")
+    roi_dir = tmp_path / "roi"
+    invalid = Polygon([(1, 1), (5, 5), (1, 5), (5, 1), (1, 1)])
+    assert not invalid.is_valid
+    write_rois(roi_dir, geometries=[invalid])
+
+    report = build_roi_quality_report("Site04", roi_dir, raster_paths=raster_paths)
+    feature = report["shapefiles"][0]["features"][0]
+
+    assert feature["geometry_valid"] is False
+    assert "Self-intersection" in feature["geometry_validity_reason"]
+    assert feature["native_geometry"]["type"] == "Polygon"
+    assert feature["status"] == "review_required"
+    assert "no automatic repair was attempted" in feature["warnings"][0]
+    assert "roi_pixel_center_count" not in feature
+
+
+def test_lunar_roi_report_documents_raster_frame_but_not_roi_frame(tmp_path):
+    raster_paths = write_site_rasters(tmp_path / "rasters", crs=SITE04_RASTER_CRS_WKT)
+    roi_dir = tmp_path / "roi"
+    write_rois(roi_dir, crs=SITE04_SHAPEFILE_CRS_WKT)
+
+    report = build_roi_quality_report("Site04", roi_dir, raster_paths=raster_paths)
+    shp = report["shapefiles"][0]
+
+    assert report["raster_assets"]["elevation"]["coordinate_reference_frame"] == "MOON_ME/DE421"
+    assert report["raster_assets"]["elevation"]["coordinate_reference_frame_source"] == "https://pgda.gsfc.nasa.gov/products/78"
+    assert shp["coordinate_reference_frame_status"] == "unverified_provider_roi_frame"
+    assert "unknown" in shp["crs_wkt"].casefold()
+    assert shp["coordinate_handling"] == "native source coordinates; no reprojection or transformation"

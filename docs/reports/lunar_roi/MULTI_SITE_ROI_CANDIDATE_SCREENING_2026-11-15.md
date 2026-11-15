@@ -6,7 +6,7 @@ This is a diagnostic comparison of seven valid provider-defined ROI features acr
 
 The local screening sampled native raster pixel centres inside each provider polygon (all_touched=False). It read the five native layers: elevation, LDEC counts, slope, Z RMS uncertainty and slope RMS uncertainty. All seven candidates had 100% valid coverage at sampled pixel centres in each of the five layers.
 
-No reprojection, resampling, geometry repair, area weighting, or source-file modification was performed. The output is based on the local read-only screening run dated 2026-11-15; large source rasters and machine-readable raw outputs remain local and gitignored.
+No reprojection, resampling, geometry repair, area weighting, or source-file modification was performed. The seven-candidate comparison below is based on the local read-only screening run dated 2026-11-15. The current GitHub workflow separately uploads compact Site01/Site04 polygon-level ROI-quality JSON/Markdown artifacts; the raw source rasters and original ROI archives remain artifact-only and gitignored.
 
 ## Candidate measurements
 
@@ -41,8 +41,8 @@ NASA PGDA Product 78 describes Site01 RoIs 4–6 as generally having favorable i
 - Z RMS and slope RMS are the provider uncertainty layers. They are not independent validation of the elevation/slope estimates.
 - The reported elevation P90–P10 is the within-ROI elevation distribution spread. It is **not** the moving-window local-relief metric used by the terrain-fingerprint pipeline.
 - Nominal 5 m posting is not proof of 5 m effective terrain resolution.
-- The ROI geometries and rasters have nominally matching polar-stereographic projection parameters, but their CRS objects/WKT labels are not identical and the physical Moon-fixed ME/PA reference frame is not independently resolved. The screen used raw native coordinates and did not transform them.
-- Cross-site terrain/uncertainty comparisons remain provisional until the lunar reference frame, vertical reference, product comparability and common analysis scale are resolved.
+- The raster GeoTIFF frame is source-documented as MOON_ME/DE421 by PGDA Product 78; the provider ROI shapefile frame remains unverified because that product page excludes ROI shapefiles. The raster/ROI projection math is nominally compatible, but this does not prove physical frame alignment. The screen used raw native coordinates and did not transform them.
+- Cross-site terrain/uncertainty comparisons remain provisional until the provider ROI shapefile frame, vertical reference, product comparability and common analysis scale are resolved.
 - Provider polygons remain candidate footprints, not AREA 67-approved study AOIs.
 
 ## Provenance

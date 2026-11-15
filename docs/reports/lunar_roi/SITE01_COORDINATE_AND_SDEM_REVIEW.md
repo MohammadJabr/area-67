@@ -43,7 +43,7 @@ The Site01 QA command reported:
 
 A 100% valid raster mask is not 100% direct LOLA observation. The 9.4942% figure is site-wide and must not be substituted for a polygon-specific support percentage. Five-metre posting is not proof of five-metre effective terrain resolution or accuracy.
 
-The embedded custom south-polar stereographic CRS uses a lunar sphere with an unknown datum label. The provider catalog's frame description is useful provenance, but the local WKT does not independently resolve the physical Moon-fixed frame. Do not invent an ME/PA shift or infer a vertical datum from the horizontal CRS.
+Both the local raster and provider ROI WKT use placeholder unknown datum labels, but their roles differ: NASA PGDA Product 78 documents the GeoTIFF raster layers as MOON_ME/DE421 and explicitly excludes ROI shapefiles. Thus the raster frame is source-documented at product level; the provider ROI shapefile frame remains unverified. Do not assign the raster frame to ROI shapes, rewrite raw WKT, invent an ME/PA shift, or infer a vertical datum from the horizontal CRS.
 
 ## 3. Native-geometry ROI audit
 
@@ -95,6 +95,8 @@ Feature 5's 12.5 m² fragment has only one pixel centre and no direct LDEC shot 
 
 ## 5. Pixel-registration audit
 
+The versioned ROI-quality workflow now exports each original provider polygon as native_geometry in its compact JSON artifact, alongside the original shapefile WKT, one-based provider ROI number, validity reason, native bounds/area/centroid, and any valid-pixel support statistics. Coordinates are retained in the source projected coordinate plane; this is not WGS84 GeoJSON and does not assign a physical frame to the ROI shapefile.
+
 The read-only registration audit examined all seven source geometries, including the two invalid polygons:
 
 - 7 features and 607 vertices.
@@ -118,7 +120,25 @@ Site01 feature 2 has the highest direct-shot support among these three records. 
 
 Site01's site-wide direct-support percentage (9.4942%) and Site04's previously reported site-wide percentage (9.1541%) are not substitutes for ROI-specific values. The target polygons also have not been approved by the AREA 67 team.
 
-## 7. Pixel-count and polygon-area accounting
+## 7. Candidate AOI shortlist for team review
+
+The evidence supports a small, explicit shortlist rather than selecting a polygon by one metric:
+
+| Review role | Provider feature | Pixel centres | Positive LDEC support | Median Z RMS (m) | Median slope RMS (°) | Reason to retain |
+|---|---|---:|---:|---:|---:|---|
+| Primary review candidate | Site01 feature 4 / ROI5 | 362 | 11.05% | 0.3036 | 1.7799 | Good sample size and uncertainty balance; provider catalog notes ROIs 4–6 are generally favorable for illumination |
+| Direct-support comparator | Site01 feature 2 / ROI3 | 135 | 17.78% | 0.2658 | 1.6642 | Highest positive LDEC support among Site01 valid features, but substantially smaller sample |
+| Larger-sample comparator | Site01 feature 3 / ROI4 | 484 | 9.09% | 0.3492 | 1.9321 | Largest Site01 valid sample, with lower direct support and higher median uncertainty than ROI5 |
+
+**Proposed review order:** inspect Site01 ROI5 first, compare it with ROI3, and retain ROI4 as the larger-sample control. This is a review shortlist, not an AREA 67 AOI decision.
+
+The existing Site01 990 m × 990 m window should remain a **context window**, not the AOI. It contains the five valid provider ROI polygons, but their union occupies only 3.87% of the window area. Use the window to describe surrounding terrain context; use the individual provider polygons to report ROI-specific support and uncertainty. Do not merge the two concepts into one footprint.
+
+Site04 features 2 and 3 remain secondary comparison candidates (102 and 101 pixel centres respectively). They should not replace the Site01 target in the current MVP without a separate decision: the available A306 Connecting Ridge SDEM footprint does not cover the Site04 ROI cluster, and the Site04 coordinate/SDEM review identifies a distinct SP-4 source/footprint issue.
+
+Approval still requires the provider ROI frame to be confirmed, the selected footprint and mission question to be agreed, and the common physical analysis scale/vertical-reference policy to be documented. The exported native geometries make this review possible; they do not approve the polygons.
+
+## 8. Pixel-count and polygon-area accounting
 
 A separate diagnostic counted cells touched by each valid polygon:
 
@@ -132,7 +152,7 @@ A separate diagnostic counted cells touched by each valid polygon:
 
 A 5 m cell has a nominal 25 m² area, but multiplying a pixel count by 25 m² is a rasterized-area estimate under that pixel-inclusion rule, not the vector polygon's exact area. `all_touched` deliberately includes cells intersected only at their edges and therefore produces larger counts. Do not call either count-derived value the provider's official polygon area. Any difference from an area stated in a paper needs a separate boundary/method/provenance reconciliation; this audit does not establish its cause.
 
-## 8. Conclusions and blockers
+## 9. Conclusions and blockers
 
 Completed locally for Site01:
 
@@ -155,7 +175,7 @@ Still unresolved:
 
 The next scientifically valid handoff is a team decision on the target lunar ROI(s), named Earth landforms and polygon boundaries, followed by a documented common-grid/scale policy. Do not generate real fingerprints from whole source tiles or unapproved provider ROIs.
 
-## 9. Reproduction commands
+## 10. Reproduction commands
 
 Run from the repository root after the five local rasters and Site01 ROI archive are available:
 

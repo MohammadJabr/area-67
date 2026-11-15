@@ -104,3 +104,47 @@ def test_build_report_passes_layer_semantics_to_preflight(tmp_path, monkeypatch)
     assert captured["value_unit"] == "degrees"
     assert captured["vertical_reference_applicable"] is False
     assert captured["coordinate_reference_frame"] == "MOON_ME/DE421"
+
+
+def test_markdown_separates_earth_horizontal_crs_from_lunar_frame():
+    report = {
+        "generated_at_utc": "2026-11-15T00:00:00+00:00",
+        "raster_count": 2,
+        "status_counts": {"PASS": 1, "REVIEW": 1, "FAIL": 0},
+        "rasters": [
+            {
+                "path": "data/raw/earth/copernicus_tile.tif",
+                "inventory": {"bands": []},
+                "preflight": {"status": "REVIEW"},
+                "source_documentation": {
+                    "data_kind": "elevation",
+                    "value_unit": "m",
+                    "horizontal_crs": "EPSG:4326",
+                    "coordinate_reference_frame": None,
+                    "vertical_reference": "EGM2008",
+                    "vertical_reference_applicable": True,
+                    "source_url": "https://example.invalid/earth",
+                },
+            },
+            {
+                "path": "data/raw/moon/site01/Site01_final_adj_5mpp_slp.tif",
+                "inventory": {"bands": []},
+                "preflight": {"status": "PASS"},
+                "source_documentation": {
+                    "data_kind": "slope",
+                    "value_unit": "degrees",
+                    "horizontal_crs": None,
+                    "coordinate_reference_frame": "MOON_ME/DE421",
+                    "vertical_reference": None,
+                    "vertical_reference_applicable": False,
+                    "source_url": "https://pgda.gsfc.nasa.gov/products/78",
+                },
+            },
+        ],
+        "errors": [],
+    }
+
+    markdown = ci_gis_audit._markdown(report)
+
+    assert "| copernicus_tile.tif | elevation | m | EPSG:4326 | — | EGM2008 |" in markdown
+    assert "| Site01_final_adj_5mpp_slp.tif | slope | degrees | — | MOON_ME/DE421 | not applicable |" in markdown
