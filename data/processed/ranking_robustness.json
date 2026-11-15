@@ -607,6 +607,28 @@
     "limitations": [
       "This refresh does not approve AOIs, scales, candidate identity, weights, tolerances, or completeness thresholds.",
       "The tracked fingerprint table remains an exploratory reference-window dataset; Yungay is not the frozen canonical candidate shortlist."
-    ]
+    ],
+    "source_raster_checksums": {
+      "MOON_SITE01_PILOT990": {
+        "source_raster_sha256": "3ba7b97cb00a2bcf21189c3aeb535f65afc21207154ab9f0d43c5bdc1f7e747e",
+        "ldec_sha256": "16d6ed21020ad48fa71d94e7437492acf5bf04118f52bcd292f57f22ead4cd23",
+        "z_uncertainty_sha256": "cf2cf52f52d2aa51e60d058010d10b0ebfb1d3e920f5a2b9a46eb6c51054ab1c"
+      },
+      "EARTH_HAUGHTON_REF990": {
+        "source_raster_sha256": "6731d23cff09f4cb7d2c72ec1d41c7ae9b6389565434e820692e08c2a4bcefa7",
+        "ldec_sha256": null,
+        "z_uncertainty_sha256": null
+      },
+      "EARTH_MAUNAKEA_REF990": {
+        "source_raster_sha256": "a1881be4ef3710ebf3d0e59a7a22e77ca79e2a6a3f51cdbadb74209e0698e00d",
+        "ldec_sha256": null,
+        "z_uncertainty_sha256": null
+      },
+      "EARTH_YUNGAY_HYPERARID_REF990": {
+        "source_raster_sha256": "ac7b8fce2e8598c5d522fd0f6ff0b4a1ae6f6c5aecda55671fc6e2bd82ec7710",
+        "ldec_sha256": null,
+        "z_uncertainty_sha256": null
+      }
+    }
   }
 }
