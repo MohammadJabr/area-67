@@ -1,4 +1,6 @@
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import geopandas as gpd
@@ -133,3 +135,19 @@ def test_read_only_local_screen_creates_reports_without_overwriting(tmp_path):
         include_remote=False,
     )
     assert second != output
+
+
+
+def test_direct_script_entrypoint_help_imports_sibling_module():
+    repository_root = Path(__file__).resolve().parents[1]
+    script = repository_root / "src" / "data" / "site01_sdem_quality_screen.py"
+    completed = subprocess.run(
+        [sys.executable, str(script), "--help"],
+        cwd=repository_root,
+        capture_output=True,
+        text=True,
+        timeout=20,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert "Product 90" in completed.stdout
