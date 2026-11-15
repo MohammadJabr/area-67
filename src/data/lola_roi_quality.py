@@ -70,8 +70,11 @@ def _equivalent_custom_projected_crs(left: Any, right: Any) -> bool:
 
     This narrow fallback is intended for custom lunar CRS WKT where providers
     serialize the same sphere/projection with different placeholder names.
-    It requires identical geodetic body dimensions, prime meridian, projection
-    method and normalized parameters, and coordinate-axis directions/units.
+    Datum identity must also be compatible: two generic placeholder names may
+    match, but an unknown datum cannot match an explicit one, and two different
+    explicit datum names are never treated as equivalent. The fallback also
+    requires identical body dimensions, prime meridian, projection method and
+    normalized parameters, and coordinate-axis directions/units.
     """
     if not (left.is_projected and right.is_projected):
         return False
@@ -79,6 +82,27 @@ def _equivalent_custom_projected_crs(left: Any, right: Any) -> bool:
     left_geodetic = left.geodetic_crs
     right_geodetic = right.geodetic_crs
     if left_geodetic is None or right_geodetic is None:
+        return False
+
+    left_datum = left_geodetic.datum
+    right_datum = right_geodetic.datum
+    if left_datum is None or right_datum is None:
+        return False
+
+    left_datum_name = " ".join(str(left_datum.name).casefold().split())
+    right_datum_name = " ".join(str(right_datum.name).casefold().split())
+    placeholder_datum_names = {
+        "",
+        "unknown",
+        "unnamed",
+        "unknown datum",
+        "unnamed datum",
+    }
+    left_is_placeholder = left_datum_name in placeholder_datum_names
+    right_is_placeholder = right_datum_name in placeholder_datum_names
+    if left_is_placeholder != right_is_placeholder:
+        return False
+    if not left_is_placeholder and left_datum_name != right_datum_name:
         return False
 
     left_ellipsoid = left_geodetic.ellipsoid
@@ -295,6 +319,7 @@ def build_roi_quality_report(
             "NoData, interpolated LDEM values, and zero LDEC counts are distinct states.",
             "Raster posting is not effective resolution or a per-pixel accuracy guarantee.",
             "No reprojection, resampling, geometry repair, or vertical-reference transformation is performed.",
+            "For custom lunar CRS with placeholder datum labels, matching projection mathematics is only nominal compatibility; it does not identify the Moon-fixed frame (ME/PA).",
             "Statistics use native raster pixel centers within each polygon; no pixel-area weighting is applied.",
         ],
     }
