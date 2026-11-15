@@ -81,10 +81,10 @@ Do not populate selectable profiles with empty or misleading results. A profile 
 - Five-group DEM terrain fingerprint extraction and synthetic/GeoTIFF tests.
 - CSV-driven target-aware matching, candidate ranking, feature contributions, Slope-only baseline and weight sensitivity utilities.
 - Integration contracts, data provenance and judging-readiness gates.
-- Latest full main CI at commit `ce6a406` (2026-11-15, workflow run #255): **175 passed, 112 warnings in 3.01s**. The warnings are not test failures; inspect the run logs if their details matter for a release.
+- Latest full main CI at commit `cb40a09` (2026-11-15, workflow run #257): **175 passed, 112 warnings in 4.89s**. The warnings are not test failures; inspect the run logs if their details matter for a release.
 
 ### Partially implemented / not scientifically complete
-- The five provider-defined lunar ROI archive and five-layer audit tools are implemented. Site04's local provider ROI archive and all five native rasters have been inspected with polygon-level support/uncertainty QA and a pixel-registration audit; equivalent site-level inspection remains to be confirmed for Site01, Site06, Site07 and Site11. Provider polygons are not approved AREA 67 study AOIs.
+- The five provider-defined lunar ROI archives and five-layer audit tools are implemented. Local Site01 and Site04 provider ROI archives and all five native raster layers have now been inspected with polygon-level support/uncertainty QA, read-only invalid-geometry previews, and pixel-registration audits. Site01 has seven features (five valid, two invalid); all 607 source vertices align with its raster pixel-centre lattice. Site04 has four features (two valid, two invalid); all 325 source vertices align with its raster pixel-centre lattice. The invalid features remain excluded from official native-geometry ROI statistics. Equivalent site-level review remains for Site06, Site07 and Site11. Provider polygons are not approved AREA 67 study AOIs; see the [Site01 review](reports/lunar_roi/SITE01_COORDINATE_AND_SDEM_REVIEW.md) and [Site04 review](reports/lunar_roi/SITE04_COORDINATE_AND_SDEM_REVIEW.md).
 - No lunar target sub-AOI, Earth candidate AOIs, common analysis grid, or source harmonization policy has been approved. Earth source tiles and remote catalog probes are not analysis-ready AOI rasters.
 - The reference-point GeoJSON contains points only. Haughton has a ~1.47 km marker/reference difference; McMurdo's provisional point is not a named valley and alternatives may fall outside the local Copernicus tile; Yungay's marker differs by ~5.81 km from a published field reference. Askja and Mauna Kea reference points align at recorded precision but do not define the target landform.
 - Remote COG 500 × 500 windows prove only that selected assets can be queried and return values in those windows; they do not establish full-tile coverage, effective resolution, or candidate suitability.
@@ -104,6 +104,21 @@ The local Site04 review now includes the original provider shapefile, all five m
 - Valid feature 2 has 102 pixel centres, 100% elevation coverage, and 14.71% positive LDEC direct-shot support; feature 3 has 101 centres, 100% elevation coverage, and 13.86% positive direct-shot support. Their remaining valid LDEC cells are zero-count/interpolated support, not NoData.
 - The in-memory repair preview splits invalid feature 0 into two polygon components and feature 1 into three polygon components plus three LineString remnants. All statistics for these repaired candidates are preview-only; they do not establish provider intent or AOI approval.
 - The legacy ROI shapefile's physical lunar datum/frame remains unknown. Do not apply a guessed ME/PA shift or generalize the local pixel-registration result to external lunar products.
+
+
+### Site01 ROI evidence update — 2026-11-15
+
+The local Site01 (Connecting Ridge) review now includes the provider ROI shapefile, all five matching LOLA raster layers, polygon-level support/uncertainty QA, an in-memory `make_valid` sensitivity preview, a 607-vertex pixel-registration audit, and valid-polygon geometry inventory.
+
+- All five rasters are 3200 × 3200 Float32 layers with a common 5 m posting, affine transform, CRS and bounds. Each reports 10,240,000 finite/mask-valid pixels; exact-grid QA passed.
+- Site-wide positive LDEC support is 9.4942%. This is not full direct observation: zero-count cells are interpolated LDEM support, not NoData.
+- Five of seven original ROI features (features 0–4) are valid. Their pixel-centre counts range from 135 to 484, direct LDEC support from 4.73% to 17.78%, and all have 100% elevation coverage at included pixel centres.
+- Original features 5 and 6 are invalid due to ring self-intersections. Their in-memory repair previews are diagnostic only: feature 5 produces two polygon components, including a 12.5 m² fragment with one pixel centre; feature 6 produces one polygon plus two LineString remnants. Do not replace source geometry or mix preview statistics into native-geometry ROI QA.
+- All 607 source vertices across all seven features lie exactly on the local raster's pixel-centre lattice (0 m maximum residual). This does not resolve the physical lunar ME/PA frame or fix topology.
+- Among the five valid polygons, Site01 feature 2 has the highest direct LDEC support (17.78%) and lowest median Z RMS (0.2658 m); it is not thereby an approved or overall superior target. Site04's valid features have lower median slope RMS (1.604° and 1.473°). These dimensions remain separate and do not establish a site ranking.
+
+The source rasters and machine-readable QA/preview outputs remain local and gitignored. The detailed measurements, paths and reproduction commands are recorded in [the Site01 review](reports/lunar_roi/SITE01_COORDINATE_AND_SDEM_REVIEW.md).
+
 
 Detailed measurements and provenance are recorded in `docs/LOLA_ROI_QUALITY_AUDIT.md` and `docs/reports/lunar_roi/SITE04_COORDINATE_AND_SDEM_REVIEW.md`. The immediate scientific decisions remain: resolve the intended topology/provenance of invalid provider features, select and approve the actual Site04 sub-AOI (or another target), and agree a common physical analysis scale and neighborhood/window policy before real fingerprint extraction.
 
@@ -164,7 +179,7 @@ Prioritize one vertical at a time, with separate data contracts and tests:
 - A stable demo fallback clearly marked as synthetic if real data is unavailable.
 
 ## 8. Immediate next actions (not silently assigned as approvals)
-1. Download and inspect the official Site01/Site04/Site06/Site07/Site11 ROI archives; compare their actual features/attributes and run the polygon-level support/uncertainty audit for sites with complete local inputs.
+1. Site01 and Site04 local ROI/raster review is now recorded. Complete the equivalent archive, five-layer support/uncertainty, topology and registration review for Site06, Site07 and Site11 where the local assets are available.
 2. Decide which lunar provider ROI(s) to carry forward; use Site01's published illumination context as a research lead, not as an overall base-site ranking.
 3. Finalize 3–5 Earth candidate landform AOIs, stable IDs, and authoritative boundary evidence; the whole 1° DEM tiles are not study ROIs.
 4. Approve a common physical analysis scale, projection, resampling/reprojection policy, vertical-reference treatment, windows, and quality/uncertainty policy.
