@@ -33,6 +33,7 @@ def test_cli_runs_csv_to_matching_outputs(
     exit_code = main([
         "--fingerprints", str(fingerprints_path),
         "--target-site-id", "MOON_SITE04",
+        "--candidate-site-ids", "EARTH_A",
         "--tolerances-json", str(tolerances_path),
         "--min-feature-group-completeness", "0.0",
         "--min-data-completeness", "0.0",
@@ -93,6 +94,8 @@ def test_cli_requires_explicit_completeness_policy():
     with pytest.raises(SystemExit) as error:
         parser.parse_args([
             "--target-site-id", "MOON_SITE04",
+            "--candidate-site-ids", "EARTH_A",
             "--tolerances-json", "config/matching_tolerances.json",
+            "--candidate-site-ids", "EARTH_A",
         ])
     assert error.value.code == 2
