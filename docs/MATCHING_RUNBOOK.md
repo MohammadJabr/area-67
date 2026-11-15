@@ -69,7 +69,7 @@ If a candidate has incompatible method definitions or spatial scales, it is repo
 The workflow writes:
 
 - `data/processed/candidate_rankings.csv` — app-facing results with `target_site_id`, `candidate_site_id`, `mission_profile`, `rank`, `similarity_score`, `weighted_distance`, feature contributions, completeness, and method/quality context.
-- `data/processed/ranking_robustness.json` — one-at-a-time ±20% weight scenarios, Top-3/Top-5 appearance counts, and the Slope-only baseline/rank comparison.
+- `data/processed/ranking_robustness.json` — one-at-a-time weight scenarios, Top-3/Top-5 appearance counts, the Slope-only baseline/rank comparison, and a `matching_configuration` block recording the exact feature/data completeness cutoffs, scale-relative tolerance, terrain-distribution sum tolerance, weight perturbation, and Top-K values used. Keep this sidecar with the ranking CSV; together they preserve the run settings needed to audit the result.
 
 The display score is `100 / (1 + weighted_distance)`. It is a monotonic relative ranking index on the configured tolerance scale, not a probability, physical-equivalence percentage, mission-success estimate, or site certification.
 
