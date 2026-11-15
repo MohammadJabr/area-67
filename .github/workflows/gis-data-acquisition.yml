@@ -104,12 +104,15 @@ jobs:
       - name: Report acquisition failures after preserving the artifact
         if: always()
         shell: bash
+        env:
+          EARTH_OUTCOME: ${{ steps.earth_acquire.outcome }}
+          MOON_OUTCOME: ${{ steps.moon_acquire.outcome }}
+          ROI_OUTCOME: ${{ steps.roi_acquire.outcome }}
         run: |
           failed=0
-          for step in earth_acquire moon_acquire roi_acquire; do
-            outcome="${{ steps[step].outcome }}"
+          for outcome in "$EARTH_OUTCOME" "$MOON_OUTCOME" "$ROI_OUTCOME"; do
             if [[ "$outcome" == "failure" ]]; then
-              echo "::error::Acquisition step $step failed; inspect its logs and the uploaded partial artifact."
+              echo "::error::At least one acquisition step failed; inspect its logs and the uploaded partial artifact."
               failed=1
             fi
           done
