@@ -12,7 +12,10 @@ from typing import Any
 import numpy as np
 import rasterio
 
-from lola_site04 import ASSETS, RAW_DIR, REPO_ROOT
+try:
+    from .lola_site04 import ASSETS, RAW_DIR, REPO_ROOT
+except ImportError:  # direct script execution from the repository root
+    from lola_site04 import ASSETS, RAW_DIR, REPO_ROOT
 
 
 JSON_PATH = REPO_ROOT / "data" / "metadata" / "site04_qa.json"
