@@ -1,0 +1,26 @@
+{
+  "status": "EXPLORATORY_NOT_APPROVED",
+  "target_site_id": "MOON_SITE01_PILOT990",
+  "candidate_ids_in_ranking": ["EARTH_HAUGHTON_REF990", "EARTH_YUNGAY_HYPERARID_REF990", "EARTH_MAUNAKEA_REF990"],
+  "held_out_candidate": {
+    "site_id": "EARTH_ASKJA_REF990",
+    "reason": "Reference-centred window dominated by near-flat/equal-elevation samples; a geomorphic caldera or lava-field AOI has not been selected."
+  },
+  "window_width_m": 990.0,
+  "window_height_m": 990.0,
+  "analysis_scale_m": 30.0,
+  "relief_window_m": 150.0,
+  "local_relief_min_valid_fraction": 0.8,
+  "tri_definition": "Riley 8-neighbour TRI, one-cell radius",
+  "tri_window_cells": 1,
+  "slope_classes_deg": {"low_lt": 10.0, "mid_lt": 25.0, "high_gte": 25.0},
+  "spatial_pattern": "Largest 8-connected patch with slope >=25 degrees divided by valid slope area",
+  "connectivity": 8,
+  "resampling": "Bilinear elevation only for Earth windows; Moon uses native LOLA grid clipped to the screen window.",
+  "vertical_offset_applied": false,
+  "weights": {"slope": 0.30, "tri": 0.25, "local_relief": 0.20, "spatial_pattern": 0.20, "terrain_distribution": 0.05},
+  "tolerances": {"slope_deg": 5.0, "tri_m": 10.0, "local_relief_m": 15.0, "terrain_distribution_pp": 20.0, "spatial_pattern_pct": 15.0},
+  "completeness": {"min_feature_group_completeness": 1.0, "min_data_completeness": 0.95},
+  "weight_sensitivity": {"relative_change": 0.20, "scenario_count": 11},
+  "approval": "No AOI, scale, tolerance, or weight was approved by the science team during this exploratory run."
+}
