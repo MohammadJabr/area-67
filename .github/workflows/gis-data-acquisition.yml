@@ -2,6 +2,8 @@ name: AREA 67 GIS data acquisition and audit
 
 on:
   push:
+    branches:
+      - main
     paths:
       - .github/workflows/gis-data-acquisition.yml
       - src/data/ci_gis_audit.py
@@ -94,14 +96,23 @@ jobs:
             tests/test_lola_roi_acquisition.py \
             tests/test_lola_roi_quality.py
 
-      - name: Upload acquisition data and audit reports
+      - name: Upload raw acquisition data
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: area67-gis-${{ github.event_name == 'push' && 'both' || inputs.dataset }}-${{ github.run_id }}
+          name: area67-gis-raw-${{ github.event_name == 'push' && 'both' || inputs.dataset }}-${{ github.run_id }}
           path: |
             data/raw/earth/
             data/raw/moon/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload compact GIS audit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: area67-gis-reports-${{ github.run_id }}
+          path: |
             data/metadata/ci_gis_audit/
             data/metadata/lola_south_pole/
             data/metadata/lola_rois/
