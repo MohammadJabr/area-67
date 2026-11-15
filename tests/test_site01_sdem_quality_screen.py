@@ -96,6 +96,15 @@ def test_summary_separates_zero_from_nonfinite():
     assert result["zero_pct"] == pytest.approx(100 / 3)
 
 
+def test_window_sample_rejects_oversized_window(tmp_path):
+    path = tmp_path / "bounded.tif"
+    values = np.ones((4, 4), dtype=np.float32)
+    write_raster(path, values, from_origin(0, 20, 5, 5))
+    with rasterio.open(path) as dataset:
+        with pytest.raises(ValueError, match="limit is 15"):
+            m._window_sample(dataset, (0, 0, 20, 20), max_pixels=15)
+
+
 def test_read_only_local_screen_creates_reports_without_overwriting(tmp_path):
     roi, lola, sdem = make_inputs(tmp_path)
     output_base = tmp_path / "data/metadata/screen"
