@@ -161,7 +161,11 @@ def main() -> None:
         st.warning(
             "EXPLORATORY REAL-DATA PILOT — these measurements come from real NASA LOLA and Copernicus rasters, "
             "but every footprint is a provisional reference-centred sampling window, not an approved geomorphic AOI. "
-            "Scores are exploratory relative rankings only; do not present them as site certification or rover safety evidence."
+            "The tracked ranking is a historical exploratory set (Haughton, Yungay, Mauna Kea), not the frozen study "
+            "shortlist (Haughton, Askja, Mauna Kea). Yungay is held out from the canonical study. Askja's current "
+            "reference-centred test window was held out as near-flat/equal-elevation; this is not a conclusion about "
+            "all Askja terrain. Site01 positive LOLA LDEC support is 9.235%, distinct from 100% valid-raster coverage. "
+            "Scores are exploratory relative rankings only; do not present them as site certification or rover-safety evidence."
         )
 
     fingerprints = fingerprints.copy()
