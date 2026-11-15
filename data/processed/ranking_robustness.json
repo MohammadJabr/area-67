@@ -165,7 +165,7 @@
   ],
   "relief_window_sensitivity": {
     "status": "EXPLORATORY_NOT_APPROVED",
-    "method": "Recomputed the existing five-group metric calculations on the same five 30m, 33x33 sample grids, changing only the requested Local Relief window. The repository method rounds requested physical windows to an odd cell count and records actual centre-to-centre span. All other metrics, mission weights, tolerances, grid, extents, masks, and anchors were held constant.",
+    "method": "Recomputed the existing five-group metric calculations on the same four 30m, 33x33 sample grids, changing only the requested Local Relief window. The repository method rounds requested physical windows to an odd cell count and records actual centre-to-centre span. All other metrics, mission weights, tolerances, grid, extents, masks, and anchors were held constant.",
     "scenarios": [
       {
         "requested_window_m": 90,
