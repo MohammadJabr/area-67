@@ -41,8 +41,8 @@ NASA PGDA Product 78 describes Site01 RoIs 4–6 as generally having favorable i
 - Z RMS and slope RMS are the provider uncertainty layers. They are not independent validation of the elevation/slope estimates.
 - The reported elevation P90–P10 is the within-ROI elevation distribution spread. It is **not** the moving-window local-relief metric used by the terrain-fingerprint pipeline.
 - Nominal 5 m posting is not proof of 5 m effective terrain resolution.
-- The ROI geometries and rasters have nominally matching polar-stereographic projection parameters, but their CRS objects/WKT labels are not identical and the physical Moon-fixed ME/PA reference frame is not independently resolved. The screen used raw native coordinates and did not transform them.
-- Cross-site terrain/uncertainty comparisons remain provisional until the lunar reference frame, vertical reference, product comparability and common analysis scale are resolved.
+- The raster GeoTIFF frame is source-documented as MOON_ME/DE421 by PGDA Product 78; the provider ROI shapefile frame remains unverified because that product page excludes ROI shapefiles. The raster/ROI projection math is nominally compatible, but this does not prove physical frame alignment. The screen used raw native coordinates and did not transform them.
+- Cross-site terrain/uncertainty comparisons remain provisional until the provider ROI shapefile frame, vertical reference, product comparability and common analysis scale are resolved.
 - Provider polygons remain candidate footprints, not AREA 67-approved study AOIs.
 
 ## Provenance
