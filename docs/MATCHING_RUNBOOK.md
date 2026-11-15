@@ -94,3 +94,8 @@ The display score is `100 / (1 + weighted_distance)`. It is a monotonic relative
 - Slope, TRI, and Terrain Distribution may be correlated; assess double-counting with the real fingerprints.
 - Current code reports direct-observation support when supplied but does not propagate the RMS uncertainty layers into the score.
 - A* routing is not part of this CSV-to-ranking workflow and must be treated as a separate, explicitly modeled extension.
+
+
+## Tolerance sensitivity
+
+Every matching workflow now records tolerance sensitivity in `data/processed/ranking_robustness.json`: one baseline plus one-at-a-time 0.5× and 1.5× changes for each feature tolerance. All other tolerances, weights, completeness gates, and fingerprint inputs are held fixed. The output records per-scenario ranks, Top-1/Top-3/Top-5 appearance counts, and rejection reasons. These are descriptive sensitivity results, not probabilities, confidence intervals, or a method for choosing scientifically valid tolerances automatically.

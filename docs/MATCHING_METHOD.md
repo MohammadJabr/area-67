@@ -88,6 +88,7 @@ Candidates are sorted by ascending weighted distance. Ties are resolved by `site
 
 - The Slope-only baseline ranks the same accepted candidates using only the Slope group. Rank changes are descriptive and help show whether adding other groups changes the ordering.
 - Weight sensitivity runs the baseline profile plus one-at-a-time ±20% perturbations for each group, renormalizing weights after each change. Five groups produce 11 scenarios.
+- Tolerance sensitivity runs one baseline plus one-at-a-time 0.5× and 1.5× perturbations for each declared feature tolerance, holding all other tolerances, weights, completeness gates, and fingerprints fixed. With five tolerance keys this produces 11 scenarios. Rank/Top-K changes and rejection reasons are recorded; counts are descriptive, not probabilities.
 - Top-3/Top-5 appearances are reported as counts across tested scenarios. They are not probabilities or confidence levels.
 - Run these analyses on real candidate group distances before reporting scientific ranking stability.
 
