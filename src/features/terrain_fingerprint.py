@@ -486,7 +486,11 @@ def analyze_run_config(config_path: str | Path, output_csv: str | Path, maps_dir
         slope_mid_max_deg=float(document.get("slope_mid_max_deg", 25)),
         steep_threshold_deg=float(document.get("steep_threshold_deg", 25)),
         connectivity=int(document.get("connectivity", 8)),
-        minimum_valid_coverage_pct=float(document.get("minimum_valid_coverage_pct", 80)),
+        minimum_valid_coverage_pct=(
+            None
+            if document.get("minimum_valid_coverage_pct") is None
+            else float(document["minimum_valid_coverage_pct"])
+        ),
         local_relief_min_valid_fraction=float(document["local_relief_min_valid_fraction"]),
     )
     run_config.validate()
