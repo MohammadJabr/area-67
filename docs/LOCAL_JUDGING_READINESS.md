@@ -4,7 +4,7 @@
 
 **Applies to:** The active Space-to-Earth MVP: one Moon/Mars target compared with documented Earth candidates using five terrain-fingerprint groups, a transparent ranking workflow, and an Analog Passport.
 
-**Status date:** 2026-11-14
+**Status date:** 2026-11-15
 
 ## 1. How to use the judging rubric
 
@@ -97,9 +97,9 @@ Only use real-data results in this sequence after Gates A–D pass. Until then, 
 
 ## 6. Current project snapshot (2026-11-15)
 
-- `main` contains the Streamlit MVP, Analog Passport, application contracts, provisional lunar LOLA Site04 acquisition/QA, multi-site PGDA LOLA download/inspection for Site01/Site04/Site06/Site07/Site11, official ROI archive inspection, polygon-level support/uncertainty audit, Earth DEM source acquisition/QA/screening, and the CSV-driven Space-to-Earth matching workflow.
-- Hiba's terrain-fingerprint PR #17 and Omar's matching workflow/diagnostics are merged. The latest full `main` CI at commit `1ea2f0b` passed **130 tests** (66 warnings); Python compilation and the geospatial artifact ignore-policy check passed. The optional A* route-planning feature branch separately passed 76 synthetic tests after geometry/resource/provenance safeguards; it remains a Draft PR and is not part of `main`.
-- The Earth-data package records five provisional Copernicus GLO-30 DSM source tiles (Haughton, McMurdo, Askja, Mauna Kea, Yungay) and one separate Mauna Kea USGS 3DEP 1 m alternative. Large raw rasters remain gitignored.
+- `main` contains the Streamlit MVP, Analog Passport, application contracts, provisional lunar LOLA Site04 acquisition/QA, multi-site PGDA LOLA acquisition/inspection for Site01/Site04/Site06/Site07/Site11, official ROI archive inspection, polygon-level support/uncertainty audit, Earth DEM source acquisition/QA/screening, Earth raster inventory/preflight, local raster audit, remote COG inspection, and CSV-driven Space-to-Earth matching.
+- Hiba's terrain-fingerprint PR #17, Omar's matching workflow/diagnostics, and Ghassan's Earth GIS inspection/preflight PR #49 are merged. The latest full `main` CI at commit `ce6a406` passed **175 tests** (112 warnings); compilation and the geospatial artifact ignore-policy check passed. The optional A* route-planning feature branch separately passed 76 synthetic tests after geometry/resource/provenance safeguards; it remains a Draft PR and is not part of `main`.
+- The Earth-data package records five provisional Copernicus GLO-30 DSM source tiles, two adjacent Mauna Kea USGS 3DEP 1 m DTM tiles (with the eastern tile's vertical reference/units unresolved), and bounded remote COG probes for ArcticDEM Haughton, REMA McMurdo and ÍslandsDEM Askja. Large raw rasters remain gitignored; remote probes did not download full assets.
 - These source tiles and named points are **not approved candidate AOIs**. No final ROI boundaries, site IDs for the study, common analysis scale, or cross-source preparation policy have been approved. Metadata/structural QA does not prove physical accuracy or suitability.
 - The matching CLI requires explicit feature tolerances and explicit minimum completeness settings. Those values are team-selected study assumptions, not NASA specifications; no approved real-study configuration is committed.
 - The terrain-extraction software and synthetic validation are merged. Hiba's real `data/processed/terrain_fingerprints.csv` is still not available on `main`; no real `candidate_rankings.csv` or validated ranking/Passport result exists.
