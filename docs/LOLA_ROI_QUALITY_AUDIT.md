@@ -66,7 +66,7 @@ The normal ROI quality audit deliberately does not calculate statistics for inva
 python src/data/preview_invalid_roi_repairs.py --site Site04 --roi-directory data/raw/moon/roi_shapes/Site04 --output data/metadata/site04_invalid_roi_repair_preview.json
 ```
 
-For invalid features, the JSON records the Shapely validity reason, `make_valid` output type, polygon component count, any non-polygon components excluded from raster statistics, candidate geometry bounds/area, and preview-only LOLA statistics for the union of polygonal components. Already-valid features are summarized from their original geometry for comparison.
+For invalid features, the JSON records the Shapely validity reason, `make_valid` output type, polygon component count, any non-polygon components excluded from raster statistics, candidate geometry bounds/area, separate preview-only LOLA statistics for each polygon component, and combined statistics for their union. Already-valid features are summarized from their original geometry for comparison.
 
 The utility is diagnostic only. It never writes geometry, replaces an ROI, or treats a make-valid result as the provider's intended boundary. Repair-preview statistics must not be merged into the official ROI QA report or used as AREA 67 study-AOI evidence until the team reviews the candidate geometry and its scientific provenance.
 
