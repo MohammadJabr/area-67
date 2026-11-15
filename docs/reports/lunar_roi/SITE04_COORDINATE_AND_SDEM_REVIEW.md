@@ -91,9 +91,17 @@ For the Data Book R04 point, the same check returned 1,814.41 m to Feature 0, 1,
 
 The distances to valid Features 2 and 3 provide the more reliable geometric comparison. Distances reported for self-intersecting Features 0 and 1 are diagnostic only: invalid polygon topology can make geometric operations less dependable. Neither published point is covered by any of the four original provider ROI polygons. In particular, SP-4 is a nearby reference point, not a point proven to lie within the provider's ROI footprint.
 
-### Disposition
+### Numbering lineage and disposition
 
-The two published references should not be conflated. They may refer to different Site04/R04/Artemis Site 004 point definitions, or there may be a source-definition inconsistency. The current evidence does not settle that question. Keep both coordinate records, their source labels, and their original longitude conventions in the project manifest until the team/GIS reviewer reconciles them.
+NASA PGDA Product 78 explicitly states that the Site01/Site04/Site07/Site11 numbering follows Mazarico et al. (2011). The same product identifies Site04 as Shackleton Rim and provides the exact Site04 ROI archive used in this project.
+
+Patterson et al. (2024), section 1.2.2, explicitly identifies potential Artemis landing site 004 as Mazarico et al. (2011) site SP-4 at (-89.78°, 204.27°E). The local provider ROI cluster projects close to that SP-4 point: the point is 49.27 m from valid Feature 2 and 99.10 m from valid Feature 3, although it is not contained by any of the four original features.
+
+This published numbering lineage supports treating the local Site04 ROI cluster as the **Mazarico Site 4 / Artemis Site 004 (SP-4) area**. It is stronger evidence than proximity alone.
+
+The NASA Lunar Surface Data Book nevertheless labels (-89.7668°, -171.87°) as “R04 or Site04 — Shackleton Rim.” That point is about 1.97 km from the SP-4 point in the local projected CRS and is 1,875.06 m and 1,921.88 m from valid provider Features 2 and 3 respectively. The available sources do not explain why this separately published coordinate differs from the Mazarico/SP-4 reference. It could represent a different center/reference point within the broader Shackleton-Rim site or a source-definition inconsistency; do not silently substitute it for the SP-4 coordinate or erase it from provenance.
+
+Keep both records in the manifest with their exact source labels and longitude conventions. For work specifically using the locally inspected Site04 ROI cluster, identify the target provisionally as the Mazarico Site 4 / Artemis Site 004 (SP-4) vicinity, pending team/GIS-owner approval of the study AOI.
 
 ## 3. Exploratory window result remains scoped to the ROI cluster
 
@@ -134,6 +142,14 @@ The Zenodo README gives the Connecting Ridge regional bounding box in longitude/
 - Max latitude: -89.090284°
 
 This coarse regional bounding box includes the inverse-transformed local provider ROI centroids and the peer-reviewed SP-4 coordinate. It does not, by itself, prove exact raster-mask coverage for every point or every layer.
+
+### Screened small derivative: not the Site04/SP-4 tile
+
+A third-party Hugging Face dataset, “Connecting Ridge 5 m: Lunar South Pole Terrain & Ice-Prospectivity” (Terranova Robotics, 2026), describes a 3 km × 3 km, 5 m/pixel tile centered at 89.439°S, 222.856°E (the Site001 / Connecting Ridge vicinity). Its published South Polar Stereographic georeferencing places that tile center approximately 10.90 km from the SP-4 point; the 3 km square therefore does not overlap SP-4.
+
+This third-party tile should not be treated as the Site04/SP-4 SDEM subset. It is centered on the Connecting Ridge/Site001 vicinity, about 10.90 km from the SP-4 point in the local projection; its 3 km square does not overlap SP-4. It may be useful as an example of a small derived terrain bundle or pipeline reference, but not as elevation coverage for this Site04 target. Its derived layers and model outputs have the limitations stated in its dataset card and are not substitutes for the NASA source rasters.
+
+This is a screening result from the dataset card's published center and grid description, not inspection of the files themselves. Source: https://huggingface.co/datasets/terranova-robotics/connecting-ridge-5m.
 
 ### Suitability and limitations
 
