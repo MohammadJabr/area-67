@@ -339,7 +339,10 @@ def earth_window_feature(site: Mapping[str, Any], bounds: tuple[float, float, fl
 
 
 def matching(
-    records: Mapping[str, Mapping[str, Any]], config: Mapping[str, Any]
+    records: Mapping[str, Mapping[str, Any]],
+    config: Mapping[str, Any],
+    *,
+    include_tolerance_sensitivity: bool = True,
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     m = config["matching"]
     target_id = str(config["target"]["site_id"])
@@ -364,18 +367,20 @@ def matching(
         top_k=(1, 2),
         min_completeness=float(m["min_feature_group_completeness"]),
     )
-    tolerance_sensitivity = run_tolerance_sensitivity(
-        target_fingerprint=dict(records[target_id]),
-        candidate_fingerprints=candidates,
-        weights=m["weights"],
-        tolerances=m["tolerances"],
-        mission_profile=m["mission_profile"],
-        min_feature_group_completeness=float(m["min_feature_group_completeness"]),
-        min_data_completeness=float(m["min_data_completeness"]),
-        scale_relative_tolerance=float(m["scale_relative_tolerance"]),
-        distribution_sum_tolerance_pp=float(m["distribution_sum_tolerance_pp"]),
-        top_k=(1, 2),
-    )
+    tolerance_sensitivity = {}
+    if include_tolerance_sensitivity:
+        tolerance_sensitivity = run_tolerance_sensitivity(
+            target_fingerprint=dict(records[target_id]),
+            candidate_fingerprints=candidates,
+            weights=m["weights"],
+            tolerances=m["tolerances"],
+            mission_profile=m["mission_profile"],
+            min_feature_group_completeness=float(m["min_feature_group_completeness"]),
+            min_data_completeness=float(m["min_data_completeness"]),
+            scale_relative_tolerance=float(m["scale_relative_tolerance"]),
+            distribution_sum_tolerance_pp=float(m["distribution_sum_tolerance_pp"]),
+            top_k=(1, 2),
+        )
     return result, robustness, tolerance_sensitivity
 
 
@@ -500,7 +505,9 @@ def relief_window_sensitivity(
             scenario_records[site_id] = {**dict(records[site_id]), **metrics}
             actual_cells = int(metrics["relief_window_cells"])
             actual_span = float(metrics["relief_window_span_m"])
-        result, _, _ = matching(scenario_records, config)
+        result, _, _ = matching(
+            scenario_records, config, include_tolerance_sensitivity=False
+        )
         scenarios.append({
             "requested_window_m": float(requested),
             "cells": actual_cells,
