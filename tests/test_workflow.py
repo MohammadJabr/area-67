@@ -50,10 +50,13 @@ def test_workflow_reads_fingerprints_and_exports_results(
         "largest_steep_patch_pct": 30.0,
     })
 
+    held_out = dict(candidate_b)
+    held_out.update({"site_id": "EARTH_HELD_OUT", "source_id": "DEM_HELD_OUT"})
+
     fingerprints_path = tmp_path / "terrain_fingerprints.csv"
     _write_fingerprint_csv(
         fingerprints_path,
-        [target_fingerprint, candidate_a, candidate_b],
+        [target_fingerprint, candidate_a, candidate_b, held_out],
     )
 
     ranking_path = tmp_path / "candidate_rankings.csv"
@@ -115,6 +118,10 @@ def test_workflow_reads_fingerprints_and_exports_results(
         "top_k": [3, 5],
     }
     assert "slope_only_baseline" in summary
+    assert summary["candidate_site_ids"] == ["EARTH_A", "EARTH_B"]
+    assert "EARTH_HELD_OUT" not in {
+        row["site_id"] for row in result["ranking_result"]["ranking"]
+    }
 
 
 
