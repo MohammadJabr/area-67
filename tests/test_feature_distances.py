@@ -179,3 +179,20 @@ def test_non_earth_candidate_is_rejected(
         compare_terrain_fingerprints(
             target_fingerprint, candidate, matching_tolerances
         )
+
+def test_missing_both_tri_method_fields_reports_both_warnings(
+    target_fingerprint, earth_candidate, matching_tolerances
+):
+    candidate = dict(earth_candidate)
+    candidate.pop("tri_definition")
+    candidate.pop("tri_window_cells")
+
+    result = compare_terrain_fingerprints(
+        target_fingerprint, candidate, matching_tolerances
+    )
+
+    assert result["group_distances"]["tri"] is None
+    assert "tri" in result["missing_groups"]
+    warning_text = " ".join(result["method_warnings"])
+    assert "tri_definition" in warning_text
+    assert "tri_window_cells" in warning_text

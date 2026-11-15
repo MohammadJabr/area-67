@@ -35,6 +35,18 @@ def _write_robustness_summary(
         "mission_profile": ranking_result["mission_profile"],
         "mission_weights": ranking_result.get("mission_weights", {}),
         "feature_tolerances": ranking_result.get("feature_tolerances", {}),
+        "matching_configuration": {
+            "min_feature_group_completeness": ranking_result.get(
+                "min_feature_group_completeness"
+            ),
+            "min_data_completeness": ranking_result.get("min_data_completeness"),
+            "scale_relative_tolerance": ranking_result.get("scale_relative_tolerance"),
+            "distribution_sum_tolerance_pp": ranking_result.get(
+                "distribution_sum_tolerance_pp"
+            ),
+            "weight_relative_change": sensitivity["relative_change"],
+            "top_k": sorted(int(value) for value in sensitivity["top_k_counts"]),
+        },
         "matching_method": ranking_result.get("matching_method", {}),
         "sensitivity": {
             "scenario_count": sensitivity["scenario_count"],

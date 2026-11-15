@@ -105,6 +105,14 @@ def test_workflow_reads_fingerprints_and_exports_results(
 
     summary = json.loads(robustness_path.read_text(encoding="utf-8"))
     assert summary["sensitivity"]["scenario_count"] == 11
+    assert summary["matching_configuration"] == {
+        "min_feature_group_completeness": 0.0,
+        "min_data_completeness": 0.0,
+        "scale_relative_tolerance": 0.01,
+        "distribution_sum_tolerance_pp": 0.5,
+        "weight_relative_change": 0.2,
+        "top_k": [3, 5],
+    }
     assert "slope_only_baseline" in summary
 
 

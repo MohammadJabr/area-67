@@ -261,10 +261,16 @@ def compare_terrain_fingerprints(
                 raise ValueError(f"{label} valid_coverage_pct conflicts with nodata_pct.")
 
     warnings = []
-    tri_method_ready = (
-        _compare_method_field(target, candidate, "tri_definition", warnings)
-        and _compare_method_field(target, candidate, "tri_window_cells", warnings)
+    # Evaluate both fields independently so all missing metadata is reported.
+    # Boolean short-circuiting here would hide tri_window_cells whenever
+    # tri_definition is absent, making the pre-ranking QA report incomplete.
+    tri_definition_ready = _compare_method_field(
+        target, candidate, "tri_definition", warnings
     )
+    tri_window_ready = _compare_method_field(
+        target, candidate, "tri_window_cells", warnings
+    )
+    tri_method_ready = tri_definition_ready and tri_window_ready
     relief_method_ready = _compare_method_field(
         target, candidate, "relief_window_m", warnings
     )
