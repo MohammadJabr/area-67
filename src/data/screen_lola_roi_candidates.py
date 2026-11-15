@@ -120,6 +120,20 @@ def compare_roi_raster_crs(roi_crs: Any, raster_crs: Any) -> dict[str, Any]:
 
     roi = CRS.from_user_input(roi_crs)
     raster = CRS.from_user_input(raster_crs)
+
+    def is_metric_projected(crs: CRS) -> bool:
+        return (
+            crs.is_projected
+            and bool(crs.axis_info)
+            and all(
+                math.isclose(axis.unit_conversion_factor, 1.0, rel_tol=0, abs_tol=1e-12)
+                for axis in crs.axis_info[:2]
+            )
+        )
+
+    if not is_metric_projected(roi) or not is_metric_projected(raster):
+        raise ValueError("ROI and raster CRS must both be projected in metres.")
+
     exact = roi.equals(raster, ignore_axis_order=True)
     roi_signature = _polar_stereographic_signature(roi)
     raster_signature = _polar_stereographic_signature(raster)
