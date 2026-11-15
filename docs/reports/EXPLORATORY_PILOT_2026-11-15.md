@@ -46,7 +46,7 @@ The Slope-only baseline gives the same ordering for these three windows (Haughto
 
 ## Provisional analysis and matching settings
 
-The exploratory configuration used 30m analysis cells, a 150m local-relief window, an 0.80 minimum local-neighbour fraction, Riley eight-neighbour TRI (one-cell radius), slope classes below 10°, 10–25°, and at least 25°, and an eight-connected steep-patch metric. The mission weights were 0.30 Slope, 0.25 TRI, 0.20 Local Relief, 0.20 Spatial Pattern, and 0.05 Terrain Distribution. The tolerances were 5°, 10m, 15m, 20 percentage points, and 15 percentage points, respectively. Weight sensitivity perturbed one weight at a time by ±20%, producing 11 scenarios including baseline.
+The exploratory configuration used 30m analysis cells, a 150m requested local-relief window (rounded to five cells with a 120m centre-to-centre span), an 0.80 minimum local-neighbour fraction, Riley eight-neighbour TRI (one-cell radius), slope classes below 10°, 10–25°, and at least 25°, and an eight-connected steep-patch metric. The mission weights were 0.30 Slope, 0.25 TRI, 0.20 Local Relief, 0.20 Spatial Pattern, and 0.05 Terrain Distribution. The tolerances were 5°, 10m, 15m, 20 percentage points, and 15 percentage points, respectively. Weight sensitivity perturbed one weight at a time by ±20%, producing 11 scenarios including baseline.
 
 These settings are **provisional team assumptions**, not official NASA or rover-manufacturer standards. They still require Hiba, Omar, and Ghassan's review against effective resolution, AOI geometry, source support, and scale/window sensitivity.
 
