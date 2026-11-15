@@ -85,6 +85,11 @@ def test_crs_comparison_rejects_unrelated_coordinate_systems():
         compare_roi_raster_crs("EPSG:4326", "EPSG:3857")
 
 
+def test_crs_comparison_rejects_geographic_coordinates_even_when_equal():
+    with pytest.raises(ValueError, match="projected in metres"):
+        compare_roi_raster_crs("EPSG:4326", "EPSG:4326")
+
+
 def test_read_candidate_reports_native_layer_coverage(tmp_path):
     paths = _write_layers(tmp_path / "rasters")
     gdf = gpd.GeoDataFrame({"id": [1]}, geometry=[box(5, 5, 15, 15)], crs="EPSG:3857")
