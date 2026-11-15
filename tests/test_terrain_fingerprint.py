@@ -323,3 +323,47 @@ def test_run_config_preserves_optional_minimum_coverage_threshold(
     assert len(captured) == 1
     assert captured[0].minimum_valid_coverage_pct == expected_threshold
     assert output_path.is_file()
+
+
+@pytest.mark.parametrize(
+    ("overrides", "message"),
+    [
+        ({"analysis_scale_m": 0}, "analysis_scale_m"),
+        ({"relief_window_m": float("nan")}, "relief_window_m"),
+        ({"local_relief_min_valid_fraction": 0}, "local_relief_min_valid_fraction"),
+        ({"connectivity": 6}, "connectivity"),
+        ({"steep_threshold_deg": 91}, "steep_threshold_deg"),
+        ({"minimum_valid_coverage_pct": 101}, "minimum_valid_coverage_pct"),
+    ],
+)
+def test_terrain_config_rejects_invalid_physical_or_threshold_settings(overrides, message):
+    values = {
+        "analysis_scale_m": 10.0,
+        "relief_window_m": 40.0,
+        "local_relief_min_valid_fraction": 0.8,
+    }
+    values.update(overrides)
+    with pytest.raises(ValueError, match=message):
+        TerrainConfig(**values).validate()
+
+
+def test_all_derived_maps_preserve_source_nodata_mask():
+    z = np.full((25, 25), 50.0)
+    z[12, 12] = np.nan
+    _, maps = calculate_terrain_fingerprint(z, 10, 10, config())
+    for name, layer in maps.items():
+        assert np.isnan(layer[12, 12]), f"{name} must preserve the source NoData centre"
+
+
+def test_terrain_class_threshold_boundaries_are_documented_and_applied():
+    # The output contract uses low < 10°, mid 10–25°, high >= 25°.
+    # A plane with a 0.1763 rise/run gradient is approximately 10°.
+    rows, cols = np.indices((41, 41))
+    z = np.where(cols < 14, 0.0, np.where(cols < 27, rows * 1.7633, rows * 4.6631))
+    metrics, _ = calculate_terrain_fingerprint(
+        z, 10, 10, config(steep_threshold_deg=25.0)
+    )
+    assert metrics["terrain_class_thresholds"] == (
+        "low < 10; mid >= 10 and < 25; high >= 25 degrees"
+    )
+    assert metrics["slope_distribution_sum_pct"] == pytest.approx(100.0, abs=1e-9)
