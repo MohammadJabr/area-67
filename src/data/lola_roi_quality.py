@@ -19,6 +19,8 @@ import numpy as np
 import rasterio
 from rasterio.errors import WindowError
 from rasterio.features import geometry_mask, geometry_window
+from shapely.geometry import mapping
+from shapely.validation import explain_validity
 
 try:
     from .lola_south_pole import SITES, site_asset_paths
@@ -235,15 +237,35 @@ def inspect_feature(
     result: dict[str, Any] = {
         "source_shapefile": source_name,
         "feature_index": int(feature_index),
+        "provider_roi_number": int(feature_index) + 1,
         "properties": {str(key): json_value(value) for key, value in properties.items()},
         "status": "review_required",
         "warnings": [],
     }
     if geometry is None or geometry.is_empty:
+        result["geometry_type"] = None if geometry is None else str(geometry.geom_type)
+        result["geometry_valid"] = False
+        result["geometry_validity_reason"] = "Geometry is null or empty."
+        result["native_geometry"] = None
         result["warnings"].append("Feature geometry is null or empty; no raster statistics calculated.")
         return result
+
+    # Preserve the provider geometry exactly as read. This is a native-CRS
+    # inventory, not GeoJSON in WGS84; no make_valid(), buffer(0), or transform.
+    result.update(
+        {
+            "geometry_type": str(geometry.geom_type),
+            "geometry_valid": bool(geometry.is_valid),
+            "geometry_validity_reason": "Valid Geometry" if geometry.is_valid else explain_validity(geometry),
+            "native_bounds": [float(value) for value in geometry.bounds],
+            "native_area_m2": float(geometry.area) if geometry.geom_type in {"Polygon", "MultiPolygon"} else None,
+            "native_perimeter_m": float(geometry.length),
+            "native_centroid_xy": [float(geometry.centroid.x), float(geometry.centroid.y)],
+            "native_geometry": mapping(geometry),
+        }
+    )
     if not geometry.is_valid:
-        result["warnings"].append("Feature geometry is invalid; no automatic repair was attempted.")
+        result["warnings"].append("Feature geometry is invalid; original native geometry was preserved and no automatic repair was attempted.")
         return result
     if geometry.geom_type not in {"Polygon", "MultiPolygon"}:
         result["warnings"].append(
@@ -350,7 +372,8 @@ def build_roi_quality_report(
             "NoData, interpolated LDEM values, and zero LDEC counts are distinct states.",
             "Raster posting is not effective resolution or a per-pixel accuracy guarantee.",
             "No reprojection, resampling, geometry repair, or vertical-reference transformation is performed.",
-            "For custom lunar CRS with placeholder datum labels, matching projection mathematics is only nominal compatibility; it does not identify the Moon-fixed frame (ME/PA).",
+            "NASA PGDA Product 78 documents MOON_ME/DE421 for GeoTIFF products but explicitly excludes ROI shapefiles; the raster frame is source-documented while the provider ROI shapefile frame remains unverified.",
+            "Native polygon coordinates are exported in the original shapefile CRS, not WGS84 GeoJSON; no reprojection or coordinate transformation is applied.",
             "Statistics use native raster pixel centers within each polygon; no pixel-area weighting is applied.",
         ],
     }
@@ -373,9 +396,13 @@ def build_roi_quality_report(
                 or ds.transform != reference.transform
             ):
                 raise ValueError(f"{name} grid does not exactly match the elevation raster grid.")
+            lunar_raster = bool(ds.crs and _is_lunar_spherical_projected_crs(ds.crs))
             report["raster_assets"][name] = {
                 "path": str(paths[name]),
                 "crs": ds.crs.to_string() if ds.crs else None,
+                "crs_wkt": ds.crs.to_wkt() if ds.crs else None,
+                "coordinate_reference_frame": "MOON_ME/DE421" if lunar_raster else None,
+                "coordinate_reference_frame_source": "https://pgda.gsfc.nasa.gov/products/78" if lunar_raster else None,
                 "width": int(ds.width),
                 "height": int(ds.height),
                 "transform": list(ds.transform)[:6],
@@ -417,6 +444,13 @@ def build_roi_quality_report(
                     "shapefile": relative_name,
                     "feature_count": int(len(frame)),
                     "crs": frame.crs.to_string(),
+                    "crs_wkt": frame.crs.to_wkt(),
+                    "coordinate_reference_frame_status": (
+                        "unverified_provider_roi_frame"
+                        if _is_lunar_spherical_projected_crs(reference.crs)
+                        else "not_assessed"
+                    ),
+                    "coordinate_handling": "native source coordinates; no reprojection or transformation",
                     "geometry_types": sorted(
                         str(value) for value in frame.geometry.geom_type.dropna().unique()
                     ),
@@ -453,15 +487,26 @@ def markdown_report(report: dict[str, Any]) -> str:
         "",
         "This polygon-level data-support audit is not an AOI approval, terrain fingerprint, or site ranking.",
         "",
-        "| ROI shapefile | Feature | Status | ROI pixel centers | Elevation valid % | Positive LDEC support % | Zero-count/interpolated % | Z RMS median (m) | Slope RMS median (degrees) |",
-        "|---|---:|---|---:|---:|---:|---:|---:|---:|",
+        "## Coordinate frame and native geometry",
+        "",
+        f"- Raster frame: {next((asset.get('coordinate_reference_frame') for asset in report['raster_assets'].values() if asset.get('coordinate_reference_frame')), 'not identified by this raster set')}.",
+        f"- ROI shapefile frame: {next((shp.get('coordinate_reference_frame_status') for shp in report['shapefiles']), 'not assessed')}.",
+        "- Exact provider polygon coordinates are included in the JSON as features[].native_geometry, with the original shapefile WKT. These are native projected coordinates, not WGS84 GeoJSON.",
+        "- Invalid geometries are exported unchanged for review; no automatic repair or transformation is performed.",
+        "",
+        "| ROI shapefile | Feature | Provider ROI | Geometry | Validity | Native area (m²) | Status | ROI pixel centers | Elevation valid % | Positive LDEC support % | Zero-count/interpolated % | Z RMS median (m) | Slope RMS median (degrees) |",
+        "|---|---:|---:|---|---|---:|---|---:|---:|---:|---:|---:|---:|",
     ]
     for shp in report["shapefiles"]:
         for feature in shp["features"]:
             lines.append(
-                "| {} | {} | {} | {} | {} | {} | {} | {} | {} |".format(
+                "| {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |".format(
                     shp["shapefile"],
                     feature["feature_index"],
+                    feature.get("provider_roi_number", ""),
+                    feature.get("geometry_type", ""),
+                    feature.get("geometry_validity_reason", ""),
+                    feature.get("native_area_m2", ""),
                     feature["status"],
                     feature.get("roi_pixel_center_count", ""),
                     feature.get("elevation_valid_coverage_pct", ""),
