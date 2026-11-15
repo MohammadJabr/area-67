@@ -22,6 +22,7 @@ from src.data.contracts import (
     validate_space_to_earth,
 )
 from src.reporting.passport import build_passport, passport_to_markdown
+from src.reporting.evidence_bundle import build_evidence_bundle
 
 st.set_page_config(page_title="AREA 67 | Planetary Analog Discovery", page_icon="🪐", layout="wide")
 FP = ROOT / "data/processed/terrain_fingerprints.csv"
@@ -353,7 +354,13 @@ def main() -> None:
     )
     render_hero(status_label, len(fingerprints), rankings["candidate_site_id"].nunique())
 
-    tab_setup, tab_results, tab_terrain, tab_passport = st.tabs(["01 · Mission Control", "02 · Analog Radar", "03 · Terrain Lab", "04 · Analog Passport"])
+    tab_setup, tab_results, tab_terrain, tab_atlas, tab_passport = st.tabs([
+        "01 · Mission Control",
+        "02 · Analog Radar",
+        "03 · Terrain Lab",
+        "04 · Planetary Atlas",
+        "05 · Analog Passport",
+    ])
 
     with tab_setup:
         st.markdown(
@@ -366,6 +373,27 @@ def main() -> None:
         c1.metric("Target region", target_name)
         c2.metric("Target body", target_body)
         c3.metric("Mission profile", mission_profile)
+        earth_rows = fingerprints[fingerprints["planet"].astype(str).str.casefold().eq("earth")]
+        earth_candidate_rows = earth_rows[earth_rows["site_id"].isin(
+            rankings.loc[rankings["target_site_id"] == target_id, "candidate_site_id"].astype(str)
+        )]
+        approved_aoi_count = 0
+        if "aoi_approval" in fingerprints.columns:
+            approved_aoi_count = int(
+                fingerprints["aoi_approval"].astype(str).str.upper().eq("APPROVED").sum()
+            )
+        mars_record_count = int(
+            fingerprints["planet"].astype(str).str.casefold().eq("mars").sum()
+        )
+        st.markdown("#### Evidence readiness")
+        ready_a, ready_b, ready_c = st.columns(3)
+        ready_a.metric("Earth references in this pilot", int(earth_candidate_rows["site_id"].nunique()))
+        ready_b.metric("Scientifically approved AOIs", approved_aoi_count)
+        ready_c.metric("Mars records in current dataset", mars_record_count)
+        st.caption(
+            "The current public demonstration is a single-target lunar exploratory pilot. "
+            "AOI approval and Mars comparison remain scientific/data work, not hidden UI options."
+        )
         st.markdown(
             '<div class="a67-inline-note">Space-to-Earth is the active MVP workflow: start from a lunar or Martian target and inspect ranked Earth reference windows. Earth-to-Space remains a future search direction.</div>',
             unsafe_allow_html=True,
@@ -530,7 +558,22 @@ def main() -> None:
         candidate_ids = selected_rankings["candidate_site_id"].tolist()
         comparison_ids = [sid for sid in [target_id, *candidate_ids] if sid in known_ids]
         st.markdown("#### Geographic discovery map")
-        st.caption("Explore the selected Earth reference anchors. Drag to pan, scroll to zoom, and hover over a marker for its evidence summary.")
+        st.caption("Explore Earth reference anchors. Pan and zoom the map, switch basemaps, focus one candidate, or show site labels.")
+        map_controls = st.columns([1.05, 1.55, 1.0])
+        basemap_choice = map_controls[0].selectbox(
+            "Basemap", ["Dark Matter", "Light", "Voyager"], key="area67_map_basemap"
+        )
+        focus_options = ["All selected candidates", *candidate_ids]
+        map_focus = map_controls[1].selectbox(
+            "Map focus",
+            options=focus_options,
+            format_func=lambda value: "All selected candidates" if value == "All selected candidates"
+            else candidate_name_map.get(value, value),
+            key="area67_map_focus",
+        )
+        show_map_labels = map_controls[2].toggle(
+            "Show labels", value=True, key="area67_map_labels"
+        )
         if {"latitude", "longitude"}.issubset(fingerprints.columns):
             # Only Earth candidate anchors belong on this basemap; lunar coordinates
             # are intentionally kept out of the Earth geographic view.
@@ -571,14 +614,29 @@ def main() -> None:
                     )
                 else:
                     mapped["distance_label"] = "Not supplied"
-                lat_span = float(mapped["latitude"].max() - mapped["latitude"].min())
-                lon_span = float(mapped["longitude"].max() - mapped["longitude"].min())
-                map_zoom = 1.25 if len(mapped) > 1 else 4.0
-                if len(mapped) > 1 and max(lat_span, lon_span) < 18:
-                    map_zoom = 3.0
+                if map_focus != "All selected candidates":
+                    focus_marker = mapped[mapped["site_id"] == map_focus]
+                    if not focus_marker.empty:
+                        center_lat = float(focus_marker.iloc[0]["latitude"])
+                        center_lon = float(focus_marker.iloc[0]["longitude"])
+                        map_zoom = 5.2
+                    else:
+                        center_lat = float(mapped["latitude"].mean())
+                        center_lon = float(mapped["longitude"].mean())
+                        map_zoom = 1.25
+                else:
+                    lat_span = float(mapped["latitude"].max() - mapped["latitude"].min())
+                    lon_span = float(mapped["longitude"].max() - mapped["longitude"].min())
+                    map_zoom = 1.25
+                    if len(mapped) == 1:
+                        map_zoom = 4.0
+                    elif max(lat_span, lon_span) < 18:
+                        map_zoom = 3.0
+                    center_lat = float(mapped["latitude"].mean())
+                    center_lon = float(mapped["longitude"].mean())
                 view_state = pdk.ViewState(
-                    latitude=float(mapped["latitude"].mean()),
-                    longitude=float(mapped["longitude"].mean()),
+                    latitude=center_lat,
+                    longitude=center_lon,
                     zoom=map_zoom, pitch=0, bearing=0,
                 )
                 points_layer = pdk.Layer(
@@ -593,10 +651,31 @@ def main() -> None:
                     pickable=True, auto_highlight=True,
                     radius_min_pixels=7, radius_max_pixels=20,
                 )
+                map_layers = [points_layer]
+                if show_map_labels:
+                    map_layers.append(
+                        pdk.Layer(
+                            "TextLayer",
+                            data=mapped,
+                            get_position="[longitude, latitude]",
+                            get_text="site_name",
+                            get_size=13,
+                            get_color=[242, 247, 252, 235],
+                            get_angle=0,
+                            billboard=True,
+                            pickable=False,
+                            get_pixel_offset=[0, -22],
+                        )
+                    )
+                map_styles = {
+                    "Dark Matter": "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+                    "Light": "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+                    "Voyager": "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
+                }
                 deck = pdk.Deck(
-                    layers=[points_layer],
+                    layers=map_layers,
                     initial_view_state=view_state,
-                    map_style="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+                    map_style=map_styles[basemap_choice],
                     tooltip={
                         "html": (
                             "<b>{site_name}</b><br/>Rank: {rank_label}<br/>"
@@ -612,7 +691,16 @@ def main() -> None:
                     },
                 )
                 st.pydeck_chart(deck, width="stretch", height=470, key="area67_candidate_map")
-                st.caption("Map pins are reference-window anchors only, not approved AOI polygons. Lunar target coordinates are deliberately not plotted on this Earth map.")
+                if map_focus != "All selected candidates":
+                    st.caption(
+                        "Focused on " + str(candidate_name_map.get(map_focus, map_focus))
+                        + "; other filtered candidate anchors remain visible."
+                    )
+                st.caption(
+                    "Pins are reference-window anchors only, not approved AOI polygons. "
+                    "No terrain raster overlay is shown because validated, hosted AOI rasters are not yet available. "
+                    "Lunar coordinates are deliberately not plotted on this Earth map."
+                )
                 st.markdown(
                     '<div class="a67-map-legend"><span><i class="rank-one"></i> Rank 1</span><span><i class="rank-two"></i> Rank 2</span><span><i class="rank-three"></i> Rank 3</span></div>',
                     unsafe_allow_html=True,
@@ -654,17 +742,108 @@ def main() -> None:
                 f2.metric("Planetary body", str(focus.get("planet", "Not supplied")))
                 scale_value = value_or_none(focus.get("analysis_scale_m"))
                 f3.metric("Analysis scale", f"{float(scale_value):g} m" if scale_value is not None else "Not supplied")
+                qa1, qa2, qa3 = st.columns(3)
+                valid_coverage = pd.to_numeric(
+                    pd.Series([focus.get("valid_coverage_pct")]), errors="coerce"
+                ).iloc[0]
+                direct_coverage = pd.to_numeric(
+                    pd.Series([focus.get("direct_observation_coverage_pct")]), errors="coerce"
+                ).iloc[0]
+                nodata_value = pd.to_numeric(
+                    pd.Series([focus.get("nodata_pct")]), errors="coerce"
+                ).iloc[0]
+                qa1.metric(
+                    "Valid raster coverage",
+                    f"{valid_coverage:.1f}%" if pd.notna(valid_coverage) else "Not supplied",
+                )
+                qa2.metric(
+                    "Direct instrument support",
+                    f"{direct_coverage:.2f}%" if pd.notna(direct_coverage) else "Not supplied",
+                )
+                qa3.metric(
+                    "NoData",
+                    f"{nodata_value:.1f}%" if pd.notna(nodata_value) else "Not supplied",
+                )
+                aoi_value = value_or_none(focus.get("aoi_approval")) or value_or_none(focus.get("aoi_status"))
+                if aoi_value:
+                    st.caption(
+                        f"Study footprint status: {aoi_value}. Raster coverage and direct instrument support are separate evidence measures."
+                    )
             st.markdown("#### Five-group terrain fingerprint")
             show_feature_groups(fingerprints, comparison_ids)
             st.markdown("#### Single-parameter explorer")
             st.caption("Select a measurement to compare its supplied value across the target and currently selected Earth candidates.")
             show_single_parameter_explorer(fingerprints, comparison_ids)
 
+            st.markdown("#### Why does the matcher rank candidates this way?")
+            contribution_columns = {
+                "slope_contribution": "Slope",
+                "tri_contribution": "TRI",
+                "relief_contribution": "Local Relief",
+                "distribution_contribution": "Terrain Distribution",
+                "spatial_pattern_contribution": "Spatial Pattern",
+            }
+            available_contributions = [
+                column for column in contribution_columns if column in selected_rankings.columns
+            ]
+            if available_contributions:
+                contribution_frame = selected_rankings[
+                    ["candidate_site_id", *available_contributions]
+                ].copy()
+                contribution_frame["Candidate"] = contribution_frame["candidate_site_id"].map(
+                    candidate_name_map
+                ).fillna(contribution_frame["candidate_site_id"])
+                contribution_long = contribution_frame.melt(
+                    id_vars=["Candidate"],
+                    value_vars=available_contributions,
+                    var_name="Feature group",
+                    value_name="Reported contribution",
+                )
+                contribution_long["Feature group"] = contribution_long["Feature group"].map(
+                    contribution_columns
+                )
+                contribution_long["Reported contribution"] = pd.to_numeric(
+                    contribution_long["Reported contribution"], errors="coerce"
+                )
+                contribution_long = contribution_long.dropna(subset=["Reported contribution"])
+                if not contribution_long.empty:
+                    contribution_figure = px.bar(
+                        contribution_long,
+                        x="Candidate",
+                        y="Reported contribution",
+                        color="Feature group",
+                        barmode="stack",
+                        title="Matcher-reported feature-group contributions",
+                        template="plotly_dark",
+                        hover_data={"Reported contribution": ":.4f"},
+                    )
+                    contribution_figure.update_layout(
+                        paper_bgcolor="rgba(0,0,0,0)",
+                        plot_bgcolor="rgba(8,18,31,.35)",
+                        font_color="#dce9f8",
+                        margin=dict(l=16, r=16, t=56, b=22),
+                        yaxis_title="Reported contribution value",
+                        xaxis_title="Earth candidate",
+                        legend_title_text="Terrain group",
+                        height=390,
+                    )
+                    st.plotly_chart(
+                        contribution_figure,
+                        width="stretch",
+                        config={"displayModeBar": True, "responsive": True},
+                    )
+                    st.caption(
+                        "These values are supplied by the matching engine as feature-group contributions. "
+                        "They explain this run's weighted comparison; they are not percentages of physical similarity."
+                    )
+            else:
+                st.info("Feature-group contribution values were not supplied by the matching engine.")
+
             explanation_cols = [
                 col for col in selected_rankings.columns
                 if col.endswith("_contribution") or col.endswith("_difference")
             ]
-            with st.expander("Matcher explanation · supplied feature contributions and differences", expanded=False):
+            with st.expander("Matcher explanation · exact supplied values and differences", expanded=False):
                 if explanation_cols:
                     explanation = selected_rankings[["candidate_site_id", *explanation_cols]].copy()
                     explanation = explanation.rename(columns={"candidate_site_id": "Earth candidate"})
@@ -684,6 +863,88 @@ def main() -> None:
                     st.dataframe(quality, width="stretch", hide_index=True)
                 else:
                     st.info("No quality/provenance fields were supplied for this comparison.")
+
+    with tab_atlas:
+        st.markdown(
+            '<div class="a67-section"><div class="a67-section-kicker">Planetary map workspace</div>'
+            '<div class="a67-section-title">Planetary Atlas</div>'
+            '<div class="a67-section-subtitle">Explore the source worlds with dedicated planetary mapping tools. These external reference maps are not automatically ingested into the current matching results.</div></div>',
+            unsafe_allow_html=True,
+        )
+        earth_col, moon_col, mars_col = st.columns(3)
+        with earth_col:
+            st.markdown("### Earth")
+            st.markdown("**AREA 67 Analog Radar**")
+            st.write(
+                "The project's interactive Earth map is in Analog Radar. It shows the three current "
+                "reference-window anchors and their matcher-supplied rank. The pins are not approved AOI polygons."
+            )
+            st.link_button(
+                "Open Copernicus DEM catalogue",
+                "https://dataspace.copernicus.eu/explore-data/data-collections/copernicus-contributing-missions/collections-description/COP-DEM",
+                use_container_width=True,
+            )
+            st.caption("Current ranking input: Copernicus DEM GLO-30 DSM reference windows.")
+        with moon_col:
+            st.markdown("### Moon")
+            st.markdown("**NASA Moon Trek**")
+            st.write(
+                "Explore lunar mosaics, polar views, elevation products, slope and illumination layers. "
+                "Use the product search and inspect each layer's source metadata before using it in a study."
+            )
+            st.link_button(
+                "Open interactive Moon Trek",
+                "https://trek.nasa.gov/moon/",
+                use_container_width=True,
+            )
+            st.caption(
+                "Reference layers include LRO WAC mosaics and polar imagery. Some advanced analysis "
+                "functions may require a registered research account."
+            )
+        with mars_col:
+            st.markdown("### Mars")
+            st.markdown("**NASA Mars Trek**")
+            st.write(
+                "Explore global and regional Martian imagery, MOLA elevation and hillshade, THEMIS "
+                "thermal mosaics, and higher-resolution CTX/HiRISE coverage where available."
+            )
+            st.link_button(
+                "Open interactive Mars Trek",
+                "https://trek.nasa.gov/mars/",
+                use_container_width=True,
+            )
+            st.caption(
+                "These are external source-exploration tools. The current AREA 67 ranking has no Mars "
+                "target fingerprint and does not use these layers as scored inputs."
+            )
+        st.divider()
+        st.markdown("#### What is connected to AREA 67 today?")
+        atlas_rows = [
+            {
+                "Body": "Earth",
+                "Current project connection": "Three Copernicus GLO-30 reference windows in the exploratory pilot",
+                "Map experience": "Interactive Earth candidate map in Analog Radar",
+                "Scientific status": "Provisional reference windows; not approved AOIs",
+            },
+            {
+                "Body": "Moon",
+                "Current project connection": "NASA LOLA Site01 target fingerprint and quality companions",
+                "Map experience": "NASA Moon Trek external explorer; project-native lunar raster map pending",
+                "Scientific status": "Exploratory target window; local frame/AOI approval unresolved",
+            },
+            {
+                "Body": "Mars",
+                "Current project connection": "No Mars target fingerprint in the current MVP",
+                "Map experience": "NASA Mars Trek external explorer",
+                "Scientific status": "Future integration; no Mars-to-Earth ranking claimed",
+            },
+        ]
+        st.dataframe(pd.DataFrame(atlas_rows), width="stretch", hide_index=True)
+        st.info(
+            "Important: opening a NASA planetary map does not add its layers to AREA 67's scoring engine. "
+            "A layer becomes an analytical input only after its exact product, coordinate frame, scale, units, "
+            "quality metadata and processing method are recorded and validated."
+        )
 
     with tab_passport:
         st.markdown(
@@ -765,6 +1026,9 @@ def main() -> None:
             st.success("All five feature groups have at least one supplied value. This does not by itself establish full scientific validation.")
 
         st.markdown("#### Source provenance and quality")
+        source_url = value_or_none(site_row.get("source_url"))
+        if source_url and str(source_url).startswith(("https://", "http://")):
+            st.link_button("Open original source product", str(source_url))
         provenance_rows = [
             {"Field": key.replace("_", " ").title(), "Value": value}
             for key, value in provenance.items()
@@ -834,6 +1098,20 @@ def main() -> None:
             data=report,
             file_name=f"analog_passport_{selected_site}.md",
             mime="text/markdown",
+        )
+        evidence_bundle = build_evidence_bundle(
+            passport=passport,
+            fingerprint_row=site_row.to_dict(),
+            ranking_row=matched_row,
+            passport_markdown=report,
+            demo_mode=demo_mode,
+        )
+        st.download_button(
+            "Download complete evidence bundle (ZIP)",
+            data=evidence_bundle,
+            file_name=f"area67_evidence_bundle_{selected_site}.zip",
+            mime="application/zip",
+            help="Includes the Passport, structured metadata, fingerprint CSV and matching row. Raw rasters are not included.",
         )
 
     st.divider()

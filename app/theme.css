@@ -254,3 +254,14 @@ div[data-testid="stMetric"] { min-height: 100px; }
 .a67-map-legend .rank-one { background: #c7f36b; box-shadow: 0 0 9px rgba(199,243,107,.55); }
 .a67-map-legend .rank-two { background: #67d7e9; box-shadow: 0 0 9px rgba(103,215,233,.45); }
 .a67-map-legend .rank-three { background: #9c8cff; box-shadow: 0 0 9px rgba(156,140,255,.45); }
+
+/* Expanded mapping controls and evidence-readiness cards */
+[data-testid="stDeckGlJsonChart"] {
+  border: 1px solid rgba(103, 215, 233, .24);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 14px 36px rgba(0,0,0,.2);
+}
+[data-testid="stSelectbox"] label,
+[data-testid="stToggle"] label { color: #b8cbe0 !important; }
+.a67-map-legend { padding: .2rem 0 .4rem; }

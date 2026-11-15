@@ -180,3 +180,20 @@ The matching CLI refuses to run unless the operator explicitly supplies `--candi
 - Latest post-merge `main` CI after PR #107: [workflow run #43708208185](https://github.com/MohammadJabr/area-67/actions/runs/43708208185) passed **231 tests** in 5.93s (518 warnings, primarily geospatial-library deprecations); dependency installation, source/test compilation and the geospatial artifact ignore-policy check passed.
 
 The repository has a working, reproducible **exploratory presentation MVP**, but **it does not yet have a validated planetary-analog result**. See [the MVP method and results](docs/FINAL_MVP_METHOD_AND_RESULTS_2026-11-15.md) and [judge demo script](docs/JUDGE_DEMO_SCRIPT_2026-11-15.md). The next priority is approval of study areas and common physical settings, followed by independent fingerprint validation and matching review.
+
+
+## Public MVP deployment
+
+**Live application:** https://area-67.streamlit.app/
+
+The current MVP is hosted on Streamlit Community Cloud. The deployment configuration uses:
+
+- Repository: `MohammadJabr/area-67`
+- Branch: `main`
+- App entry point: `app/main.py`
+- Python runtime: `3.11`
+- Dependencies: `requirements.txt`
+
+When the Streamlit app is connected to this repository and configured to deploy from `main`, merges/pushes to `main` trigger a rebuild of the same app URL. Feature-branch commits do not update the deployed app until merged. A failed rebuild may leave the previous running release in place; check the Streamlit deployment logs after each release.
+
+The Earth basemap styles and external NASA planetary map links require browser internet access. The app does not embed raw DEMs or approved study-area overlays because those raster/AOI assets are not currently hosted as validated web layers.
