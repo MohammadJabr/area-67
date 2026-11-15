@@ -592,6 +592,12 @@ def build_pilot(raw_root: Path, output_dir: Path, metadata_dir: Path, config_pat
     input_hashes: dict[str, str] = {}
     grid_manifest: dict[str, Any] = {}
 
+    # The global access date is inherited by each source record unless the
+    # individual source explicitly declares its own access date.
+    config["target"].setdefault("access_date", config.get("access_date"))
+    for candidate in config["earth_candidates"]:
+        candidate.setdefault("access_date", config.get("access_date"))
+
     # Moon: derive an exact 990m window from the centre of the earlier 1km context square.
     moon = config["target"]
     context = tuple(float(x) for x in moon["context_bounds_native_m"])
@@ -636,10 +642,13 @@ def build_pilot(raw_root: Path, output_dir: Path, metadata_dir: Path, config_pat
         input_hashes[rel_path] = sha256_file(path)
         if name == "ldec":
             quality.update(summarize_count_layer(layer))
+            quality["ldec_source_checksum_sha256"] = input_hashes[rel_path]
         elif name == "total_error":
             quality.update(summarize_uncertainty_layer(layer, "z_rms", "m"))
+            quality["z_rms_source_checksum_sha256"] = input_hashes[rel_path]
         else:
             quality.update(summarize_uncertainty_layer(layer, "slope_rms", "deg"))
+            quality["slope_rms_source_checksum_sha256"] = input_hashes[rel_path]
     quality.update({
         "native_quality_pixel_size_m": 5.0,
         "native_quality_window_shape": [expected_native_side, expected_native_side],
