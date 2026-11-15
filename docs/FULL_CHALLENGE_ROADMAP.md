@@ -79,10 +79,10 @@ Do not populate selectable profiles with empty or misleading results. A profile 
 - Five-group DEM terrain fingerprint extraction and synthetic/GeoTIFF tests.
 - CSV-driven target-aware matching, candidate ranking, feature contributions, Slope-only baseline and weight sensitivity utilities.
 - Integration contracts, data provenance and judging-readiness gates.
-- Latest full main CI at commit `1ea2f0b` (2026-11-15): **130 passed, 66 warnings in 3.36s**. The warnings are not test failures; inspect the run logs if their details matter for a release.
+- Latest full main CI at commit `11ed4cf` (2026-11-15, workflow run #250): **154 passed, 99 warnings in 4.96s**. The warnings are not test failures; inspect the run logs if their details matter for a release.
 
 ### Partially implemented / not scientifically complete
-- The five provider-defined lunar ROI archive and five-layer audit tools are implemented, but the real archives/rasters still need to be downloaded and inspected locally; provider polygons are not approved AREA 67 study AOIs.
+- The five provider-defined lunar ROI archive and five-layer audit tools are implemented. Site04's local provider ROI archive and all five native rasters have been inspected with polygon-level support/uncertainty QA and a pixel-registration audit; equivalent site-level inspection remains to be confirmed for Site01, Site06, Site07 and Site11. Provider polygons are not approved AREA 67 study AOIs.
 - No lunar target sub-AOI, Earth candidate AOIs, common analysis grid, or source harmonization policy has been approved.
 - Real `terrain_fingerprints.csv` and `candidate_rankings.csv` are still absent; polygon-level tooling does not itself create terrain fingerprints.
 - Cross-site real-data validation, feature-correlation/double-counting audit, approved tolerances, weights and completeness gates remain pending.
@@ -90,6 +90,18 @@ Do not populate selectable profiles with empty or misleading results. A profile 
 - Rover Gauntlet/A* remains separate optional work; it must be assessed before integration and only used on a documented real ROI.
 - Real global Earth discovery/search is not yet implemented; current five Earth regions are provisional source packages, not a global scan.
 - Thermal context (MODIS/Diviner/THEMIS), SPICE/ShadowTwin, mineralogy/geology fusion, water/ice, dust/process, subsurface and biological evidence are not integrated in the MVP score or a validated end-to-end product.
+
+### Site04 ROI evidence update — 2026-11-15
+
+The local Site04 review now includes the original provider shapefile, all five matching LOLA rasters, the polygon support/uncertainty audit, the 325-vertex pixel-registration audit, and a read-only `make_valid` sensitivity preview.
+
+- Original source features 0 and 1 are invalid because of ring self-intersections; features 2 and 3 are valid. The invalid source features remain excluded from the official native-geometry ROI statistics.
+- All 325 source ring vertices lie exactly on the local Site04 raster's pixel-centre lattice. No half-pixel shift is indicated for this specific shapefile/raster pair. This does not identify the physical lunar body-fixed frame.
+- Valid feature 2 has 102 pixel centres, 100% elevation coverage, and 14.71% positive LDEC direct-shot support; feature 3 has 101 centres, 100% elevation coverage, and 13.86% positive direct-shot support. Their remaining valid LDEC cells are zero-count/interpolated support, not NoData.
+- The in-memory repair preview splits invalid feature 0 into two polygon components and feature 1 into three polygon components plus three LineString remnants. All statistics for these repaired candidates are preview-only; they do not establish provider intent or AOI approval.
+- The legacy ROI shapefile's physical lunar datum/frame remains unknown. Do not apply a guessed ME/PA shift or generalize the local pixel-registration result to external lunar products.
+
+Detailed measurements and provenance are recorded in `docs/LOLA_ROI_QUALITY_AUDIT.md` and `docs/reports/lunar_roi/SITE04_COORDINATE_AND_SDEM_REVIEW.md`. The immediate scientific decisions remain: resolve the intended topology/provenance of invalid provider features, select and approve the actual Site04 sub-AOI (or another target), and agree a common physical analysis scale and neighborhood/window policy before real fingerprint extraction.
 
 ### Important review note
 The application currently exposes the only supplied target and profile from the loaded ranking CSV. Seeing only MOON_DEMO_01 and Rover Navigation / Terrain Traversal is therefore a property of the synthetic fixture, not proof that the product is scientifically limited to one target/profile. Do not add fake selectable entries. Real target/profile options should be driven by validated datasets and implemented profile contracts.
