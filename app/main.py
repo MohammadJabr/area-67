@@ -362,6 +362,49 @@ def main() -> None:
         elif str(site_row.get("planet", "")).casefold() == "earth":
             st.caption("Direct instrument-shot support was not supplied for this Earth DSM; this is separate from raster NoData.")
 
+        if str(site_row.get("planet", "")).casefold() == "moon":
+            quality_values = {
+                key: pd.to_numeric(pd.Series([site_row.get(key)]), errors="coerce").iloc[0]
+                for key in (
+                    "ldec_zero_count_pct", "z_rms_median_m", "z_rms_p90_m",
+                    "slope_rms_median_deg", "slope_rms_p90_deg",
+                    "provider_roi_union_overlap_pct",
+                )
+            }
+            if any(pd.notna(value) for value in quality_values.values()):
+                st.markdown("#### Native LOLA observation support and uncertainty")
+                q1, q2, q3, q4 = st.columns(4)
+                q1.metric(
+                    "LDEC positive-shot support",
+                    f"{direct_support:.3f}%" if pd.notna(direct_support) else "Not supplied",
+                )
+                q2.metric(
+                    "LDEC zero-count / interpolated",
+                    f"{quality_values['ldec_zero_count_pct']:.3f}%"
+                    if pd.notna(quality_values["ldec_zero_count_pct"]) else "Not supplied",
+                )
+                q3.metric(
+                    "Median Z RMS",
+                    f"{quality_values['z_rms_median_m']:.4f} m"
+                    if pd.notna(quality_values["z_rms_median_m"]) else "Not supplied",
+                )
+                q4.metric(
+                    "Median slope RMS",
+                    f"{quality_values['slope_rms_median_deg']:.4f}°"
+                    if pd.notna(quality_values["slope_rms_median_deg"]) else "Not supplied",
+                )
+                st.caption(
+                    "Native 5m LDEC and RMS summaries use pixel centres inside the same 990m analysis "
+                    "footprint (198×198 cells). Zero LDEC denotes no binned direct shot and an interpolated "
+                    "LDEM cell; it is not NoData. RMS fields are source uncertainty descriptors, not rover limits."
+                )
+                if pd.notna(quality_values["provider_roi_union_overlap_pct"]):
+                    st.warning(
+                        f"The context window overlaps only {quality_values['provider_roi_union_overlap_pct']:.3f}% "
+                        "of the valid provider Site01 ROI union in the recorded coordinate-plane diagnostic. "
+                        "This context window is not the provider ROI or an approved AOI."
+                    )
+
         st.markdown("#### Terrain Fingerprint evidence")
         missing_features = []
         for group, metrics in FEATURE_GROUPS.items():
@@ -388,8 +431,17 @@ def main() -> None:
             for key in (
                 "scientific_status", "aoi_status", "aoi_approval",
                 "aoi_note", "source_quality_note", "effective_resolution_note",
-                "source_checksum_sha256", "ldec_checksum_sha256",
-                "z_uncertainty_checksum_sha256",
+                "source_raster_path", "source_checksum_sha256",
+                "ldec_positive_cells", "ldec_zero_cells", "ldec_valid_coverage_pct",
+                "ldec_zero_count_pct", "ldec_nodata_pct",
+                "z_rms_median_m", "z_rms_p90_m",
+                "slope_rms_median_deg", "slope_rms_p90_deg",
+                "native_quality_pixel_size_m", "native_quality_window_shape",
+                "native_quality_window_area_km2", "native_quality_selection_rule",
+                "ldec_source_checksum_sha256", "z_rms_source_checksum_sha256",
+                "slope_rms_source_checksum_sha256",
+                "provider_roi_union_overlap_pct", "provider_roi_overlap_note",
+                "coordinate_frame", "analysis_crs", "processing_method",
             )
             if key in site_row.index and pd.notna(site_row.get(key))
         }
