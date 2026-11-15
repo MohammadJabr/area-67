@@ -130,3 +130,10 @@ This audit helps compare the observation support and uncertainty context of prov
 Do not compare absolute lunar and Earth elevations as if their vertical reference frames were interchangeable. Do not infer effective terrain resolution from the 5 m pixel posting. Keep direct observations, interpolated cells, raster validity, and RMS uncertainty as separate evidence dimensions.
 
 NASA PGDA source: https://pgda.gsfc.nasa.gov/products/78
+
+
+## Site01 review record
+
+A local Site01 (Connecting Ridge) five-layer and seven-feature review was completed on 2026-11-15. Five original ROI polygons are valid; two contain ring self-intersections and remain excluded from native-geometry statistics. All 607 vertices align exactly with the Site01 raster pixel-centre lattice. The Site01 site-wide positive LDEC support is 9.4942%; valid-ROI support varies by polygon and is reported separately. Two invalid-geometry previews are diagnostic only and do not replace provider source geometries.
+
+See [Site01 coordinate, support and uncertainty review](reports/lunar_roi/SITE01_COORDINATE_AND_SDEM_REVIEW.md) for per-feature metrics, repair-preview measurements, pixel-registration results, area-accounting notes, limitations and reproduction commands. The local raw rasters and generated JSON outputs are not committed.
