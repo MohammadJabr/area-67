@@ -147,6 +147,7 @@ The following software and data-management components are merged into `main`:
 - Two adjacent Mauna Kea USGS 3DEP 1 m bare-earth tiles are recorded. The western tile has EPSG:26904 / NAVD88 / metres in its source record; the eastern tile is EPSG:26905, but its vertical reference and elevation units remain unverified. They must not be mosaicked or treated as a harmonized replacement for the Copernicus DSM.
 - Read-only remote COG inspection using HTTP byte-range preflight and bounded 500 × 500 pixel windows for ArcticDEM Haughton, REMA McMurdo, and ÍslandsDEM Askja catalog assets; no full high-resolution raster assets were downloaded.
 - Structural raster preflight checks and provisional Earth reference-point GeoJSON. The points are source/landmark checks, not approved candidate AOI polygons.
+- Site01 (Connecting Ridge) has now received local five-layer raster QA, seven-feature ROI support/uncertainty review, invalid-geometry sensitivity preview, and 607-vertex pixel-registration audit. Its provider ROIs remain provisional; see the [Site01 evidence review](docs/reports/lunar_roi/SITE01_COORDINATE_AND_SDEM_REVIEW.md).
 - Target-aware terrain-matching engine plus a CSV loader/CLI, canonical ranking export, Slope-only baseline, and weight-sensitivity report.
 - Five-group terrain-fingerprint extraction and validation pipeline, including synthetic/GeoTIFF tests, explicit method/provenance metadata, and optional derived feature maps.
 
@@ -170,6 +171,6 @@ The matching CLI refuses to run unless the operator explicitly supplies both `--
 - The five-group terrain-fingerprint extraction pipeline is merged into `main` and includes 16 focused synthetic/GeoTIFF tests. These verify the implementation against constructed surfaces, not actual lunar or Earth reference terrain.
 - The matching workflow is software plumbing tested with synthetic fixtures; no real Earth–Moon/Mars ranking is claimed.
 - The optional A* Rover Gauntlet work remains in [Draft PR #9](https://github.com/MohammadJabr/area-67/pull/9), not in `main`. Its updated branch rejects sheared affine grids, enforces a 250,000-cell default software resource guard, and writes a route provenance JSON sidecar. Its latest CI passed 76 synthetic tests; no real route is claimed.
-- The latest full main CI at ce6a406 passed **175 tests** (112 warnings); compilation and the geospatial artifact ignore-policy check also passed.
+- The latest full main CI at cb40a09 (workflow run #257) passed **175 tests** (112 warnings); compilation and the geospatial artifact ignore-policy check also passed.
 
 The project has a working application and reproducible source/matching software, but **it does not yet have a validated planetary-analog result**. The next priority is to approve study areas and physical scales, produce validated real fingerprints, and run the complete evidence chain—not to add more optional features.
