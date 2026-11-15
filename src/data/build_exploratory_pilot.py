@@ -191,8 +191,9 @@ def resample_elevation(
             init_dest_nodata=True,
             num_threads=2,
         )
+        source_crs = CRS.from_user_input(source.crs)
         metadata = {
-            "source_crs": source.crs.to_string(),
+            "source_crs": source_crs.to_wkt(),
             "source_transform": [float(x) for x in source.transform[:6]],
             "source_width": source.width,
             "source_height": source.height,
@@ -209,7 +210,7 @@ def resample_elevation(
             "resampling": "GDAL/Rasterio bilinear elevation resampling",
             "coordinate_operation": (
                 "Preserve source CRS and resample to local metric grid."
-                if source.crs == target_crs
+                if source_crs == target_crs
                 else "Reproject source grid to declared local metric CRS."
             ),
         }
