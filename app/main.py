@@ -530,7 +530,22 @@ def main() -> None:
         candidate_ids = selected_rankings["candidate_site_id"].tolist()
         comparison_ids = [sid for sid in [target_id, *candidate_ids] if sid in known_ids]
         st.markdown("#### Geographic discovery map")
-        st.caption("Explore the selected Earth reference anchors. Drag to pan, scroll to zoom, and hover over a marker for its evidence summary.")
+        st.caption("Explore Earth reference anchors. Pan and zoom the map, switch basemaps, focus one candidate, or show site labels.")
+        map_controls = st.columns([1.05, 1.55, 1.0])
+        basemap_choice = map_controls[0].selectbox(
+            "Basemap", ["Dark Matter", "Light", "Voyager"], key="area67_map_basemap"
+        )
+        focus_options = ["All selected candidates", *candidate_ids]
+        map_focus = map_controls[1].selectbox(
+            "Map focus",
+            options=focus_options,
+            format_func=lambda value: "All selected candidates" if value == "All selected candidates"
+            else candidate_name_map.get(value, value),
+            key="area67_map_focus",
+        )
+        show_map_labels = map_controls[2].toggle(
+            "Show labels", value=True, key="area67_map_labels"
+        )
         if {"latitude", "longitude"}.issubset(fingerprints.columns):
             # Only Earth candidate anchors belong on this basemap; lunar coordinates
             # are intentionally kept out of the Earth geographic view.
@@ -571,14 +586,29 @@ def main() -> None:
                     )
                 else:
                     mapped["distance_label"] = "Not supplied"
-                lat_span = float(mapped["latitude"].max() - mapped["latitude"].min())
-                lon_span = float(mapped["longitude"].max() - mapped["longitude"].min())
-                map_zoom = 1.25 if len(mapped) > 1 else 4.0
-                if len(mapped) > 1 and max(lat_span, lon_span) < 18:
-                    map_zoom = 3.0
+                if map_focus != "All selected candidates":
+                    focus_marker = mapped[mapped["site_id"] == map_focus]
+                    if not focus_marker.empty:
+                        center_lat = float(focus_marker.iloc[0]["latitude"])
+                        center_lon = float(focus_marker.iloc[0]["longitude"])
+                        map_zoom = 5.2
+                    else:
+                        center_lat = float(mapped["latitude"].mean())
+                        center_lon = float(mapped["longitude"].mean())
+                        map_zoom = 1.25
+                else:
+                    lat_span = float(mapped["latitude"].max() - mapped["latitude"].min())
+                    lon_span = float(mapped["longitude"].max() - mapped["longitude"].min())
+                    map_zoom = 1.25
+                    if len(mapped) == 1:
+                        map_zoom = 4.0
+                    elif max(lat_span, lon_span) < 18:
+                        map_zoom = 3.0
+                    center_lat = float(mapped["latitude"].mean())
+                    center_lon = float(mapped["longitude"].mean())
                 view_state = pdk.ViewState(
-                    latitude=float(mapped["latitude"].mean()),
-                    longitude=float(mapped["longitude"].mean()),
+                    latitude=center_lat,
+                    longitude=center_lon,
                     zoom=map_zoom, pitch=0, bearing=0,
                 )
                 points_layer = pdk.Layer(
@@ -593,10 +623,31 @@ def main() -> None:
                     pickable=True, auto_highlight=True,
                     radius_min_pixels=7, radius_max_pixels=20,
                 )
+                map_layers = [points_layer]
+                if show_map_labels:
+                    map_layers.append(
+                        pdk.Layer(
+                            "TextLayer",
+                            data=mapped,
+                            get_position="[longitude, latitude]",
+                            get_text="site_name",
+                            get_size=13,
+                            get_color=[242, 247, 252, 235],
+                            get_angle=0,
+                            billboard=True,
+                            pickable=False,
+                            get_pixel_offset=[0, -22],
+                        )
+                    )
+                map_styles = {
+                    "Dark Matter": "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+                    "Light": "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+                    "Voyager": "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
+                }
                 deck = pdk.Deck(
-                    layers=[points_layer],
+                    layers=map_layers,
                     initial_view_state=view_state,
-                    map_style="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+                    map_style=map_styles[basemap_choice],
                     tooltip={
                         "html": (
                             "<b>{site_name}</b><br/>Rank: {rank_label}<br/>"
@@ -612,7 +663,16 @@ def main() -> None:
                     },
                 )
                 st.pydeck_chart(deck, width="stretch", height=470, key="area67_candidate_map")
-                st.caption("Map pins are reference-window anchors only, not approved AOI polygons. Lunar target coordinates are deliberately not plotted on this Earth map.")
+                if map_focus != "All selected candidates":
+                    st.caption(
+                        "Focused on " + str(candidate_name_map.get(map_focus, map_focus))
+                        + "; other filtered candidate anchors remain visible."
+                    )
+                st.caption(
+                    "Pins are reference-window anchors only, not approved AOI polygons. "
+                    "No terrain raster overlay is shown because validated, hosted AOI rasters are not yet available. "
+                    "Lunar coordinates are deliberately not plotted on this Earth map."
+                )
                 st.markdown(
                     '<div class="a67-map-legend"><span><i class="rank-one"></i> Rank 1</span><span><i class="rank-two"></i> Rank 2</span><span><i class="rank-three"></i> Rank 3</span></div>',
                     unsafe_allow_html=True,
