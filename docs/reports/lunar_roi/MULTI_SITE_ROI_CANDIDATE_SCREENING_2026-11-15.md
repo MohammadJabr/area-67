@@ -6,7 +6,7 @@ This is a diagnostic comparison of seven valid provider-defined ROI features acr
 
 The local screening sampled native raster pixel centres inside each provider polygon (all_touched=False). It read the five native layers: elevation, LDEC counts, slope, Z RMS uncertainty and slope RMS uncertainty. All seven candidates had 100% valid coverage at sampled pixel centres in each of the five layers.
 
-No reprojection, resampling, geometry repair, area weighting, or source-file modification was performed. The output is based on the local read-only screening run dated 2026-11-15; large source rasters and machine-readable raw outputs remain local and gitignored.
+No reprojection, resampling, geometry repair, area weighting, or source-file modification was performed. The seven-candidate comparison below is based on the local read-only screening run dated 2026-11-15. The current GitHub workflow separately uploads compact Site01/Site04 polygon-level ROI-quality JSON/Markdown artifacts; the raw source rasters and original ROI archives remain artifact-only and gitignored.
 
 ## Candidate measurements
 
