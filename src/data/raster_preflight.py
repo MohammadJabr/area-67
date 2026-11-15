@@ -1,4 +1,4 @@
-"""Read-only structural preflight checks for elevation rasters.
+"""Read-only structural preflight checks for elevation and companion raster layers.
 
 This utility reports input readiness evidence only. It does not infer scientific
 quality, vertical datums, effective resolution, or approval.
@@ -28,13 +28,20 @@ def preflight_raster(
     vertical_reference: str | None = None,
     require_projected_metre_grid: bool = False,
     quality_paths: dict[str, str | Path] | None = None,
+    data_kind: str = "elevation",
+    value_unit: str | None = None,
+    vertical_reference_applicable: bool = True,
+    coordinate_reference_frame: str | None = None,
+    coordinate_reference_frame_source: str | None = None,
 ) -> dict[str, Any]:
     """Inspect raster structure and explicit metadata without modifying input.
 
-    ``elevation_unit`` and ``vertical_reference`` should be sourced from product
+    ``elevation_unit``/``value_unit``, ``vertical_reference``, and
+    ``coordinate_reference_frame`` may be supplied from authoritative product
     documentation where raster tags do not declare them. They are never inferred
-    from the horizontal CRS. Set ``require_projected_metre_grid`` when checking
-    against Hiba's structural grid requirement.
+    from the horizontal CRS. Non-elevation layers can set ``vertical_reference_applicable=False``
+    so counts, slopes, and uncertainty magnitudes are not incorrectly treated as elevations.
+    Set ``require_projected_metre_grid`` when checking against Hiba's structural grid requirement.
     """
     raster_path = Path(path)
     checks: list[dict[str, Any]] = []
@@ -61,7 +68,8 @@ def preflight_raster(
                 valid_count += int((mask & np.isfinite(values)).sum())
             coverage = 100.0 * valid_count / total_count if total_count else 0.0
             band_unit = ds.units[0] if ds.units else None
-            effective_elevation_unit = elevation_unit or band_unit
+            effective_value_unit = value_unit or elevation_unit or band_unit
+            effective_elevation_unit = effective_value_unit if data_kind == "elevation" else None
             metadata = ds.tags()
             vertical_evidence = vertical_reference or metadata.get("VERTICAL_DATUM") or metadata.get("VERTICAL_REFERENCE")
             orientation_ok = transform.a > 0 and transform.e < 0
@@ -90,13 +98,23 @@ def preflight_raster(
                                   "nodata": ds.nodata, "mask_flags": [x.name for x in ds.mask_flag_enums[0]]},
                                  "Mask and finite-value support counted block-wise; coverage does not prove accuracy."))
             checks.append(_check("band_count", "PASS" if ds.count == 1 else "REVIEW", ds.count,
-                                 "Single elevation band." if ds.count == 1 else "Confirm intended elevation band."))
-            checks.append(_check("elevation_unit", "PASS" if effective_elevation_unit else "REVIEW",
-                                 effective_elevation_unit, "Explicit/tagged elevation unit recorded." if effective_elevation_unit else
-                                 "Elevation unit missing; verify product documentation."))
-            checks.append(_check("vertical_reference", "PASS" if vertical_evidence else "REVIEW",
-                                 vertical_evidence, "Explicit vertical reference recorded." if vertical_evidence else
-                                 "Vertical reference missing; do not infer it from horizontal CRS."))
+                                 "Single raster band." if ds.count == 1 else "Confirm intended data band."))
+            unit_check_name = "elevation_unit" if data_kind == "elevation" else "value_unit"
+            checks.append(_check(unit_check_name, "PASS" if effective_value_unit else "REVIEW",
+                                 effective_value_unit, "Explicit or source-documented product value unit recorded." if effective_value_unit else
+                                 "Product value unit missing; verify authoritative documentation."))
+            if vertical_reference_applicable:
+                checks.append(_check("vertical_reference", "PASS" if vertical_evidence else "REVIEW",
+                                     vertical_evidence, "Explicit or source-documented vertical reference recorded." if vertical_evidence else
+                                     "Vertical reference missing; do not infer it from horizontal CRS."))
+            else:
+                checks.append(_check("vertical_reference", "PASS", "not_applicable",
+                                     f"Vertical reference is not applicable to {data_kind} values."))
+            if coordinate_reference_frame:
+                frame_note = "Source-documented coordinate reference frame."
+                if coordinate_reference_frame_source:
+                    frame_note += f" Evidence: {coordinate_reference_frame_source}"
+                checks.append(_check("coordinate_reference_frame", "PASS", coordinate_reference_frame, frame_note))
             checks.append(_check("metadata", "PASS", {"dataset_tags": metadata, "band_units": list(ds.units or ())},
                                  "Available raster tags and band units captured."))
             info = {
@@ -105,8 +123,12 @@ def preflight_raster(
                 "transform": list(transform)[:6], "bounds": list(ds.bounds),
                 "pixel_spacing": {"x": x_size, "y": y_size, "units": horizontal_units[0] if horizontal_units else None},
                 "nodata": ds.nodata, "band_units": list(ds.units or ()),
+                "data_kind": data_kind,
+                "value_unit_evidence": effective_value_unit,
                 "elevation_unit_evidence": effective_elevation_unit,
+                "vertical_reference_applicable": vertical_reference_applicable,
                 "vertical_reference_evidence": vertical_evidence,
+                "coordinate_reference_frame_evidence": coordinate_reference_frame,
             }
             reference_grid = (ds.width, ds.height, ds.crs.to_wkt() if ds.crs else None, tuple(transform)[:6])
     except (OSError, rasterio.errors.RasterioError, ValueError, CRSError) as exc:
@@ -132,5 +154,5 @@ def preflight_raster(
     return {"path": str(raster_path), "status": overall, "scientific_approval": False,
             "raster": info, "checks": checks, "quality_layers": quality_results,
             "limitations": ["Structural preflight only; not scientific approval.",
-                            "Vertical reference, unit, effective resolution and accuracy require authoritative evidence.",
+                            "Units and coordinate frames are accepted only when explicitly supplied or documented; effective resolution and accuracy require separate evidence.",
                             "No raster values are changed; no reprojection, resampling, clipping or mosaicking is performed."]}
