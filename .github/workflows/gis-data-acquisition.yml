@@ -8,6 +8,9 @@ on:
       - .github/workflows/gis-data-acquisition.yml
       - src/data/ci_gis_audit.py
       - tests/test_ci_gis_audit.py
+      - src/data/build_exploratory_pilot.py
+      - config/exploratory_pilot_2026-11-15.json
+      - tests/test_exploratory_pilot_builder.py
   workflow_dispatch:
     inputs:
       dataset:
@@ -89,6 +92,16 @@ jobs:
         run: |
           python -m src.data.ci_gis_audit
 
+      - name: Rebuild exploratory Site01-to-Earth pilot with canonical methods
+        id: pilot_build
+        if: success() && steps.earth_acquire.outcome == 'success' && steps.moon_acquire.outcome == 'success'
+        run: |
+          python -m src.data.build_exploratory_pilot \
+            --raw-root data/raw \
+            --output-dir data/processed \
+            --metadata-dir data/metadata/pilot_2026-11-15 \
+            --config config/exploratory_pilot_2026-11-15.json
+
       - name: Run terrain fingerprint and GIS data tests
         if: always()
         run: |
@@ -99,7 +112,8 @@ jobs:
             tests/test_lola_site04_qa.py \
             tests/test_lola_south_pole.py \
             tests/test_lola_roi_acquisition.py \
-            tests/test_lola_roi_quality.py
+            tests/test_lola_roi_quality.py \
+            tests/test_exploratory_pilot_builder.py
 
       - name: Upload raw acquisition data
         if: always()
@@ -125,6 +139,20 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Upload exploratory pilot outputs
+        if: always() && steps.pilot_build.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: area67-exploratory-pilot-${{ github.run_id }}
+          path: |
+            data/processed/terrain_fingerprints.csv
+            data/processed/candidate_rankings.csv
+            data/processed/ranking_robustness.json
+            data/processed/pilot_2026-11-15/
+            data/metadata/pilot_2026-11-15/
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Report acquisition failures after preserving the artifact
         if: always()
         shell: bash
@@ -132,6 +160,7 @@ jobs:
           EARTH_OUTCOME: ${{ steps.earth_acquire.outcome }}
           MOON_OUTCOME: ${{ steps.moon_acquire.outcome }}
           ROI_OUTCOME: ${{ steps.roi_acquire.outcome }}
+          PILOT_OUTCOME: ${{ steps.pilot_build.outcome }}
         run: |
           failed=0
           for outcome in "$EARTH_OUTCOME" "$MOON_OUTCOME" "$ROI_OUTCOME"; do
@@ -140,6 +169,10 @@ jobs:
               failed=1
             fi
           done
+          if [[ "$PILOT_OUTCOME" == "failure" ]]; then
+            echo "::error::The canonical exploratory pilot rebuild failed; inspect the pilot step logs."
+            failed=1
+          fi
           if [[ "$failed" -ne 0 ]]; then
             exit 1
           fi
