@@ -11,6 +11,7 @@ EARTH_SITE_CATALOG = {
         "site_name": "Haughton Crater, Devon Island",
         "latitude": 75.3772222, "longitude": -89.68, "analysis_crs": "EPSG:32616",
         "source_id": "Copernicus_DSM_COG_10_N75_00_W090_00_DEM",
+        "source_sha256": "6731d23cff09f4cb7d2c72ec1d41c7ae9b6389565434e820692e08c2a4bcefa7",
         "source_url": "https://copernicus-dem-30m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_10_N75_00_W090_00_DEM/Copernicus_DSM_COG_10_N75_00_W090_00_DEM.tif",
         "reference_source": "Patterson & Ernst (2020), crater-centre reference",
         "reference_url": "https://doi.org/10.1111/maps.13573",
@@ -22,6 +23,7 @@ EARTH_SITE_CATALOG = {
         "site_name": "Askja, Iceland",
         "latitude": 65.033, "longitude": -16.783, "analysis_crs": "EPSG:32628",
         "source_id": "Copernicus_DSM_COG_10_N65_00_W017_00_DEM",
+        "source_sha256": "1c663c1b6c3263c763ee40e5e20b85dfacdfeddaf3c41acb6b60cac8581cd56e",
         "source_url": "https://copernicus-dem-30m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_10_N65_00_W017_00_DEM/Copernicus_DSM_COG_10_N65_00_W017_00_DEM.tif",
         "reference_source": "Smithsonian Global Volcanism Program — Askja",
         "reference_url": "https://volcano.si.edu/volcano.cfm?vn=373060",
@@ -33,6 +35,7 @@ EARTH_SITE_CATALOG = {
         "site_name": "Mauna Kea, Hawaiʻi",
         "latitude": 19.82, "longitude": -155.47, "analysis_crs": "EPSG:32605",
         "source_id": "Copernicus_DSM_COG_10_N19_00_W156_00_DEM",
+        "source_sha256": "a1881be4ef3710ebf3d0e59a7a22e77ca79e2a6a3f51cdbadb74209e0698e00d",
         "source_url": "https://copernicus-dem-30m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_10_N19_00_W156_00_DEM/Copernicus_DSM_COG_10_N19_00_W156_00_DEM.tif",
         "reference_source": "USGS Hawaiian Volcano Observatory — Mauna Kea",
         "reference_url": "https://www.usgs.gov/volcanoes/mauna-kea",
@@ -44,6 +47,7 @@ EARTH_SITE_CATALOG = {
         "site_name": "Yungay hyper-arid core, Atacama",
         "latitude": -24.0637778, "longitude": -69.8805, "analysis_crs": "EPSG:32719",
         "source_id": "Copernicus_DSM_COG_10_S25_00_W070_00_DEM",
+        "source_sha256": "ac7b8fce2e8598c5d522fd0f6ff0b4a1ae6f6c5aecda55671fc6e2bd82ec7710",
         "source_url": "https://copernicus-dem-30m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_10_S25_00_W070_00_DEM/Copernicus_DSM_COG_10_S25_00_W070_00_DEM.tif",
         "reference_source": "Published Yungay hyper-arid-core study reference",
         "reference_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8859261/",
@@ -98,6 +102,11 @@ def build_draft_aoi_feature_collection(
         raise ValueError("Enter the named landform / geomorphic unit.")
     if not mission_question.strip():
         raise ValueError("Enter the mission or science question for this AOI.")
+    if not source_reference.strip():
+        raise ValueError(
+            "Enter the geological map, published boundary, field survey, or other source "
+            "supporting this draft geometry. A landmark point alone is not an AOI source."
+        )
 
     site = EARTH_SITE_CATALOG[site_id]
     geod = Geod(ellps="WGS84")
@@ -142,6 +151,7 @@ def build_draft_aoi_feature_collection(
             "bounds_wgs84_lon_lat": [min_lon, min_lat, max_lon, max_lat],
             "analysis_crs_proposal": site["analysis_crs"],
             "source_dem_id": site["source_id"],
+            "source_dem_sha256": site["source_sha256"],
             "source_dem_url": site["source_url"],
             "source_coverage_bounds_wgs84": site["source_coverage_bounds_wgs84"],
             "reference_anchor": {
