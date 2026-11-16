@@ -106,13 +106,15 @@ def build_draft_aoi_feature_collection(
         geometry = shape(feature["geometry"])
         if geometry.geom_type not in {"Polygon", "MultiPolygon"}:
             raise ValueError(f"Drawing {index} is {geometry.geom_type}; only Polygon/MultiPolygon is accepted.")
-        if geometry.is_empty or geometry.area <= 0:
-            raise ValueError(f"Drawing {index} has no usable area.")
+        if geometry.is_empty:
+            raise ValueError(f"Drawing {index} is empty.")
         if not geometry.is_valid:
             raise ValueError(
                 f"Drawing {index} has invalid polygon topology ({explain_validity(geometry)}). "
                 "Edit the shape; AREA 67 will not silently repair it."
             )
+        if geometry.area <= 0:
+            raise ValueError(f"Drawing {index} has no usable area.")
         min_lon, min_lat, max_lon, max_lat = geometry.bounds
         if min_lon < -180 or max_lon > 180 or min_lat < -90 or max_lat > 90:
             raise ValueError(f"Drawing {index} has coordinates outside WGS84 longitude/latitude bounds.")
