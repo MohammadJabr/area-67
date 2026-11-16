@@ -56,6 +56,7 @@ def test_invalid_polygon_topology_is_rejected_not_repaired():
             site_id="haughton",
             landform_label="Crater-floor candidate",
             mission_question="Terrain screening",
+            source_reference="Published geological map, figure 3",
         )
 
 
@@ -73,6 +74,7 @@ def test_draft_polygon_outside_catalogued_dem_tile_is_rejected():
             site_id="haughton",
             landform_label="Crater unit",
             mission_question="Terrain screening",
+            source_reference="Published geological map, figure 3",
         )
 
 
