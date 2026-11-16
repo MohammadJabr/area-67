@@ -280,8 +280,9 @@ def render_earth_aoi_workbench() -> None:
             height=90,
         )
         source_reference = st.text_input(
-            "Boundary source / map reference",
-            placeholder="Citation, geological map sheet, figure, or field boundary source",
+            "Boundary source / map reference (required)",
+            placeholder="Citation, geological map sheet, figure, field survey, or boundary source",
+            help="A reference point alone does not justify an AOI. Cite the mapped geomorphic boundary you traced.",
         )
         author = st.text_input("Prepared by", placeholder="Team member")
         prepare = st.form_submit_button(
