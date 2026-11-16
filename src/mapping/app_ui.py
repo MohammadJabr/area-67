@@ -54,20 +54,24 @@ def _earth_map(
         prefer_canvas=True,
     )
     folium.TileLayer(
-        tiles="CartoDB dark_matter",
-        name="Dark Matter",
+        tiles="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+        name="CARTO Dark",
         attr="© OpenStreetMap contributors · © CARTO",
+        subdomains="abcd",
         overlay=False,
         control=True,
         show=True,
+        max_zoom=20,
     ).add_to(map_object)
     folium.TileLayer(
-        tiles="OpenStreetMap",
+        tiles="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
         name="OpenStreetMap",
         attr="© OpenStreetMap contributors",
+        subdomains="abc",
         overlay=False,
         control=True,
         show=False,
+        max_zoom=19,
     ).add_to(map_object)
     folium.Marker(
         [site["latitude"], site["longitude"]],
