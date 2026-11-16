@@ -14,6 +14,7 @@ EARTH_SITE_CATALOG = {
         "source_url": "https://copernicus-dem-30m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_10_N75_00_W090_00_DEM/Copernicus_DSM_COG_10_N75_00_W090_00_DEM.tif",
         "reference_source": "Patterson & Ernst (2020), crater-centre reference",
         "reference_url": "https://doi.org/10.1111/maps.13573",
+        "source_coverage_bounds_wgs84": [-90.0004167, 75.0001389, -89.0004167, 76.0001389],
         "candidate_status": "PRIMARY CANDIDATE · AOI NOT APPROVED",
         "landform_guidance": "Choose a specific mapped unit: central basin, final rim/faulted terraces, or crater-fill unit. Do not draw one circle for the full apparent crater.",
     },
@@ -24,6 +25,7 @@ EARTH_SITE_CATALOG = {
         "source_url": "https://copernicus-dem-30m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_10_N65_00_W017_00_DEM/Copernicus_DSM_COG_10_N65_00_W017_00_DEM.tif",
         "reference_source": "Smithsonian Global Volcanism Program — Askja",
         "reference_url": "https://volcano.si.edu/volcano.cfm?vn=373060",
+        "source_coverage_bounds_wgs84": [-17.0002778, 65.0001389, -16.0002778, 66.0001389],
         "candidate_status": "PRIMARY SHORTLIST · AOI NOT APPROVED",
         "landform_guidance": "Select a named caldera, crater, lava field or other volcanic unit. The volcano reference point is not an AOI.",
     },
@@ -34,6 +36,7 @@ EARTH_SITE_CATALOG = {
         "source_url": "https://copernicus-dem-30m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_10_N19_00_W156_00_DEM/Copernicus_DSM_COG_10_N19_00_W156_00_DEM.tif",
         "reference_source": "USGS Hawaiian Volcano Observatory — Mauna Kea",
         "reference_url": "https://www.usgs.gov/volcanoes/mauna-kea",
+        "source_coverage_bounds_wgs84": [-156.0001389, 19.0001389, -155.0001389, 20.0001389],
         "candidate_status": "PRIMARY CANDIDATE · AOI NOT APPROVED",
         "landform_guidance": "Choose a summit-cone field, lava surface, glacially modified unit or flank sector. Do not use the whole volcano.",
     },
@@ -44,6 +47,7 @@ EARTH_SITE_CATALOG = {
         "source_url": "https://copernicus-dem-30m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_10_S25_00_W070_00_DEM/Copernicus_DSM_COG_10_S25_00_W070_00_DEM.tif",
         "reference_source": "Published Yungay hyper-arid-core study reference",
         "reference_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8859261/",
+        "source_coverage_bounds_wgs84": [-70.0001389, -24.9998611, -69.0001389, -23.9998611],
         "candidate_status": "HELD · AREA 67 FIELD-PLOT IDENTITY NOT CONFIRMED",
         "landform_guidance": "This is a published study-site search anchor, not confirmation of the team's intended field plot. Confirm the site before digitizing.",
     },
@@ -112,6 +116,15 @@ def build_draft_aoi_feature_collection(
         min_lon, min_lat, max_lon, max_lat = geometry.bounds
         if min_lon < -180 or max_lon > 180 or min_lat < -90 or max_lat > 90:
             raise ValueError(f"Drawing {index} has coordinates outside WGS84 longitude/latitude bounds.")
+        west, south, east, north = site["source_coverage_bounds_wgs84"]
+        if (
+            min_lon < west or max_lon > east
+            or min_lat < south or max_lat > north
+        ):
+            raise ValueError(
+                f"Drawing {index} extends beyond the currently catalogued source tile for {site_id}. "
+                "Acquire/check adjacent source tiles before exporting a larger draft AOI."
+            )
         signed_area_m2, _ = geod.geometry_area_perimeter(geometry)
         area_km2 = abs(float(signed_area_m2)) / 1_000_000.0
         properties = {
@@ -128,6 +141,7 @@ def build_draft_aoi_feature_collection(
             "analysis_crs_proposal": site["analysis_crs"],
             "source_dem_id": site["source_id"],
             "source_dem_url": site["source_url"],
+            "source_coverage_bounds_wgs84": site["source_coverage_bounds_wgs84"],
             "reference_anchor": {
                 "latitude": site["latitude"],
                 "longitude": site["longitude"],
