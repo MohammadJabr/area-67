@@ -23,6 +23,12 @@ from src.data.contracts import (
 )
 from src.reporting.passport import build_passport, passport_to_markdown
 from src.reporting.evidence_bundle import build_evidence_bundle
+from src.mapping.app_ui import (
+    render_earth_aoi_workbench,
+    render_moon_surface_lab,
+    render_moon_surface_map,
+    render_mars_surface_map,
+)
 
 st.set_page_config(page_title="AREA 67 | Planetary Analog Discovery", page_icon="🪐", layout="wide")
 FP = ROOT / "data/processed/terrain_fingerprints.csv"
@@ -868,83 +874,26 @@ def main() -> None:
         st.markdown(
             '<div class="a67-section"><div class="a67-section-kicker">Planetary map workspace</div>'
             '<div class="a67-section-title">Planetary Atlas</div>'
-            '<div class="a67-section-subtitle">Explore the source worlds with dedicated planetary mapping tools. These external reference maps are not automatically ingested into the current matching results.</div></div>',
+            '<div class="a67-section-subtitle">Explore real Earth reference terrain, draw reviewable draft AOIs, and inspect official lunar and Martian map layers. External planetary layers remain separate from scored AREA 67 inputs.</div></div>',
             unsafe_allow_html=True,
         )
-        earth_col, moon_col, mars_col = st.columns(3)
-        with earth_col:
-            st.markdown("### Earth")
-            st.markdown("**AREA 67 Analog Radar**")
-            st.write(
-                "The project's interactive Earth map is in Analog Radar. It shows the three current "
-                "reference-window anchors and their matcher-supplied rank. The pins are not approved AOI polygons."
+        earth_tab, moon_tab, mars_tab = st.tabs([
+            "EARTH · TERRAIN & AOI",
+            "MOON · LOLA / WAC",
+            "MARS · MOLA / VIKING",
+        ])
+        with earth_tab:
+            render_earth_aoi_workbench()
+        with moon_tab:
+            render_moon_surface_map()
+            st.divider()
+            render_moon_surface_lab()
+        with mars_tab:
+            render_mars_surface_map()
+            st.info(
+                "Mars is currently a visual exploration workspace only. The MVP does not yet have "
+                "a Mars target fingerprint, a Mars-to-Earth ranking, or a validated Mars/Earth AOI pair."
             )
-            st.link_button(
-                "Open Copernicus DEM catalogue",
-                "https://dataspace.copernicus.eu/explore-data/data-collections/copernicus-contributing-missions/collections-description/COP-DEM",
-                use_container_width=True,
-            )
-            st.caption("Current ranking input: Copernicus DEM GLO-30 DSM reference windows.")
-        with moon_col:
-            st.markdown("### Moon")
-            st.markdown("**NASA Moon Trek**")
-            st.write(
-                "Explore lunar mosaics, polar views, elevation products, slope and illumination layers. "
-                "Use the product search and inspect each layer's source metadata before using it in a study."
-            )
-            st.link_button(
-                "Open interactive Moon Trek",
-                "https://trek.nasa.gov/moon/",
-                use_container_width=True,
-            )
-            st.caption(
-                "Reference layers include LRO WAC mosaics and polar imagery. Some advanced analysis "
-                "functions may require a registered research account."
-            )
-        with mars_col:
-            st.markdown("### Mars")
-            st.markdown("**NASA Mars Trek**")
-            st.write(
-                "Explore global and regional Martian imagery, MOLA elevation and hillshade, THEMIS "
-                "thermal mosaics, and higher-resolution CTX/HiRISE coverage where available."
-            )
-            st.link_button(
-                "Open interactive Mars Trek",
-                "https://trek.nasa.gov/mars/",
-                use_container_width=True,
-            )
-            st.caption(
-                "These are external source-exploration tools. The current AREA 67 ranking has no Mars "
-                "target fingerprint and does not use these layers as scored inputs."
-            )
-        st.divider()
-        st.markdown("#### What is connected to AREA 67 today?")
-        atlas_rows = [
-            {
-                "Body": "Earth",
-                "Current project connection": "Three Copernicus GLO-30 reference windows in the exploratory pilot",
-                "Map experience": "Interactive Earth candidate map in Analog Radar",
-                "Scientific status": "Provisional reference windows; not approved AOIs",
-            },
-            {
-                "Body": "Moon",
-                "Current project connection": "NASA LOLA Site01 target fingerprint and quality companions",
-                "Map experience": "NASA Moon Trek external explorer; project-native lunar raster map pending",
-                "Scientific status": "Exploratory target window; local frame/AOI approval unresolved",
-            },
-            {
-                "Body": "Mars",
-                "Current project connection": "No Mars target fingerprint in the current MVP",
-                "Map experience": "NASA Mars Trek external explorer",
-                "Scientific status": "Future integration; no Mars-to-Earth ranking claimed",
-            },
-        ]
-        st.dataframe(pd.DataFrame(atlas_rows), width="stretch", hide_index=True)
-        st.info(
-            "Important: opening a NASA planetary map does not add its layers to AREA 67's scoring engine. "
-            "A layer becomes an analytical input only after its exact product, coordinate frame, scale, units, "
-            "quality metadata and processing method are recorded and validated."
-        )
 
     with tab_passport:
         st.markdown(

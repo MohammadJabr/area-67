@@ -5,9 +5,9 @@
 The Streamlit application is organized as five mission-oriented workspaces:
 
 1. **Mission Control** — selected planetary target and mission profile, project status, current Earth candidate references, scientifically approved AOI count, and available Mars records.
-2. **Analog Radar** — matcher-supplied Earth candidate ranking, candidate-card/table switch, relative-index chart, candidate filtering and spotlight, and an interactive Earth reference map.
+2. **Analog Radar** — matcher-supplied Earth candidate ranking, candidate-card/table switch, relative-index chart, candidate filtering and spotlight, and the interactive Earth reference-anchor map.
 3. **Terrain Lab** — side-by-side five-group terrain fingerprint tables, single-parameter exploration, matcher-supplied feature contributions/differences, focus-site quality metrics, and data-quality/provenance comparison.
-4. **Planetary Atlas** — the project-native Earth candidate map workflow plus direct links to official NASA Moon Trek and Mars Trek map explorers. External layers are not silently treated as AREA 67 matching inputs.
+4. **Planetary Atlas** — nested Earth, Moon and Mars workspaces. Earth provides bounded Copernicus reference-window overlays and a user-drawn AOI workbench; Moon provides NASA LRO WAC global tiles plus a bounded Site01 LOLA raster lab; Mars provides NASA MOLA/Viking global tiles. Visual layers are separate from scored matching inputs.
 5. **Analog Passport** — selectable target/candidate dossier, readable terrain evidence tables, target-to-candidate comparison, source lineage, quality caveats, matching assumptions, and Markdown/ZIP evidence export.
 
 Target and mission-profile controls live in the sidebar. Options are populated only from the loaded ranking CSV. Candidate filters operate on the supplied matcher rows; they do not recalculate scores or alter the source ranking. The candidate count shows filtered and total available candidates so intentional filtering is not mistaken for missing data.
@@ -70,3 +70,28 @@ Target and mission-profile controls live in the sidebar. Options are populated o
 - Candidate-card values, map attributes and feature-contribution values are rendered from supplied matcher/fingerprint outputs.
 - The detailed data table remains available as an alternate ranking view.
 - Local entry point: `python -m streamlit run app/main.py`.
+
+
+## Earth Terrain Explorer and AOI Workbench
+
+- Candidate maps are centered on the published/provisional reference anchors in the source catalogue: Haughton, Askja, Mauna Kea and the held Yungay published-study reference.
+- Optional bounded reference-window reads query public Copernicus GLO-30 COGs using GDAL/Rasterio HTTP range reads. The UI can show elevation, slope derived from that bounded preview, or hillshade derived from the same display grid.
+- Preview window choices are 990 m, 1,980 m, 2,970 m or 4,950 m at a 30 m display grid. These are visualization dimensions, not approved study AOIs, and display derivatives do not update canonical fingerprints or matching CSVs.
+- The image overlay is displayed in a geographic bounding envelope for usability. It is not a new analysis raster or a replacement for the exact source grid.
+- Users can draw polygons/rectangles in the interactive Leaflet map. Draft export requires a named geomorphic unit, a mission/science question and optional source-map provenance.
+- Draft AOI export validates Polygon/MultiPolygon type, topology, WGS84 coordinate bounds and containment inside the currently catalogued source tile bounds. It does not silently repair invalid geometry.
+- Every exported feature is explicitly `DRAFT_NOT_APPROVED`, `ranking_eligible=false`, and `scientific_status=DRAFT_GEOMETRY_ONLY`. The geometry is not fed into the matching engine.
+- A drawn boundary is not a scientifically defensible AOI until its map source, georeferencing, landform interpretation, GIS review, analysis-grid policy and team approval are documented. Source tile bounds are not geomorphic boundaries.
+
+## Moon and Mars mapping workspaces
+
+- **Moon global map:** NASA/JPL LRO WAC global mosaic served by the Moon Trek WMTS service.
+- **Moon native raster preview:** bounded NASA PGDA LOLA Product 78 Site01 layers (elevation, slope, LDEC, total Z uncertainty and slope uncertainty). Reads are performed only after a user enables the preview. The panel shows local native grid coordinates and does not infer a latitude/longitude location from the unresolved frame caveat. The LDEC display is averaged during downsampling and is not raw shot-level data.
+- **Mars global map:** NASA/JPL Mars Trek WMTS layers for MOLA colour hillshade and Viking MDIM 2.1 visual mosaic.
+- Global NASA map layers are for exploration/context. The current product still has no Mars target fingerprint and does not use Mars visual layers as scored inputs.
+- These live tile layers require browser internet access. Planetary map-service products remain separate from the CSV-driven AREA 67 matching output.
+
+## Dependencies
+
+- `streamlit-folium==0.27.4` is used for bidirectional interactive Leaflet maps and draw events.
+- Folium draws maps and Leaflet layers; Rasterio/GDAL performs bounded COG/GeoTIFF reads; Plotly renders the local native-grid LOLA preview.
