@@ -43,7 +43,6 @@ def build_planetary_map(body: str) -> folium.Map:
         tiles=None,
         control_scale=True,
         prefer_canvas=True,
-        world_copy_jump=False,
     )
 
     if normalized == "moon":
