@@ -445,6 +445,26 @@ def render_moon_surface_lab() -> None:
         st.caption(f"{type(exc).__name__}: {exc}")
 
 
+
+def render_moon_surface_map() -> None:
+    st.markdown("#### Moon — NASA LRO WAC global mosaic")
+    st.caption(
+        "Explore the global LRO Wide Angle Camera mosaic. The project-native Site01 LOLA raster preview "
+        "is shown separately below because its stored local coordinate frame is not treated as geographic latitude/longitude."
+    )
+    map_object = build_planetary_map("moon")
+    st_folium(
+        map_object,
+        width=1320,
+        height=620,
+        returned_objects=[],
+        key="area67_moon_wac_wmts_map",
+    )
+    st.link_button("Open NASA Moon Trek", "https://trek.nasa.gov/moon/")
+    st.caption(
+        "Map source: NASA / JPL LRO WAC global mosaic via the official Moon Trek WMTS service."
+    )
+
 def render_mars_surface_map() -> None:
     st.markdown("#### Mars — NASA global map layers")
     st.caption(
